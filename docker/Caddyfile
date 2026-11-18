@@ -1,0 +1,12 @@
+:80 {
+	encode zstd gzip
+	redir /index.html / 308
+	redir /en/index.html /en/ 308
+	root * /srv
+	try_files {path} {path}.html {path}/index.html
+	file_server
+	handle_errors 404 {
+		rewrite * /404.html
+		file_server
+	}
+}
