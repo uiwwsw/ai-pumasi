@@ -12,19 +12,19 @@ Developer preview · [MIT](LICENSE) · macOS / Windows
 
 [Open the browser demo](https://aurora-two-virid.vercel.app/) to explore conversation organization, model comparison and token ranges without installation. It runs locally without calling an AI provider. The interactive interface is currently in Korean; the [English overview](https://aurora-two-virid.vercel.app/en/) explains the features and limitations.
 
-Provider connections and real text responses are available in the installed desktop app. The public 0.1.3 preview requires an explicit analysis action and manual execution-model selection. The name *Auto Router · Low AI* describes the product direction, not a completed autonomous router.
+Provider connections and real text responses are available in the installed desktop app. The public 0.1.4 preview requires an explicit analysis action and manual execution-model selection, and adds a team mode in which a lead model plans and reviews while a cheaper worker model does the work. Team mode has not yet been verified against live providers. The name *Auto Router · Low AI* describes the product direction, not a completed autonomous router.
 
-## Download · 0.1.3
+## Download · 0.1.4
 
 | Platform | Installer |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.3/Aurora-0.1.3-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.3/Aurora-0.1.3-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.3/Aurora-0.1.3-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-windows-x64.exe) |
 
-[ZIP files, changelog, checksums and signing information](https://github.com/uiwwsw/aurora/releases/tag/v0.1.3)
+[ZIP files, changelog, checksums and signing information](https://github.com/uiwwsw/aurora/releases/tag/v0.1.4)
 
-On macOS, open the DMG and move Aurora to Applications. On Windows, run the installer. End users do not need Node.js. The macOS 0.1.3 packages use Developer ID signing and Apple notarization. The Windows installer is also unsigned by a developer certificate. Operating-system security prompts or execution restrictions may appear.
+On macOS, open the DMG and move Aurora to Applications. On Windows, run the installer. End users do not need Node.js. The macOS 0.1.4 packages use Developer ID signing and Apple notarization. The Windows installer is also unsigned by a developer certificate. Operating-system security prompts or execution restrictions may appear.
 
 ## Features
 
