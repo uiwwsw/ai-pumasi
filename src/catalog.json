@@ -34,5 +34,19 @@
     "name": "Claude Opus 5.5",
     "provider": "anthropic",
     "tier": "advanced"
+  },
+  {
+    "id": "gemini-flash-latest",
+    "name": "Gemini Flash (무료 한도)",
+    "provider": "gemini",
+    "tier": "light",
+    "free": true
+  },
+  {
+    "id": "ollama-local",
+    "name": "Ollama 로컬 (무료)",
+    "provider": "ollama",
+    "tier": "light",
+    "free": true
   }
 ]
