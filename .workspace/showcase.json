@@ -33,6 +33,7 @@
   ],
   "evidence": {
     "verifiedAt": "2026-11-24",
-    "note": "v0.1.4 프리릴리스 공개: 설치 파일 5개·업데이트 파일 포함 14개 자산, publish-release 검증(크기·SHA) 통과, README 다운로드 3개 HTTP 200. macOS arm64·x64 로컬 Developer ID 서명·Apple 공증 성공, spctl 'Notarized Developer ID' 통과, arm64 설치 앱 package-smoke 통과. Windows CI 45307839819 빌드·설치·실행 통과(Authenticode 미서명). 팀 모드는 단위 테스트 36개 통과, 실제 API 호출은 키 부재로 미검증."
-  }
+    "note": "사용자 요청으로 MOVV 공개 소개에서 제외하고 저장소를 비공개로 전환."
+  },
+  "visibility": "private"
 }
