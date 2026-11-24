@@ -47,6 +47,7 @@ import {
   ROUTING_KEY,
   type RoutingSettings,
   type ProviderStatus,
+  type TeamResult,
   type Analysis,
   type Completion,
 } from "./routing";
@@ -96,6 +97,8 @@ function App() {
   const [providerStatus, setProviderStatus] = useState<ProviderStatus>({
     openai: false,
     anthropic: false,
+    gemini: false,
+    ollama: false,
   });
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
@@ -283,7 +286,49 @@ function App() {
     if (!pending || !pending.decision || busyRef.current) return;
     const p = pending;
     let completion: Completion | null = null;
-    if (routing.live) {
+    let team: TeamResult | null = null;
+    if (routing.live && routing.team && window.auroraAI?.team) {
+      busyRef.current = true;
+      setBusy(true);
+      setAIError("");
+      const off = window.auroraAI.onTeamProgress?.((e) =>
+        setNotice(
+          e.stage === "plan"
+            ? `팀 모드 · ${modelById(routing.lead).name}가 작업을 나누는 중`
+            : e.stage === "work"
+              ? `팀 모드 · ${e.round}회차 ${e.index}/${e.total} · ${modelById(routing.worker).name}: ${e.title}`
+              : e.stage === "review"
+                ? `팀 모드 · ${modelById(routing.lead).name}가 ${e.round}회차 결과 검수 중`
+                : "팀 모드 · 완료",
+        ),
+      );
+      try {
+        team = await window.auroraAI.team({
+          lead: routing.lead,
+          worker: routing.worker,
+          text: p.text,
+          context: context(p.decision),
+        });
+        completion = {
+          text: `${team.text}\n\n—\n팀 모드 · 선임 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 주니어 ${modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? "" : " · 최종 승인 없이 마감"}`,
+          model: team.lead,
+          inputTokens: team.usage.lead.in + team.usage.worker.in,
+          outputTokens: team.usage.lead.out + team.usage.worker.out,
+          incomplete: false,
+        };
+      } catch (error) {
+        setAIError(
+          error instanceof Error
+            ? error.message
+            : "팀 모드 실행에 실패했습니다.",
+        );
+        return;
+      } finally {
+        off?.();
+        busyRef.current = false;
+        setBusy(false);
+      }
+    } else if (routing.live) {
       if (!window.auroraAI) {
         setAIError("Electron 앱에서 실행해 주세요.");
         return;
@@ -314,9 +359,11 @@ function App() {
       {
         id: crypto.randomUUID(),
         role: "assistant" as const,
-        text: completion
-          ? `${completion.text}\n\n—\n${modelById(p.modelId).name} · 실제 입력 ${completion.inputTokens ?? "미확인"} / 출력 ${completion.outputTokens ?? "미확인"} 토큰${completion.incomplete ? " · 생성 상한 도달: 미완성일 수 있음" : ""}`
-          : `${makePreview(p.text, p.selected)}\n선택한 실행 모델: ${modelById(p.modelId).name}`,
+        text: team
+          ? completion!.text
+          : completion
+            ? `${completion.text}\n\n—\n${modelById(p.modelId).name} · 실제 입력 ${completion.inputTokens ?? "미확인"} / 출력 ${completion.outputTokens ?? "미확인"} 토큰${completion.incomplete ? " · 생성 상한 도달: 미완성일 수 있음" : ""}`
+            : `${makePreview(p.text, p.selected)}\n선택한 실행 모델: ${modelById(p.modelId).name}`,
         live: !!completion,
         model: p.modelId,
       },
@@ -1196,6 +1243,64 @@ function App() {
                   </label>
                   <label className="setting-row">
                     <span>
+                      <strong>팀 모드</strong>
+                      <small>
+                        비싼 모델은 나누기와 검수만, 실제 작업은 싼 모델이
+                        합니다. 실제 API 사용이 켜져 있어야 동작합니다.
+                      </small>
+                    </span>
+                    <input
+                      type="checkbox"
+                      aria-label="팀 모드"
+                      checked={routing.team}
+                      onChange={(e) =>
+                        setRouting((r) => ({ ...r, team: e.target.checked }))
+                      }
+                    />
+                  </label>
+                  <label className="setting-row">
+                    <span>
+                      <strong>선임 모델</strong>
+                      <small>작업을 나누고 결과를 검수합니다.</small>
+                    </span>
+                    <select
+                      aria-label="선임 모델"
+                      value={routing.lead}
+                      onChange={(e) =>
+                        setRouting((r) => ({ ...r, lead: e.target.value }))
+                      }
+                    >
+                      {models.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="setting-row">
+                    <span>
+                      <strong>주니어 모델</strong>
+                      <small>
+                        나눠진 작업 하나씩만 받습니다. 대화 전체는 보내지
+                        않습니다.
+                      </small>
+                    </span>
+                    <select
+                      aria-label="주니어 모델"
+                      value={routing.worker}
+                      onChange={(e) =>
+                        setRouting((r) => ({ ...r, worker: e.target.value }))
+                      }
+                    >
+                      {models.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="setting-row">
+                    <span>
                       <strong>실제 API 사용</strong>
                       <small>
                         분석·실행 버튼을 누르면 선택한 제공자로 요청을
@@ -1214,9 +1319,11 @@ function App() {
                     OpenAI 키{" "}
                     {providerStatus.openai ? "감지됨 (미검증)" : "없음"} ·
                     Claude 키{" "}
-                    {providerStatus.anthropic ? "감지됨 (미검증)" : "없음"}.
-                    키는 .env 또는 환경변수로 설정하고 앱을 재시작하세요. 모델
-                    접근 권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과
+                    {providerStatus.anthropic ? "감지됨 (미검증)" : "없음"} ·
+                    Gemini 키{" "}
+                    {providerStatus.gemini ? "감지됨 (미검증)" : "없음"}. 키는
+                    .env 또는 환경변수로 설정하고 앱을 재시작하세요. 모델 접근
+                    권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과
                     별도로 이 기기에 유지됩니다.
                   </p>
                 </section>

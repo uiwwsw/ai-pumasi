@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4
+
+- 팀 모드를 추가했습니다. 선임 모델(예: Claude Opus)이 요청을 주니어용 작업으로 나누고, 싼·무료 모델(Gemini Flash 무료 한도, Ollama 로컬)이 작업 하나씩만 받아 처리한 뒤, 선임이 검수하고 필요한 작업만 다시 시킵니다(최대 2회차).
+- 주니어 모델에는 대화 전체를 보내지 않고 자기 작업 지시만 보내 토큰을 줄입니다. 선임·주니어 사용량을 따로 표시합니다.
+- Gemini(`GEMINI_API_KEY`)와 Ollama(`OLLAMA_MODEL`, 기본 `qwen3`) 제공자를 추가했습니다.
+- Thinple 프로젝트를 Aurora로 통합하고 Thinple은 중단(deprecated)했습니다.
+
 ## 0.1.3
 
 - 로컬 키체인 프로필을 사용하는 Developer ID 서명·공증 빌드를 지원합니다.
