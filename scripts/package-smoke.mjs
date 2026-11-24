@@ -18,6 +18,7 @@ try {
       ...process.env,
       AURORA_QA_DATA: profile,
       AURORA_DISABLE_ENV_FILE: "1",
+      AURORA_OLLAMA: "0",
       OPENAI_API_KEY: "",
       ANTHROPIC_API_KEY: "",
     },
@@ -31,6 +32,8 @@ try {
   expect(await page.evaluate(() => window.auroraAI.status())).toEqual({
     openai: false,
     anthropic: false,
+    gemini: false,
+    ollama: false,
   });
   await page
     .getByRole("button", { name: "모드 및 예산 설정", exact: true })
