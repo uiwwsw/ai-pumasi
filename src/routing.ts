@@ -81,7 +81,7 @@ export type AIRequest = {
   maxOutputTokens: number;
 };
 export type TeamProgress = {
-  stage: "plan" | "work" | "review" | "done";
+  stage: "plan" | "work" | "review" | "merge" | "done";
   round?: number;
   index?: number;
   total?: number;
@@ -91,9 +91,11 @@ export type TeamProgress = {
 export type TeamResult = {
   text: string;
   goal: string;
-  tasks: { id: string; title: string }[];
+  tasks: { id: string; title: string; failed: boolean; incomplete: boolean }[];
   rounds: number;
   approved: boolean;
+  warning: string;
+  workersUsed: string[];
   usage: Record<"lead" | "worker", { in: number; out: number }>;
   lead: string;
   worker: string;
