@@ -22,7 +22,7 @@ test("role defaults are independent, validated, and provider-specific", () => {
     ).live,
     false,
   );
-  assert.equal(models.length, 6);
+  assert.equal(models.length, 8);
 });
 test("missing key blocks a call before any network traffic", async () => {
   let calls = 0;
@@ -39,6 +39,8 @@ test("missing key blocks a call before any network traffic", async () => {
   assert.deepEqual(status({ ANTHROPIC_API_KEY: "test" }), {
     openai: false,
     anthropic: true,
+    gemini: false,
+    ollama: true,
   });
 });
 test("OpenAI adapter uses fixed endpoint, selected model, no store, usage and cap", async () => {
@@ -155,4 +157,62 @@ test("errors do not expose provider response body or retry calls", async () => {
   assert.equal(calls, 1);
   assert.throws(() => validate({ ...payload, model: "https://evil.invalid" }));
   assert.throws(() => validate({ ...payload, maxOutputTokens: 999999 }));
+});
+test("team mode: lead plans, worker gets only its task, lead reviews and redoes", async () => {
+  const { orchestrate } = require("../electron/team.cjs");
+  const calls: any[] = [];
+  let reviews = 0;
+  const chat = (text: string) => ({
+    ok: true,
+    json: async () => ({
+      choices: [{ message: { content: text }, finish_reason: "stop" }],
+      usage: { prompt_tokens: 5, completion_tokens: 2 },
+    }),
+  });
+  const result = await orchestrate(
+    {
+      lead: "claude-opus-5-5",
+      worker: "gemini-flash-latest",
+      text: "할 일",
+      context: [{ role: "user", text: "긴 이전 대화" }],
+    },
+    {
+      env: { ANTHROPIC_API_KEY: "t", GEMINI_API_KEY: "g" },
+      fetchImpl: async (url: string, opts: any) => {
+        const body = JSON.parse(opts.body);
+        calls.push({ url, body });
+        if (url.includes("anthropic")) {
+          const s = body.system as string;
+          const text = s.includes("senior lead. Never")
+            ? JSON.stringify({
+                goal: "목표",
+                tasks: [
+                  { id: "t1", title: "a", instructions: "A 하기" },
+                  { id: "t2", title: "b", instructions: "B 하기" },
+                ],
+              })
+            : ++reviews === 1
+              ? JSON.stringify({
+                  approved: false,
+                  redo: [{ id: "t2", feedback: "B 고치기" }],
+                  final: "",
+                })
+              : JSON.stringify({ approved: true, redo: [], final: "최종" });
+          return json({
+            content: [{ type: "text", text }],
+            usage: { input_tokens: 10, output_tokens: 4 },
+          });
+        }
+        return chat("결과");
+      },
+    },
+  );
+  assert.equal(result.text, "최종");
+  assert.equal(result.rounds, 2);
+  const workerCalls = calls.filter((c) => c.url.includes("generativelanguage"));
+  assert.equal(workerCalls.length, 3);
+  assert.equal(workerCalls[0].body.messages.length, 2); // system + task only, no prior conversation
+  assert.match(workerCalls[2].body.messages[1].content, /B 고치기/);
+  assert.equal(result.usage.worker.in, 15);
+  assert.equal(result.usage.lead.in, 30);
 });
