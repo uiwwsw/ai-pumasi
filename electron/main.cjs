@@ -84,6 +84,19 @@ else
         inFlight.delete(id);
       }
     });
+    ipcMain.handle("aurora:team-run", async (event, payload) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      const id = event.sender.id;
+      if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
+      inFlight.add(id);
+      try {
+        return await require("./team.cjs").orchestrate(payload, {
+          onProgress: (e) => event.sender.send("aurora:team-progress", e),
+        });
+      } finally {
+        inFlight.delete(id);
+      }
+    });
     const root = path.resolve(__dirname, "../dist");
     protocol.handle("aurora", (request) => {
       const url = new URL(request.url);

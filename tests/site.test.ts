@@ -109,10 +109,7 @@ test("Vercel upload retains build dependencies while excluding desktop and priva
       root,
     ]);
     assert.equal(init.status, 0);
-    for (const file of [
-      "scripts/build-web.mjs",
-      "public/landing.css",
-    ]) {
+    for (const file of ["scripts/build-web.mjs", "public/landing.css"]) {
       const result = spawnSync(
         "git",
         [

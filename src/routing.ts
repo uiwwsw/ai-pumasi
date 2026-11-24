@@ -1,11 +1,12 @@
 import catalog from "./catalog.json";
 import type { Tier } from "./domain";
-export type Provider = "openai" | "anthropic";
+export type Provider = "openai" | "anthropic" | "gemini" | "ollama";
 export type Model = {
   id: string;
   name: string;
   provider: Provider;
   tier: Tier;
+  free?: boolean;
 };
 export const models = catalog as Model[];
 export const modelById = (id: string) => models.find((m) => m.id === id)!;
@@ -14,13 +15,28 @@ export type RoutingSettings = {
   analyzer: string;
   executor: string;
   live: boolean;
+  team: boolean;
+  lead: string;
+  worker: string;
 };
-export const presets: Record<Provider, RoutingSettings> = {
-  openai: { analyzer: "gpt-6-luna", executor: "gpt-6.1-sol", live: false },
+const teamDefaults = {
+  team: false,
+  lead: "claude-opus-5-5",
+  worker: "gemini-flash-latest",
+};
+export const presets: Record<"openai" | "anthropic", RoutingSettings> = {
+  openai: {
+    analyzer: "gpt-6-luna",
+    executor: "gpt-6.1-sol",
+    live: false,
+    ...teamDefaults,
+    lead: "gpt-6-astra",
+  },
   anthropic: {
     analyzer: "claude-haiku-5-5",
     executor: "claude-sonnet-5-5",
     live: false,
+    ...teamDefaults,
   },
 };
 export function readRouting(raw: string | null): RoutingSettings {
@@ -32,7 +48,15 @@ export function readRouting(raw: string | null): RoutingSettings {
       models.some((m) => m.id === d.executor) &&
       typeof d.live === "boolean"
     )
-      return d;
+      return {
+        ...teamDefaults,
+        ...d,
+        team: d.team === true,
+        lead: models.some((m) => m.id === d.lead) ? d.lead : teamDefaults.lead,
+        worker: models.some((m) => m.id === d.worker)
+          ? d.worker
+          : teamDefaults.worker,
+      };
   } catch {}
   return { ...presets.openai };
 }
@@ -56,7 +80,33 @@ export type AIRequest = {
   context: { role: "user" | "assistant"; text: string }[];
   maxOutputTokens: number;
 };
+export type TeamProgress = {
+  stage: "plan" | "work" | "review" | "done";
+  round?: number;
+  index?: number;
+  total?: number;
+  title?: string;
+  model?: string;
+};
+export type TeamResult = {
+  text: string;
+  goal: string;
+  tasks: { id: string; title: string }[];
+  rounds: number;
+  approved: boolean;
+  usage: Record<"lead" | "worker", { in: number; out: number }>;
+  lead: string;
+  worker: string;
+};
 export interface AIBridge {
+  team?(payload: {
+    lead: string;
+    worker: string;
+    text: string;
+    context: AIRequest["context"];
+    maxRounds?: number;
+  }): Promise<TeamResult>;
+  onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
   status(): Promise<ProviderStatus>;
   request(payload: AIRequest): Promise<Completion | Analysis>;
 }
