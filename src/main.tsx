@@ -299,7 +299,9 @@ function App() {
               ? `팀 모드 · ${e.round}회차 ${e.index}/${e.total} · ${modelById(routing.worker).name}: ${e.title}`
               : e.stage === "review"
                 ? `팀 모드 · ${modelById(routing.lead).name}가 ${e.round}회차 결과 검수 중`
-                : "팀 모드 · 완료",
+                : e.stage === "merge"
+                  ? `팀 모드 · ${modelById(routing.worker).name}가 결과를 합치는 중`
+                  : "팀 모드 · 완료",
         ),
       );
       try {
@@ -310,7 +312,7 @@ function App() {
           context: context(p.decision),
         });
         completion = {
-          text: `${team.text}\n\n—\n팀 모드 · 선임 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 주니어 ${modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? "" : " · 최종 승인 없이 마감"}`,
+          text: `${team.text}\n\n—\n팀 모드 · 선임 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 주니어 ${team.workersUsed.map((id) => modelById(id).name).join(", ") || modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? " · 선임 승인" : ""}${team.tasks.some((t) => t.failed) ? ` · 실패 작업 ${team.tasks.filter((t) => t.failed).length}개` : ""}${team.tasks.some((t) => t.incomplete) ? " · 일부 작업 출력 상한 도달" : ""}${team.warning ? `\n주의: ${team.warning}` : ""}`,
           model: team.lead,
           inputTokens: team.usage.lead.in + team.usage.worker.in,
           outputTokens: team.usage.lead.out + team.usage.worker.out,
