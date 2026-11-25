@@ -39,6 +39,12 @@ On macOS, open the DMG and move Aurora to Applications. On Windows, run the inst
 
 Organization suggestions use local rules. Recommendations and execution are separate actions. Only text responses are supported; filesystem editing and shell execution are unavailable.
 
+## Measurements (2026-11-26)
+
+On a 30-question hard reasoning exam, the free-model bundle scored **29** and ChatGPT's free tier scored **23**. Each exam is freshly generated (so it is not on the internet) and graded automatically against program-computed answers: logic puzzles, shortest paths, knapsack, lattice paths, and big-number arithmetic. ChatGPT free missed 7 of the 10 logic puzzles; on 5 of them it said "no solution" or "cannot be determined" although each has exactly one. The bundle asks four free models and takes a majority vote.
+
+On 31 everyday questions the answer quality was the same (8.23 vs 8.19 out of 10), and code and document tasks tied. The bundle is slower: about 38 s median per everyday question (ChatGPT free about 10 s) and about 10 minutes per hard reasoning question. The bundle is not in the app yet. Method and limits: [bench/README.md](bench/README.md).
+
 ## Estimates and data
 
 Token ranges use **character counts and tier-level output assumptions**. They are not per-model empirical predictions or guaranteed costs; models in the same tier show the same range. Budget percentages refer to the planning budget you enter, not an account's remaining quota.
