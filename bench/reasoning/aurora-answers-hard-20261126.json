@@ -1,0 +1,692 @@
+{
+ "grid-1": {
+  "vote": "1140",
+  "votes": 3,
+  "ms": 208862,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "1140",
+    "ms": 208861
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 171293
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "1140",
+    "ms": 104637
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "1140",
+    "ms": 51611
+   }
+  }
+ },
+ "bigmul-1": {
+  "vote": "250744754562827051508798",
+  "votes": 3,
+  "ms": 1218090,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "250744754562827051508798",
+    "ms": 298619
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 21926
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "250744754562827051508798",
+    "ms": 85689
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "250744754562827051508798",
+    "ms": 42242
+   }
+  }
+ },
+ "bigmul-5": {
+  "vote": "502407897041731269837760",
+  "votes": 2,
+  "ms": 1514482,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "502407897041731269837760",
+    "ms": 289990
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "50232993026077360092176",
+    "ms": 17581
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "502407897041731269837760",
+    "ms": 107110
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "502407897072302480455760",
+    "ms": 71874
+   }
+  }
+ },
+ "zebra-5": {
+  "vote": "프랑스",
+  "votes": 3,
+  "ms": 728236,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "프랑스",
+    "ms": 227425
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "독일",
+    "ms": 226714
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "프랑스",
+    "ms": 43671
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "프랑스",
+    "ms": 42589
+   }
+  }
+ },
+ "knights-3": {
+  "vote": "도윤,서준,소율,유나,태민,하린",
+  "votes": 3,
+  "ms": 438167,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "도윤,서준,소율,유나,태민,하린",
+    "ms": 195653
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "지아,소율,태민,유나",
+    "ms": 187394
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "도윤,서준,소율,유나,태민,하린",
+    "ms": 64584
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "도윤,서준,소율,유나,태민,하린",
+    "ms": 169081
+   }
+  }
+ },
+ "bigmul-2": {
+  "vote": "173070571909611807511068",
+  "votes": 1,
+  "ms": 1838679,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "",
+    "error": "failed"
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 14991
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "173070571909611807511068",
+    "ms": 179693
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "173069150074987557876068",
+    "ms": 31019
+   }
+  }
+ },
+ "path-5": {
+  "vote": "30",
+  "votes": 4,
+  "ms": 297719,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "30",
+    "ms": 102345
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "30",
+    "ms": 82247
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "30",
+    "ms": 33239
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "30",
+    "ms": 75349
+   }
+  }
+ },
+ "path-3": {
+  "vote": "56",
+  "votes": 4,
+  "ms": 549147,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "56",
+    "ms": 242778
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "56",
+    "ms": 119776
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "56",
+    "ms": 32237
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "56",
+    "ms": 111377
+   }
+  }
+ },
+ "zebra-4": {
+  "vote": "프랑스",
+  "votes": 3,
+  "ms": 1503836,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "프랑스",
+    "ms": 197905
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "error": "failed"
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "프랑스",
+    "ms": 56094
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "프랑스",
+    "ms": 147850
+   }
+  }
+ },
+ "knapsack-1": {
+  "vote": "556",
+  "votes": 2,
+  "ms": 1838373,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "",
+    "error": "failed"
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 19252
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "556",
+    "ms": 76897
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "556",
+    "ms": 47909
+   }
+  }
+ },
+ "zebra-3": {
+  "vote": "독일",
+  "votes": 4,
+  "ms": 361381,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "독일",
+    "ms": 78590
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "독일",
+    "ms": 110515
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "독일",
+    "ms": 28920
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "독일",
+    "ms": 31637
+   }
+  }
+ },
+ "grid-5": {
+  "vote": "3038",
+  "votes": 3,
+  "ms": 571765,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "3038",
+    "ms": 265782
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 183137
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "3038",
+    "ms": 170039
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "3038",
+    "ms": 38881
+   }
+  }
+ },
+ "knapsack-5": {
+  "vote": "499",
+  "votes": 1,
+  "ms": 1837211,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "",
+    "error": "failed"
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 15142
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "499",
+    "ms": 171273
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "492",
+    "ms": 36688
+   }
+  }
+ },
+ "grid-3": {
+  "vote": "8232",
+  "votes": 3,
+  "ms": 436946,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "8232",
+    "ms": 152793
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 186844
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "8232",
+    "ms": 125706
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "8232",
+    "ms": 76669
+   }
+  }
+ },
+ "knights-2": {
+  "vote": "건우,도윤,서준,소율,예린,유나,하린",
+  "votes": 4,
+  "ms": 467116,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "건우,도윤,서준,소율,예린,유나,하린",
+    "ms": 161088
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "건우,도윤,서준,소율,예린,유나,하린",
+    "ms": 241964
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "건우,도윤,서준,소율,예린,유나,하린",
+    "ms": 72083
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "건우,도윤,서준,소율,예린,유나,하린",
+    "ms": 115473
+   }
+  }
+ },
+ "path-1": {
+  "vote": "79",
+  "votes": 3,
+  "ms": 361139,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "79",
+    "ms": 191574
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 110467
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "79",
+    "ms": 31106
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "79",
+    "ms": 37041
+   }
+  }
+ },
+ "grid-2": {
+  "vote": "1034",
+  "votes": 3,
+  "ms": 560963,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "1034",
+    "ms": 254998
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 57358
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "1034",
+    "ms": 176397
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "1034",
+    "ms": 35765
+   }
+  }
+ },
+ "knapsack-4": {
+  "vote": "362",
+  "votes": 3,
+  "ms": 438551,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "362",
+    "ms": 132342
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 155210
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "362",
+    "ms": 192506
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "362",
+    "ms": 42983
+   }
+  }
+ },
+ "knights-4": {
+  "vote": "건우,서준,소율,예린,하린",
+  "votes": 3,
+  "ms": 524861,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "건우,서준,소율,예린,하린",
+    "ms": 206757
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 24281
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "건우,서준,소율,예린,하린",
+    "ms": 69398
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "건우,서준,소율,예린,하린",
+    "ms": 33597
+   }
+  }
+ },
+ "knights-5": {
+  "vote": "건우,도윤,유나,지아,태민,하린",
+  "votes": 3,
+  "ms": 367716,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "건우,도윤,유나,지아,태민,하린",
+    "ms": 239553
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "건우,서준,소율,태민,하린",
+    "ms": 220364
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "건우,도윤,유나,지아,태민,하린",
+    "ms": 138684
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "건우,도윤,유나,지아,태민,하린",
+    "ms": 44651
+   }
+  }
+ },
+ "knights-1": {
+  "vote": "도윤,서준,소율,유나,태민",
+  "votes": 3,
+  "ms": 598606,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "도윤,서준,소율,유나,태민",
+    "ms": 226445
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "하린, 지아, 민수, 소율, 서준, 태민, 예린",
+    "ms": 97588
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "도윤,서준,소율,유나,태민",
+    "ms": 62075
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "도윤,서준,소율,유나,태민",
+    "ms": 42566
+   }
+  }
+ },
+ "zebra-2": {
+  "vote": "한국",
+  "votes": 3,
+  "ms": 1838520,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "",
+    "error": "failed"
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "한국",
+    "ms": 107755
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "한국",
+    "ms": 269241
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "한국",
+    "ms": 65738
+   }
+  }
+ },
+ "path-4": {
+  "vote": "50",
+  "votes": 4,
+  "ms": 386301,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "50",
+    "ms": 80337
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "50",
+    "ms": 60196
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "50",
+    "ms": 31882
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "50",
+    "ms": 20739
+   }
+  }
+ },
+ "knapsack-3": {
+  "vote": "547",
+  "votes": 2,
+  "ms": 1836727,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "",
+    "error": "failed"
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 48790
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "547",
+    "ms": 120356
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "547",
+    "ms": 28057
+   }
+  }
+ },
+ "path-2": {
+  "vote": "107",
+  "votes": 3,
+  "ms": 569636,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "107",
+    "ms": 263655
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "23",
+    "ms": 176175
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "107",
+    "ms": 74373
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "107",
+    "ms": 22813
+   }
+  }
+ },
+ "bigmul-3": {
+  "vote": "689000613160865246121710",
+  "votes": 1,
+  "ms": 1836475,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "",
+    "error": "failed"
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 29044
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "689000613160865246121710",
+    "ms": 88641
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "688978160459069939531710",
+    "ms": 28987
+   }
+  }
+ },
+ "grid-4": {
+  "vote": "3090",
+  "votes": 3,
+  "ms": 770623,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "3090",
+    "ms": 221111
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 72134
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "3090",
+    "ms": 53753
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "3090",
+    "ms": 159940
+   }
+  }
+ },
+ "zebra-1": {
+  "vote": "독일",
+  "votes": 3,
+  "ms": 1814744,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "독일",
+    "ms": 284470
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 119894
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "독일",
+    "ms": 102229
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "독일",
+    "ms": 59426
+   }
+  }
+ },
+ "knapsack-2": {
+  "vote": "524",
+  "votes": 1,
+  "ms": 1836962,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "",
+    "error": "failed"
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "",
+    "ms": 42586
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "524",
+    "ms": 113238
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "",
+    "error": "failed"
+   }
+  }
+ },
+ "bigmul-4": {
+  "vote": "620825572059663074475",
+  "votes": 1,
+  "ms": 1838383,
+  "models": {
+   "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+    "answer": "",
+    "error": "failed"
+   },
+   "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+    "answer": "620825572059663074475",
+    "ms": 13806
+   },
+   "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+    "answer": "620484352059425369047910",
+    "ms": 77434
+   },
+   "gemini/gemini-3.1-flash-lite": {
+    "answer": "620485348634499719584260",
+    "ms": 266578
+   }
+  }
+ }
+}
