@@ -7,7 +7,7 @@
   "symbol": "✦",
   "color": "#c0cfa5",
   "summary": "여러 AI 제공자를 한 창에서 쓰고, 비싼 모델과 무료 모델에게 일을 나눠 맡기는 데스크톱 앱",
-  "description": "macOS·Windows용 개발 프리뷰입니다. OpenAI·Anthropic·Gemini·Ollama 모델을 한 앱에서 부르고, 실행 전에 분석 모델의 추천과 예상 토큰 범위를 본 뒤 실행 모델을 직접 고릅니다. 팀 모드에서는 유료 선임 모델(기본 Claude Opus 5.5)이 일을 나누고 판정하며 Gemini Flash 무료 한도나 Ollama가 작업을 처리합니다. 자동 라우터는 아직 없습니다. 앱 밖의 측정 스크립트로 OmniRoute를 거쳐 무료 모델을 묶어 본 결과 ChatGPT 무료와 품질은 비슷하고 3~4배 느렸으며, 이 구성은 앱에 들어 있지 않습니다. 공개 v0.1.4는 서명·공증된 macOS 설치 파일과 Windows x64 EXE(인증서 미서명)를 제공합니다.",
+  "description": "macOS·Windows용 개발 프리뷰입니다. OpenAI·Anthropic·Gemini·Ollama 모델을 한 앱에서 부르고, 실행 전에 분석 모델의 추천과 예상 토큰 범위를 본 뒤 실행 모델을 직접 고릅니다. 팀 모드에서는 유료 선임 모델(기본 Claude Opus 5.5)이 일을 나누고 판정하며 Gemini Flash 무료 한도나 Ollama가 작업을 처리합니다. 자동 라우터는 아직 없습니다. 앱 밖의 측정 스크립트로 OmniRoute를 거쳐 무료 모델을 묶어 본 결과, 어려운 추론 시험 30문항에서 다수결 묶음 29점, ChatGPT 무료 23점이었지만 무료 모델 하나가 혼자 30점을 받았습니다. 일반 질문에서는 ChatGPT 무료와 비슷했고 응답은 훨씬 느렸습니다. 이 구성은 앱에 들어 있지 않습니다. 공개 v0.1.4는 서명·공증된 macOS 설치 파일과 Windows x64 EXE(인증서 미서명)를 제공합니다.",
   "features": [
     "OpenAI·Anthropic·Gemini·Ollama를 한 앱에서 호출",
     "분석 모델의 추천을 보고 실행 모델은 직접 선택",
@@ -32,8 +32,8 @@
     }
   ],
   "evidence": {
-    "verifiedAt": "2026-11-25",
-    "note": "저장소 공개 전환 확인(gh visibility PUBLIC), v0.1.4 macOS·Windows 설치 파일 다운로드 HTTP 200, 웹 데모 aurora-two-virid.vercel.app 한/영·health 200. 무료 묶음 대 ChatGPT 무료 측정(bench/README.md): 일반 질문 8.23 대 8.19, 코드·문서 동점, 응답 중간값 37.8초 대 약 10초. 측정은 bench/ 스크립트가 OmniRoute로 실행했고 앱 미반영. 팀 모드 선임 기본값 claude-opus-5-5(src/routing.ts)."
+    "verifiedAt": "2026-11-26",
+    "note": "측정 기록 bench/README.md(bench/ 스크립트가 OmniRoute로 실행, 앱 미반영): 자동 채점 추론 시험 30문항(seed 20261126)에서 무료 묶음 다수결 29점, ChatGPT 무료(로그인 없음, 문항마다 새 대화) 23점, Nemotron 3.5 Super 단독 30점. 일반 질문 31개 8.23 대 8.19, 코드·문서 동점. 묶음 응답은 일반 질문 중간값 37.8초, 추론 문항 약 10분. 팀 모드 선임 기본값 claude-opus-5-5(src/routing.ts). v0.1.4 설치 파일과 웹 데모는 2026-11-25 확인."
   },
   "visibility": "public"
 }
