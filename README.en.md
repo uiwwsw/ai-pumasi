@@ -7,7 +7,7 @@
 <p>A desktop app for OpenAI, Anthropic, Gemini and Ollama models in one window</p>
 
 <p>
-<a href="https://github.com/uiwwsw/aurora/releases/latest"><img alt="release" src="https://img.shields.io/github/v/release/uiwwsw/aurora?style=flat-square&label=release"></a>
+<a href="https://github.com/uiwwsw/aurora/releases"><img alt="release" src="https://img.shields.io/github/v/release/uiwwsw/aurora?include_prereleases&style=flat-square&label=release"></a>
 <a href="https://github.com/uiwwsw/aurora/actions/workflows/check.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/uiwwsw/aurora/check.yml?branch=main&style=flat-square&label=CI"></a>
 <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-607b64?style=flat-square">
 <img alt="Electron" src="https://img.shields.io/badge/Electron-44-47848F?style=flat-square&logo=electron&logoColor=white">
