@@ -1,30 +1,48 @@
-# Aurora
+<div align="center">
 
-A desktop app for using OpenAI, Anthropic, Gemini and Ollama models from one window. You see an estimated token range before a request runs and pick the model yourself. In team mode one expensive model splits the work and judges the results while free models do the tasks.
+<img src="https://raw.githubusercontent.com/uiwwsw/aurora/main/build/icon.svg" alt="Aurora" width="96" height="96">
 
-[English](README.en.md) · [한국어](README.md) · [Web demo](https://aurora-two-virid.vercel.app/) · [Download](#install) · [Components](docs/components.md) · [Measurements](bench/README.md)
+<h1>Aurora</h1>
 
-Developer preview 0.1.4 · [MIT](LICENSE) · macOS / Windows
+<p>A desktop app for OpenAI, Anthropic, Gemini and Ollama models in one window</p>
 
-![Aurora workspace](docs/images/aurora-v0.1.png)
+<p>
+<a href="https://github.com/uiwwsw/aurora/releases/latest"><img alt="release" src="https://img.shields.io/github/v/release/uiwwsw/aurora?style=flat-square&label=release"></a>
+<a href="https://github.com/uiwwsw/aurora/actions/workflows/check.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/uiwwsw/aurora/check.yml?branch=main&style=flat-square&label=CI"></a>
+<img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-607b64?style=flat-square">
+<img alt="Electron" src="https://img.shields.io/badge/Electron-44-47848F?style=flat-square&logo=electron&logoColor=white">
+<img alt="providers" src="https://img.shields.io/badge/providers-OpenAI%20%7C%20Anthropic%20%7C%20Gemini%20%7C%20Ollama-555?style=flat-square">
+<img alt="status" src="https://img.shields.io/badge/status-developer%20preview-orange?style=flat-square">
+<a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/uiwwsw/aurora?style=flat-square"></a>
+</p>
 
-## What it does and does not do
+<p><a href="https://aurora-two-virid.vercel.app/">Web demo</a> · <a href="#install">Download</a> · <a href="docs/components.md">Components</a> · <a href="bench/README.md">Measurements</a> · <a href="CHANGELOG.md">Changelog</a> · <a href="README.md">한국어</a></p>
 
-It does:
+</div>
 
-- Send text requests to models from four providers (OpenAI, Anthropic, Google Gemini, local Ollama) and show the answer.
-- Show an estimated input and output token range before a request, computed from character count and model tier. After the response it shows the usage the provider reported, kept separate from the estimate.
-- Let you ask an analyzer model which model fits a request. The suggestion is advice; you choose the model that runs.
-- Team mode: a lead model splits the request into 1–6 tasks, a worker model does them one at a time, and the lead judges the results and sends back only the tasks that fall short.
-- Group conversations into work items and archive, trash or restore them. Saving conversations is off by default.
+<img src="https://raw.githubusercontent.com/uiwwsw/aurora/main/docs/images/aurora-v0.1.png" alt="Aurora workspace">
 
-It does not:
+## What it provides
 
-- Pick and run a model for you. There is no automatic router. The in-app tier suggestion is a rule based on keywords and length (`src/domain.ts`).
-- Run team mode on free models with the default settings. The default lead is Claude Opus 5.5 (GPT-6 Astra with the OpenAI preset) and needs a paid API key. You can choose a free model as the lead, but that combination has not been measured.
-- Use tools such as file edits, shell commands or web search. It returns text only.
-- Give exact token counts. It does not use a real tokenizer, models in the same tier get the same range, and nothing enforces a budget for a whole task.
-- Have team mode verified against live providers. It is tested with mocked responses only.
+- Text requests to OpenAI, Anthropic, Google Gemini and local Ollama models
+- Estimated input and output token range before a request (from character count and model tier)
+- Provider-reported token usage after the response
+- Model suggestions from an analyzer model (you choose the model that runs)
+- Team mode: a lead model splits the request into 1–6 tasks, a worker model does them one at a time, the lead judges
+- Worker retry once on failure, then fall through to another free model
+- Conversations grouped into work items; archive, trash, restore
+- Optional conversation saving (off by default, stored on the device)
+- macOS DMG (signed and notarized) and Windows x64 installers
+- Windows automatic updates (checked at startup and every six hours)
+- Web demo without installation (no AI calls)
+
+## Not included
+
+- An automatic router that picks and runs a model (the in-app tier suggestion is a keyword and length rule, `src/domain.ts`)
+- Team mode on free models by default (the default lead is Claude Opus 5.5 and needs a paid API key)
+- Tools such as file edits, shell commands or web search
+- Token counts from a real tokenizer, or a budget limit for a whole task
+- Team mode verified against live providers (tested with mocked responses only)
 
 ## Install
 
