@@ -1,10 +1,12 @@
 # Aurora
 
-**Aurora is a free auto router: a desktop app that bundles free AI models to answer as well as ChatGPT's free tier.**
+**A desktop app for using several AI providers in one window and splitting work between an expensive model and cheap ones.**
 
-It picks a suitable free model for each question and, for harder ones, lets several free models answer and merges the result. You can still compare models and estimated tokens before running.
+It calls OpenAI, Anthropic, Gemini and Ollama models from one app. Before a request runs, an analyzer model suggests a model and the app shows an estimated token range, but you choose the model that runs. In team mode a lead model (Claude Opus 5.5 by default, which needs a paid API key) splits the work and judges the results, and a worker model (Gemini Flash's free tier or a local Ollama model) does the tasks.
 
-[English](README.en.md) · [한국어](README.md) · [Web demo](https://aurora-two-virid.vercel.app/) · [English overview](https://aurora-two-virid.vercel.app/en/) · [Documentation](docs/README.md)
+There is no automatic router that picks a model for you yet. A setup that answers with free models only was tested by [measurement scripts](bench/README.md) outside the app.
+
+[English](README.en.md) · [한국어](README.md) · [Web demo](https://aurora-two-virid.vercel.app/) · [English overview](https://aurora-two-virid.vercel.app/en/) · [Documentation](docs/README.md) · [Components](docs/components.md)
 
 Developer preview · [MIT](LICENSE) · macOS / Windows
 
@@ -14,7 +16,7 @@ Developer preview · [MIT](LICENSE) · macOS / Windows
 
 [Open the browser demo](https://aurora-two-virid.vercel.app/) to explore conversation organization, model comparison and token ranges without installation. It runs locally without calling an AI provider. The interactive interface is currently in Korean; the [English overview](https://aurora-two-virid.vercel.app/en/) explains the features and limitations.
 
-Provider connections and real text responses are available in the installed desktop app. The public 0.1.4 preview requires an explicit analysis action and manual execution-model selection, and adds a team mode in which a lead model plans and reviews while a cheaper worker model does the work. Team mode has not yet been verified against live providers. The name *Auto Router · Low AI* describes the product direction, not a completed autonomous router.
+Provider connections and real text responses are available in the installed desktop app. The public 0.1.4 preview requires an explicit analysis action and manual execution-model selection, and adds a team mode in which a lead model plans and reviews while a cheaper worker model does the work. Team mode has not yet been verified against live providers.
 
 ## Download · 0.1.4
 
@@ -38,6 +40,22 @@ On macOS, open the DMG and move Aurora to Applications. On Windows, run the inst
 - **Updates:** Windows checks at startup and every six hours, then downloads new versions in the background.
 
 Organization suggestions use local rules. Recommendations and execution are separate actions. Only text responses are supported; filesystem editing and shell execution are unavailable.
+
+## Team mode (0.1.4)
+
+The expensive model only splits and reviews the work; cheap models do it. This is the orchestrator-workers pattern Anthropic describes in [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents).
+
+1. When a request comes in, the **lead model** divides it into 1–6 tasks that a junior developer could finish alone.
+2. A **junior model** (Gemini Flash free tier, Ollama local, etc.) receives one task at a time and never sees the whole conversation.
+3. The lead only judges the results and sends back the tasks that fall short, with feedback. After at most two rounds a worker merges the results into one answer. The lead does not rewrite the final answer.
+
+Turn on team mode in Settings and choose the lead and worker models. Real API usage must be enabled. The default lead is Claude Opus 5.5 (`ANTHROPIC_API_KEY`); with the OpenAI preset it is GPT-6 Astra (`OPENAI_API_KEY`). Lead calls (one plan, plus one review per round) are billed to that account. Set `GEMINI_API_KEY` for Gemini workers and `OLLAMA_MODEL` (default `qwen3`) for Ollama. You can pick a free model as the lead too, but that combination has not been measured.
+
+### Measurement outside the app (2026-11-25)
+
+This measurement was run via the `bench/` scripts, not the app's team mode. The scripts used a local [OmniRoute](https://github.com/diegosouzapw/OmniRoute) (an open-source gateway that puts free providers behind one address) so that three free models answered and one merged the answers, with a Wikipedia search step and a number check added. Several models answering and one merging is the same structure as [Mixture-of-Agents](https://github.com/togethercomputer/MoA).
+
+On the same 31 questions the free bundle averaged 8.23 and ChatGPT's free tier (one day's answers, without logging in) 8.19, which is no real difference; code and document tasks were also tied. Responses were 3–4x slower, about 38 seconds at the median. One grader (Claude) scored blind to the source, and with so few questions a 0.04-point gap is within the error. This setup is not in the app. Methods and limits are in the [measurement notes](bench/README.md).
 
 ## Estimates and data
 
@@ -84,6 +102,7 @@ Releases use a verified source commit, platform packaging and installed-app laun
 - [Documentation index](docs/README.md)
 - [Release, signing and update guide](docs/releases.md) — Korean
 - [Configuration](docs/configuration.md)
+- [Components and borrowed ideas](docs/components.md) — Korean
 - [Product vision and execution budgets](docs/product-vision.md) — Korean
 - [Web search architecture](docs/seo.md)
 - [Contributing](CONTRIBUTING.md) · [Issues](https://github.com/uiwwsw/aurora/issues)
