@@ -1,0 +1,129 @@
+{
+ "judge": "Claude (blind A/B, judge only)",
+ "scores": {
+  "q01": {
+   "chatgpt": 8,
+   "aurora": 7
+  },
+  "q02": {
+   "aurora": 9,
+   "chatgpt": 8
+  },
+  "q03": {
+   "aurora": 9,
+   "chatgpt": 8
+  },
+  "q04": {
+   "aurora": 9,
+   "chatgpt": 9
+  },
+  "q05": {
+   "aurora": 8,
+   "chatgpt": 8
+  },
+  "q06": {
+   "aurora": 7,
+   "chatgpt": 8
+  },
+  "q07": {
+   "chatgpt": 4,
+   "aurora": 9
+  },
+  "q08": {
+   "aurora": 9,
+   "chatgpt": 9
+  },
+  "q09": {
+   "aurora": 8,
+   "chatgpt": 6
+  },
+  "q10": {
+   "aurora": 7,
+   "chatgpt": 7
+  },
+  "q11": {
+   "chatgpt": 8,
+   "aurora": 9
+  },
+  "q12": {
+   "chatgpt": 8,
+   "aurora": 7
+  },
+  "q13": {
+   "chatgpt": 9,
+   "aurora": 7
+  },
+  "q14": {
+   "aurora": 8,
+   "chatgpt": 8
+  },
+  "q15": {
+   "chatgpt": 8,
+   "aurora": 9
+  },
+  "q16": {
+   "chatgpt": 9,
+   "aurora": 9
+  },
+  "q17": {
+   "aurora": 6,
+   "chatgpt": 9
+  },
+  "q18": {
+   "aurora": 8,
+   "chatgpt": 8
+  },
+  "q19": {
+   "aurora": 8,
+   "chatgpt": 9
+  },
+  "q20": {
+   "chatgpt": 8,
+   "aurora": 8
+  },
+  "q21": {
+   "chatgpt": 9,
+   "aurora": 6
+  },
+  "q22": {
+   "aurora": 9,
+   "chatgpt": 9
+  },
+  "q23": {
+   "chatgpt": 9,
+   "aurora": 6
+  },
+  "q24": {
+   "aurora": 9,
+   "chatgpt": 8
+  },
+  "q25": {
+   "chatgpt": 8,
+   "aurora": 9
+  },
+  "q26": {
+   "aurora": 9,
+   "chatgpt": 9
+  },
+  "q27": {
+   "chatgpt": 8,
+   "aurora": 8
+  },
+  "q28": {
+   "chatgpt": 8,
+   "aurora": 8
+  },
+  "q29": {
+   "aurora": 9,
+   "chatgpt": 6
+  },
+  "q30": {
+   "aurora": 9,
+   "chatgpt": 9
+  },
+  "d3": {
+   "chatgpt": 9,
+   "aurora": 8
+  }
+ }
+}

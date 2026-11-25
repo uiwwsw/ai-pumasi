@@ -1,4 +1,4 @@
-// Aurora bundle + free Wikipedia search grounding for QA items. Stores "aurora-search" in raw-free.json.
+// Aurora bundle + free Wikipedia search grounding for QA items. Stores argv[2] (default "aurora-v3") in raw-free.json.
 import { readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 
@@ -12,7 +12,7 @@ const MERGER = "nvidia/nvidia/nemotron-3-ultra-550b-a55b";
 const PLANNER = "gemini/gemini-3.1-flash-lite";
 const UA = { "User-Agent": "aurora-bench/0.1 (research)" };
 const BASE = "너는 AI를 처음 써 보는 사람을 돕는 비서다. 오늘은 2026-11-25다. 한국어로, 쉽게, 정확하게 답한다. 사실이 아닌 전제는 분명히 말한다. 필요한 만큼만 길게 쓴다.";
-const GROUND = " [참고 자료]가 주어지면 거기 적힌 사실을 네 기억보다 우선한다. 자료에도 없고 확실하지 않은 숫자·전화번호·가격·기관명은 지어내지 말고, 공식 확인처(예: 정부24, 해당 기관 홈페이지)를 안내한다.";
+const GROUND = " [참고 자료]는 질문과 관련 있을 때만 쓰고, 관련 있으면 거기 적힌 사실을 네 기억보다 우선한다. 관련 없으면 무시한다. 자료가 없어도 상식·안전 정보는 평소처럼 자신 있게 답한다. 확인되지 않은 전화번호·정확한 가격·법정 수치만 지어내지 말고, 그런 것만 공식 확인처를 안내한다. 참고 자료나 초안이 있었다는 말은 사용자에게 하지 않는다.";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function chat(model, messages, max = 5000) {
@@ -43,7 +43,11 @@ async function wiki(query) {
     if (!titles.length) return [];
     const e = await (await fetch("https://ko.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&format=json&titles=" + encodeURIComponent(titles.join("|")), { headers: UA, signal: AbortSignal.timeout(15000) })).json();
     const words = query.split(/\s+/).filter((w) => w.length >= 2);
-    return Object.values(e.query.pages).map((p) => {
+    return Object.values(e.query.pages).filter((p) => {
+      const t = String(p.extract ?? "");
+      const inTitle = words.some((w) => p.title.includes(w) || w.includes(p.title.replace(/\s*\(.*\)/, "")));
+      return inTitle || words.filter((w) => t.includes(w)).length >= 2;
+    }).map((p) => {
       const sents = String(p.extract ?? "").split(/(?<=[.다요])\s+|\n+/).filter(Boolean);
       const lead = sents.slice(0, 3);
       const hits = sents.filter((x) => words.some((w) => x.includes(w))).slice(0, 12);
@@ -56,35 +60,40 @@ async function wiki(query) {
 
 async function ground(question) {
   const plan = await chat(PLANNER, [
-    { role: "system", content: "질문에 답하려면 사실 확인이 필요한지 판단하고, 위키백과에서 찾을 짧은 한국어 검색어를 최대 2개 만든다. JSON만 출력: {\"search\":true|false,\"queries\":[\"...\"]}" },
+    { role: "system", content: "질문을 보고 두 가지를 판단한다. search: 최신이거나 구체적인 사실(인물, 연도, 제도, 숫자) 확인이 필요하면 true. hard: 여러 단계 설명·판단이 필요하거나 틀리면 위험한 질문이면 true, 짧은 상식·간단 계산·맞춤법·짧은 글쓰기면 false. queries: 위키백과용 짧은 한국어 검색어 최대 2개. JSON만 출력: {\"search\":true|false,\"hard\":true|false,\"queries\":[\"...\"]}" },
     { role: "user", content: question },
   ], 400);
   let p = null;
   try {
     p = JSON.parse(plan.slice(plan.indexOf("{"), plan.lastIndexOf("}") + 1));
   } catch {}
-  if (!p?.search || !Array.isArray(p.queries) || !p.queries.length) return { queries: [], context: "" };
+  const hard = p?.hard !== false;
+  if (!p?.search || !Array.isArray(p.queries) || !p.queries.length) return { queries: [], context: "", hard };
   const docs = (await Promise.all(p.queries.slice(0, 2).map(wiki))).flat();
   const seen = new Set();
   const uniq = docs.filter((d) => d.text && !seen.has(d.title) && seen.add(d.title));
   return {
+    hard,
     queries: p.queries.slice(0, 2),
     context: uniq.map((d) => `- ${d.title} (위키백과): ${d.text}`).join("\n").slice(0, 4000),
   };
 }
 
+const KEY = process.argv[2] ?? "aurora-v3";
 const outPath = here + "results/raw-free.json";
 const all = JSON.parse(readFileSync(outPath, "utf8"));
-all["aurora-search"] ??= {};
-const queue = [...qa, d3].filter((it) => !all["aurora-search"][it.id]?.text);
+all[KEY] ??= {};
+const queue = [...qa, d3].filter((it) => !all[KEY][it.id]?.text);
 async function worker() {
   while (queue.length) {
     const it = queue.shift();
     const t0 = Date.now();
-    const g = it.kind === "qa" ? await ground(it.prompt) : { queries: [], context: "" };
+    const g = it.kind === "qa" ? await ground(it.prompt) : { queries: [], context: "", hard: false };
     const sys = BASE + (g.context ? GROUND : "");
     const user = g.context ? `[참고 자료]\n${g.context}\n\n[질문]\n${it.prompt}` : it.prompt;
-    const drafts = (await Promise.all(MEMBERS.map((m) => chat(m, [{ role: "system", content: sys }, { role: "user", content: user }])))).filter(Boolean);
+    // Easy questions: the strongest single free model answers directly (speed).
+    const team = g.hard === false ? [MEMBERS[0]] : MEMBERS;
+    const drafts = (await Promise.all(team.map((m) => chat(m, [{ role: "system", content: sys }, { role: "user", content: user }])))).filter(Boolean);
     let text = drafts[0] ?? "";
     if (drafts.length > 1) {
       const merged = await chat(MERGER, [
@@ -93,9 +102,9 @@ async function worker() {
       ]);
       if (merged) text = merged;
     }
-    all["aurora-search"][it.id] = { text, ms: Date.now() - t0, drafts: drafts.length, queries: g.queries, contextChars: g.context.length };
+    all[KEY][it.id] = { text, ms: Date.now() - t0, drafts: drafts.length, hard: g.hard, queries: g.queries, contextChars: g.context.length };
     writeFileSync(outPath, JSON.stringify(all, null, 1));
-    console.log(it.id, drafts.length, g.queries.join(" | "), g.context.length, text ? "ok" : "empty", Date.now() - t0);
+    console.log(it.id, g.hard ? "hard" : "easy", drafts.length, g.queries.join(" | "), g.context.length, text ? "ok" : "empty", Date.now() - t0);
   }
 }
 await Promise.all([worker(), worker(), worker()]);
