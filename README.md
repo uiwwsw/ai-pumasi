@@ -1,30 +1,48 @@
-# Aurora · 오로라
+<div align="center">
 
-OpenAI·Anthropic·Gemini·Ollama 모델을 한 창에서 쓰는 데스크톱 앱입니다. 실행 전에 예상 토큰 범위를 보고 실행할 모델을 직접 고르고, 팀 모드에서는 비싼 모델 하나가 일을 나누고 판정하는 동안 무료 모델이 실제 작업을 합니다.
+<img src="https://raw.githubusercontent.com/uiwwsw/aurora/main/build/icon.svg" alt="Aurora" width="96" height="96">
 
-[한국어](README.md) · [English](README.en.md) · [웹 데모](https://aurora-two-virid.vercel.app/) · [다운로드](#설치) · [구성 요소](docs/components.md) · [측정 기록](bench/README.md)
+<h1>Aurora · 오로라</h1>
 
-개발 프리뷰 0.1.4 · [MIT](LICENSE) · macOS / Windows
+<p>OpenAI·Anthropic·Gemini·Ollama 모델을 한 창에서 쓰는 데스크톱 앱</p>
 
-![Aurora 작업 공간](docs/images/aurora-v0.1.png)
+<p>
+<a href="https://github.com/uiwwsw/aurora/releases"><img alt="release" src="https://img.shields.io/github/v/release/uiwwsw/aurora?include_prereleases&style=flat-square&label=release"></a>
+<a href="https://github.com/uiwwsw/aurora/actions/workflows/check.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/uiwwsw/aurora/check.yml?branch=main&style=flat-square&label=CI"></a>
+<img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-607b64?style=flat-square">
+<img alt="Electron" src="https://img.shields.io/badge/Electron-44-47848F?style=flat-square&logo=electron&logoColor=white">
+<img alt="providers" src="https://img.shields.io/badge/providers-OpenAI%20%7C%20Anthropic%20%7C%20Gemini%20%7C%20Ollama-555?style=flat-square">
+<img alt="status" src="https://img.shields.io/badge/status-developer%20preview-orange?style=flat-square">
+<a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/uiwwsw/aurora?style=flat-square"></a>
+</p>
 
-## 할 수 있는 것과 없는 것
+<p><a href="https://aurora-two-virid.vercel.app/">웹 데모</a> · <a href="#설치">다운로드</a> · <a href="docs/components.md">구성 요소</a> · <a href="bench/README.md">측정 기록</a> · <a href="CHANGELOG.md">변경 기록</a> · <a href="README.en.md">English</a></p>
 
-할 수 있는 것:
+</div>
 
-- 네 제공자(OpenAI, Anthropic, Google Gemini, 로컬 Ollama)의 모델에 텍스트 요청을 보내고 답을 받습니다.
-- 요청 전에 문자 수와 모델 등급으로 계산한 예상 입력·출력 토큰 범위를 봅니다. 응답 뒤에는 제공자가 돌려준 실제 사용량을 따로 표시합니다.
-- 분석 모델에게 "이 요청에는 어떤 모델이 맞는지" 물어볼 수 있습니다. 추천은 참고용이고, 실행 모델은 사람이 고릅니다.
-- 팀 모드: 선임 모델이 요청을 작업 1~6개로 나누고, 주니어 모델이 하나씩 처리하고, 선임이 판정해 부족한 작업만 다시 시킵니다.
-- 대화를 작업 단위로 묶고 보관·휴지통·복원합니다. 대화 저장은 기본 꺼짐입니다.
+<img src="https://raw.githubusercontent.com/uiwwsw/aurora/main/docs/images/aurora-v0.1.png" alt="Aurora 작업 공간">
 
-할 수 없는 것:
+## 제공하는 것
 
-- 질문을 보고 모델을 알아서 골라 실행하는 자동 라우터는 없습니다. 앱 안의 등급 추천은 키워드와 글자 수로 정하는 규칙(`src/domain.ts`)입니다.
-- 무료 모델만으로는 팀 모드가 기본 설정대로 돌지 않습니다. 선임 기본값은 Claude Opus 5.5(OpenAI 프리셋은 GPT-6 Astra)이고 유료 API 키가 필요합니다. 선임에 무료 모델을 고를 수는 있지만 그 조합은 측정하지 않았습니다.
-- 파일 수정, 셸 실행, 웹 검색 같은 도구는 없습니다. 텍스트 답변만 합니다.
-- 토큰 범위는 추정입니다. 실제 토크나이저를 쓰지 않고, 같은 등급의 모델은 같은 범위가 나옵니다. 전체 작업 비용을 강제로 막는 기능도 없습니다.
-- 팀 모드는 모의 응답으로만 테스트했고, 실제 제공자 호출로는 아직 검증하지 않았습니다.
+- OpenAI, Anthropic, Google Gemini, 로컬 Ollama 모델에 텍스트 요청
+- 요청 전 예상 입력·출력 토큰 범위 (문자 수와 모델 등급 기준)
+- 응답 후 제공자가 보고한 실제 토큰 사용량
+- 분석 모델에게 맞는 모델 추천 받기 (실행 모델은 직접 선택)
+- 팀 모드: 선임 모델이 작업 1~6개로 나누고, 주니어 모델이 하나씩 처리하고, 선임이 판정
+- 팀 모드 주니어 실패 시 1회 재시도, 다른 무료 모델로 넘김
+- 대화를 작업 단위로 묶기, 보관·휴지통·복원
+- 대화 저장 켜기·끄기 (기본 꺼짐, 기기 내 저장)
+- macOS(서명·공증) DMG, Windows x64 설치 파일
+- Windows 자동 업데이트 (시작 시와 6시간마다 확인)
+- 설치 없이 보는 웹 데모 (AI 호출 없음)
+
+## 제공하지 않는 것
+
+- 질문을 보고 모델을 골라 실행하는 자동 라우터 (앱 안의 등급 추천은 키워드·글자 수 규칙, `src/domain.ts`)
+- 무료 모델만으로 도는 기본 팀 모드 (선임 기본값 Claude Opus 5.5, 유료 API 키 필요)
+- 파일 수정, 셸 실행, 웹 검색 같은 도구
+- 실제 토크나이저 기반 토큰 계산, 전체 작업 비용 제한
+- 실제 제공자로 검증한 팀 모드 (모의 응답으로만 테스트)
 
 ## 설치
 
