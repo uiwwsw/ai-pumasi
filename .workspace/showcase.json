@@ -6,11 +6,11 @@
   "category": "개발 도구",
   "symbol": "✦",
   "color": "#c0cfa5",
-  "summary": "비싼 모델은 나누고 검수만, 실제 작업은 싼 모델이 하는 데스크톱 AI 작업 공간",
-  "description": "macOS·Windows용 개발 프리뷰입니다. 팀 모드에서는 선임 모델이 요청을 작은 작업으로 나누고, Gemini Flash나 Ollama 같은 싼·무료 모델이 작업을 하나씩 처리한 뒤 선임이 판정합니다. 실행 전 모델과 예상 토큰을 비교하고, 실제 사용량을 선임·주니어별로 확인합니다. 공개 v0.1.4는 macOS Developer ID 서명·공증 설치 파일과 Windows x64 EXE(인증서 미서명)를 제공합니다. 팀 모드의 실제 제공자 호출과 버전 간 자동 업데이트는 아직 검증하지 않았습니다.",
+  "summary": "무료 AI 여러 개를 묶어 질문마다 골라 쓰는 데스크톱 앱(Free Auto Router)",
+  "description": "macOS·Windows용 개발 프리뷰입니다. 질문에 맞는 AI를 골라 쓰고, 팀 모드에서는 선임 모델이 일을 나누면 Gemini Flash나 Ollama 같은 무료 모델이 처리합니다. 별도 측정에서 무료 모델 묶음은 ChatGPT 무료와 같은 수준으로 답했지만 응답이 3~4배 느렸고, 이 묶음 구성은 아직 앱에 넣지 않았습니다. 공개 v0.1.4는 서명·공증된 macOS 설치 파일과 Windows x64 EXE(인증서 미서명)를 제공합니다.",
   "features": [
-    "선임 모델이 나누고 무료 모델이 처리하는 팀 모드",
-    "선임·주니어별 실제 토큰 사용량 표시",
+    "질문마다 알맞은 AI를 고르는 모델 선택",
+    "선임이 나누고 무료 모델이 처리하는 팀 모드",
     "실행 전 모델과 예상 토큰 범위 비교",
     "관련 대화를 묶고 보관하는 작업 정리",
     "macOS와 Windows 설치 파일",
@@ -32,8 +32,8 @@
     }
   ],
   "evidence": {
-    "verifiedAt": "2026-11-24",
-    "note": "사용자 요청으로 MOVV 공개 소개에서 제외하고 저장소를 비공개로 전환."
+    "verifiedAt": "2026-11-25",
+    "note": "저장소 공개 전환 확인(gh visibility PUBLIC), v0.1.4 macOS·Windows 설치 파일 다운로드 HTTP 200, 웹 데모 aurora-two-virid.vercel.app 한/영·health 200. 무료 묶음 대 ChatGPT 무료 측정(bench/README.md): 일반 질문 8.23 대 8.19, 코드·문서 동점, 응답 중간값 37.8초 대 약 10초. 측정 구성(검색·교차 확인)은 앱 미반영."
   },
-  "visibility": "private"
+  "visibility": "public"
 }
