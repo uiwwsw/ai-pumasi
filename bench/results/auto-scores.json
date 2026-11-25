@@ -503,6 +503,46 @@
    "notes": []
   }
  },
+ "aurora": {
+  "c1": {
+   "score": 1,
+   "notes": []
+  },
+  "c2": {
+   "score": 1,
+   "notes": []
+  },
+  "c3": {
+   "score": 1,
+   "notes": []
+  },
+  "c4": {
+   "score": 1,
+   "notes": []
+  },
+  "c5": {
+   "score": 1,
+   "notes": []
+  },
+  "c6": {
+   "score": 1,
+   "notes": []
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 1,
+   "notes": []
+  },
+  "d4": {
+   "score": 0.9166666666666666,
+   "notes": [
+    "누락 Kim Seo-yeon"
+   ]
+  }
+ },
  "chatgpt-free": {
   "c1": {
    "score": 1,
