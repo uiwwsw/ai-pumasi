@@ -58,7 +58,7 @@ test("web pages expose localized content, self canonicals, reciprocal alternates
     }
     assert.ok(ko.includes('src="/assets/app.js"'));
     assert.ok(ko.includes('href="/assets/app.css"'));
-    assert.ok(en.includes("The public 0.1.2 preview"));
+    assert.ok(en.includes("The public 0.1.4 preview"));
     assert.ok(!en.includes('src="/assets/app.js"'));
     assert.ok(
       (await readFile(path.join(inputDir, "index.html"), "utf8")).includes(
