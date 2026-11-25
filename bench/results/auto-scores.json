@@ -1,0 +1,544 @@
+{
+ "groq/qwen/qwen3.8-27b": {
+  "c1": {
+   "score": 0.8461538461538461,
+   "notes": [
+    "'+82 10-1234-5678'",
+    "'+821012345678'"
+   ]
+  },
+  "c2": {
+   "score": 0.9285714285714286,
+   "notes": [
+    "'10 분' (ValueError)"
+   ]
+  },
+  "c3": {
+   "score": null,
+   "notes": [
+    "served by nvidia/nemotron-3.5-super-vl-120b-a12b"
+   ]
+  },
+  "c4": {
+   "score": null,
+   "notes": [
+    "served by nvidia/nemotron-3.5-super-vl-120b-a12b"
+   ]
+  },
+  "c5": {
+   "score": 1,
+   "notes": []
+  },
+  "c6": {
+   "score": null,
+   "notes": [
+    "served by nvidia/nemotron-3.5-super-vl-120b-a12b"
+   ]
+  },
+  "d1": {
+   "score": null,
+   "notes": [
+    "served by nvidia/nemotron-3.5-super-vl-120b-a12b"
+   ]
+  },
+  "d2": {
+   "score": 1,
+   "notes": []
+  },
+  "d4": {
+   "score": null,
+   "notes": [
+    "served by nvidia/nemotron-3.5-super-vl-120b-a12b"
+   ]
+  }
+ },
+ "groq/openai/gpt-oss-20b": {
+  "c1": {
+   "score": 1,
+   "notes": []
+  },
+  "c2": {
+   "score": null,
+   "notes": [
+    "served by nvidia/nemotron-3.5-super-vl-120b-a12b"
+   ]
+  },
+  "c3": {
+   "score": 1,
+   "notes": []
+  },
+  "c4": {
+   "score": 1,
+   "notes": []
+  },
+  "c5": {
+   "score": 1,
+   "notes": []
+  },
+  "c6": {
+   "score": null,
+   "notes": [
+    "served by nvidia/nemotron-3.5-super-vl-120b-a12b"
+   ]
+  },
+  "d1": {
+   "score": 0,
+   "notes": [
+    "대상인원: undefined",
+    "시작일: undefined",
+    "종료일: undefined",
+    "하루최대예약: undefined",
+    "예약시작: undefined",
+    "내시경본인부담: undefined",
+    "내선: undefined",
+    "환급한도: undefined",
+    "환급마감: undefined",
+    "담당자: undefined"
+   ]
+  },
+  "d2": {
+   "score": 0.75,
+   "notes": [
+    "누락: 최영호 20261127",
+    "불필요 항목 1개"
+   ]
+  },
+  "d4": {
+   "score": 0.9166666666666666,
+   "notes": [
+    "누락 Kim Seo-yeon"
+   ]
+  }
+ },
+ "groq/openai/gpt-oss-120b": {
+  "c1": {
+   "score": 1,
+   "notes": []
+  },
+  "c2": {
+   "score": 1,
+   "notes": []
+  },
+  "c3": {
+   "score": 0.8,
+   "notes": [
+    "10000",
+    "100000000",
+    "100010000"
+   ]
+  },
+  "c4": {
+   "score": 1,
+   "notes": []
+  },
+  "c5": {
+   "score": 1,
+   "notes": []
+  },
+  "c6": {
+   "score": 1,
+   "notes": []
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 1,
+   "notes": []
+  },
+  "d4": {
+   "score": 0.9166666666666666,
+   "notes": [
+    "누락 Kim Seo-yeon"
+   ]
+  }
+ },
+ "nvidia/nvidia/nemotron-3-ultra-550b-a55b": {
+  "c1": {
+   "score": 1,
+   "notes": []
+  },
+  "c2": {
+   "score": 0.9285714285714286,
+   "notes": [
+    "'10 분' (ValueError)"
+   ]
+  },
+  "c3": {
+   "score": 1,
+   "notes": []
+  },
+  "c4": {
+   "score": 1,
+   "notes": []
+  },
+  "c5": {
+   "score": 1,
+   "notes": []
+  },
+  "c6": {
+   "score": 1,
+   "notes": []
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 1,
+   "notes": []
+  },
+  "d4": {
+   "score": 1,
+   "notes": []
+  }
+ },
+ "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b": {
+  "c1": {
+   "score": 1,
+   "notes": []
+  },
+  "c2": {
+   "score": 0.9285714285714286,
+   "notes": [
+    "'10 분' (ValueError)"
+   ]
+  },
+  "c3": {
+   "score": 1,
+   "notes": []
+  },
+  "c4": {
+   "score": 1,
+   "notes": []
+  },
+  "c5": {
+   "score": null,
+   "notes": [
+    "HTTP 200 empty"
+   ]
+  },
+  "c6": {
+   "score": null,
+   "notes": [
+    "HTTP 200 empty"
+   ]
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 1,
+   "notes": []
+  },
+  "d4": {
+   "score": 1,
+   "notes": []
+  }
+ },
+ "cfp/moonshotai/kimi-k2.6": {
+  "c1": {
+   "score": 0.8461538461538461,
+   "notes": [
+    "'+82 10-1234-5678'",
+    "'+821012345678'"
+   ]
+  },
+  "c2": {
+   "score": 0.9285714285714286,
+   "notes": [
+    "err '1시간 1시간'"
+   ]
+  },
+  "c3": {
+   "score": 0.4,
+   "notes": [
+    "4567",
+    "1234567",
+    "100000000",
+    "120005000",
+    "1234567890123",
+    "-4567"
+   ]
+  },
+  "c4": {
+   "score": 0.9166666666666666,
+   "notes": [
+    "bad qty True"
+   ]
+  },
+  "c5": {
+   "score": null,
+   "notes": [
+    "timeout"
+   ]
+  },
+  "c6": {
+   "score": 0,
+   "notes": [
+    "load: SyntaxError"
+   ]
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 0.5833333333333334,
+   "notes": [
+    "누락: 최영호 20261127",
+    "누락: 박지훈 20261126",
+    "불필요 항목 1개"
+   ]
+  },
+  "d4": {
+   "score": 1,
+   "notes": []
+  }
+ },
+ "cfp/meta-llama/llama-3.3-70b-instruct-fp8-fast": {
+  "c1": {
+   "score": 0.8461538461538461,
+   "notes": [
+    "'+82 10-1234-5678'",
+    "'+821012345678'"
+   ]
+  },
+  "c2": {
+   "score": 0.7142857142857143,
+   "notes": [
+    "'45분 10초' (ValueError)",
+    "'90초' (ValueError)",
+    "'10 분' (ValueError)",
+    "'3시간5초' (ValueError)"
+   ]
+  },
+  "c3": {
+   "score": 0,
+   "notes": [
+    "load: SyntaxError"
+   ]
+  },
+  "c4": {
+   "score": 0.9166666666666666,
+   "notes": [
+    "bad qty True"
+   ]
+  },
+  "c5": {
+   "score": null,
+   "notes": [
+    "timeout"
+   ]
+  },
+  "c6": {
+   "score": null,
+   "notes": [
+    "timeout"
+   ]
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 0.8333333333333334,
+   "notes": [
+    "누락: 박지훈 20261126"
+   ]
+  },
+  "d4": {
+   "score": 1,
+   "notes": []
+  }
+ },
+ "cfp/deepseek-ai/deepseek-v4-flash-0731": {
+  "c1": {
+   "score": 1,
+   "notes": []
+  },
+  "c2": {
+   "score": 1,
+   "notes": []
+  },
+  "c3": {
+   "score": 0.8,
+   "notes": [
+    "10000",
+    "100000000",
+    "100010000"
+   ]
+  },
+  "c4": {
+   "score": 0.9166666666666666,
+   "notes": [
+    "bad qty True"
+   ]
+  },
+  "c5": {
+   "score": null,
+   "notes": [
+    "timeout"
+   ]
+  },
+  "c6": {
+   "score": null,
+   "notes": [
+    "timeout"
+   ]
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 1,
+   "notes": []
+  },
+  "d4": {
+   "score": 1,
+   "notes": []
+  }
+ },
+ "cfp/zai-org/glm-5.2": {
+  "c1": {
+   "score": 0.8461538461538461,
+   "notes": [
+    "'+82 10-1234-5678'",
+    "'+821012345678'"
+   ]
+  },
+  "c2": {
+   "score": 0.5714285714285714,
+   "notes": [
+    "'1시간 30분' (ValueError)",
+    "'45분 10초' (ValueError)",
+    "'1시간30분' (ValueError)",
+    "'1시간 0분 5초' (ValueError)",
+    "'3시간5초' (ValueError)",
+    "err '1시간 1시간'"
+   ]
+  },
+  "c3": {
+   "score": 1,
+   "notes": []
+  },
+  "c4": {
+   "score": 1,
+   "notes": []
+  },
+  "c5": {
+   "score": 0.18181818181818182,
+   "notes": [
+    "'a,b\\n'",
+    "'a,b'",
+    "'a,b\\n\"c,d\",\"e\"\"f\"\\n'",
+    "'a,,b'",
+    "'a,'",
+    "'\"x\\ny\",z\\r\\nq,r\\r\\n'"
+   ]
+  },
+  "c6": {
+   "score": 1,
+   "notes": []
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 0.8333333333333334,
+   "notes": [
+    "누락: 박지훈 20261126"
+   ]
+  },
+  "d4": {
+   "score": 0.9166666666666666,
+   "notes": [
+    "누락 Kim Seo-yeon"
+   ]
+  }
+ },
+ "gemini/gemini-3.1-flash-lite": {
+  "c1": {
+   "score": 1,
+   "notes": []
+  },
+  "c2": {
+   "score": 0.9285714285714286,
+   "notes": [
+    "'10 분' (ValueError)"
+   ]
+  },
+  "c3": {
+   "score": 1,
+   "notes": []
+  },
+  "c4": {
+   "score": 1,
+   "notes": []
+  },
+  "c5": {
+   "score": 1,
+   "notes": []
+  },
+  "c6": {
+   "score": 0.95,
+   "notes": [
+    "bad '2 3'"
+   ]
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 1,
+   "notes": []
+  },
+  "d4": {
+   "score": 1,
+   "notes": []
+  }
+ },
+ "chatgpt-free": {
+  "c1": {
+   "score": 1,
+   "notes": []
+  },
+  "c2": {
+   "score": 1,
+   "notes": []
+  },
+  "c3": {
+   "score": 1,
+   "notes": []
+  },
+  "c4": {
+   "score": 1,
+   "notes": []
+  },
+  "c5": {
+   "score": 1,
+   "notes": []
+  },
+  "c6": {
+   "score": 1,
+   "notes": []
+  },
+  "d1": {
+   "score": 1,
+   "notes": []
+  },
+  "d2": {
+   "score": 1,
+   "notes": []
+  },
+  "d4": {
+   "score": 1,
+   "notes": []
+  }
+ }
+}
