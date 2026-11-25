@@ -1,0 +1,177 @@
+{
+ "q02": [],
+ "q03": [],
+ "q01": [],
+ "q04": [],
+ "q05": [],
+ "q07": [],
+ "q08": [],
+ "q09": [],
+ "q11": [
+  {
+   "aurora": 9,
+   "chatgpt": 7,
+   "win": "aurora",
+   "by": "openai/gpt-oss-20b",
+   "reason": "Answer A is more comprehensive, accurate, and clearly organized, covering the main meaning, contextual nuances, and formal alternatives, whereas B is concise but omits important details and uses informal emojis."
+  },
+  {
+   "aurora": 9,
+   "chatgpt": 7,
+   "win": "aurora",
+   "by": "openai/gpt-oss-20b",
+   "reason": "B covers both common positive and less common negative meanings and gives context, making it more accurate and useful."
+  }
+ ],
+ "q12": [
+  {
+   "aurora": 7,
+   "chatgpt": 8,
+   "win": "chatgpt",
+   "by": "auto",
+   "reason": "B는 볶고 끓이는 시간을 명확히 알려 주면서 A보다 간결하지만, 설탕과 국간장은 김치의 신맛과 짠맛에 따라 조절하도록 안내하면 더 좋습니다."
+  },
+  {
+   "aurora": 9,
+   "chatgpt": 7,
+   "win": "aurora",
+   "by": "openai/gpt-oss-20b",
+   "reason": "B provides more detailed, clear steps and helpful tips, improving accuracy and usefulness."
+  }
+ ],
+ "q13": [
+  {
+   "aurora": 9,
+   "chatgpt": 5,
+   "win": "aurora",
+   "by": "auto",
+   "reason": "A는 연대 차이와 사료 부재로 허구임을 정확히 반박한 반면 B는 AI 환각 밈이라는 큰 틀은 맞지만 ‘최환’ 등 구체적 인물·경위를 사실처럼 지어내 정확성에서 치명적 오류를 범했다."
+  },
+  {
+   "aurora": 7,
+   "chatgpt": 9,
+   "win": "chatgpt",
+   "by": "auto",
+   "reason": "A는 실제 존재하지 않음을 정확히 지적하면서 그 유래가 2023년 초기 ChatGPT의 환각 사례라는 핵심 맥락을 구체적으로 설명한 반면, B는 존재하지 않음은 맞췄지만 유래를 일반적인 이미지 패러디로 뭉뚱그려 정확성과 설명력에서 뒤진다."
+  }
+ ],
+ "q14": [
+  {
+   "aurora": 6,
+   "chatgpt": 9,
+   "win": "chatgpt",
+   "by": "auto",
+   "reason": "B는 사실 오류 없이 6단계 로드맵을 간결·체계적으로 제시해 초보자 이해를 도운 반면, A는 부채비율 공식 오류(총자본)와 과도한 분량으로 가독성과 정확성이 떨어진다."
+  },
+  {
+   "aurora": 9,
+   "chatgpt": 7,
+   "win": "aurora",
+   "by": "openai/gpt-oss-20b",
+   "reason": "B가 구체적이고 실천 가능한 단계와 리스크 관리, 학습 자료를 포함해 초보자가 바로 활용하기에 더 도움이 된다."
+  }
+ ],
+ "q15": [
+  {
+   "aurora": 7,
+   "chatgpt": 8,
+   "win": "chatgpt",
+   "by": "auto",
+   "reason": "두 답 모두 정확하지만 B가 한국인 기준으로 간결하고 초보자가 이해하기 쉬운 반면 A는 불필요하게 길고 복잡해 가독성이 떨어진다."
+  },
+  {
+   "aurora": 9,
+   "chatgpt": 8,
+   "win": "aurora",
+   "by": "openai/gpt-oss-20b",
+   "reason": "Both answers are accurate; B provides more comprehensive guidance while remaining clear, making it slightly more helpful."
+  }
+ ],
+ "q16": [
+  {
+   "aurora": 9,
+   "chatgpt": 9,
+   "win": "tie",
+   "by": "auto",
+   "reason": "두 답 모두 주어진 키 순서를 정확히 정리해 민수가 철수보다 클 수 없다고 이해하기 쉽게 설명했다."
+  },
+  {
+   "aurora": 9,
+   "chatgpt": 9,
+   "win": "tie",
+   "by": "auto",
+   "reason": "두 답 모두 전이 관계를 정확히 적용해 '민수가 철수보다 클 수 없다'고 올바르게 설명했고, A는 더 간결하고 B는 더 구조적일 뿐 오류나 혼란은 없다."
+  }
+ ],
+ "q06": [],
+ "q17": [
+  {
+   "aurora": 8,
+   "chatgpt": 4,
+   "win": "aurora",
+   "by": "openai/gpt-oss-120b",
+   "reason": "A provides a thorough, accurate guide with correct exam structure and practical study steps; B contains several factual inaccuracies (wrong pass scores, speculative future changes) and less useful detail."
+  },
+  {
+   "aurora": 4,
+   "chatgpt": 9,
+   "win": "chatgpt",
+   "by": "auto",
+   "reason": "A는 40문항·40분·1종70점/2종60점 등 한국 학과시험 기준을 정확히 제시한 반면 B는 존재하지 않는 100문항·75% 합격기준 등 명백한 사실 오류와 불필요하게 장황한 구성으로 정확성에서 크게 뒤처진다."
+  }
+ ],
+ "q19": [
+  {
+   "aurora": 7,
+   "chatgpt": 9,
+   "win": "chatgpt",
+   "by": "openai/gpt-oss-20b",
+   "reason": "B의 답변이 보다 정확하고, 과도한 가정이나 확인되지 않은 도구를 최소화해 사실 오류를 줄이며, 핵심 안전 수칙을 명확히 제시함."
+  },
+  {
+   "aurora": 9,
+   "chatgpt": 8,
+   "win": "aurora",
+   "by": "openai/gpt-oss-120b",
+   "reason": "B provides a clearer, more comprehensive, and actionable checklist while staying accurate, making it more helpful for a first‑time user"
+  }
+ ],
+ "q10": [
+  {
+   "aurora": 9,
+   "chatgpt": 6,
+   "win": "aurora",
+   "by": "openai/gpt-oss-20b",
+   "reason": "A는 사실 오류 없이 균형 잡힌 투자 가이드를 제공하며, B는 최신 시세를 포함해 확인이 어려운 정보를 제시해 정확성이 떨어집니다."
+  }
+ ],
+ "q20": [],
+ "q18": [],
+ "q21": [],
+ "q22": [],
+ "q23": [],
+ "q24": [],
+ "q26": [
+  {
+   "aurora": 2,
+   "chatgpt": 9,
+   "win": "chatgpt",
+   "by": "auto",
+   "reason": "A는 2024년 한강 작가의 수상을 부정하는 치명적인 사실 오류를 범한 반면 B는 수상자, 연도, 수상 이유를 정확하게 제시했기 때문."
+  }
+ ],
+ "q25": [],
+ "q27": [],
+ "q28": [],
+ "q30": [],
+ "q29": [
+  {
+   "aurora": 4,
+   "chatgpt": 9,
+   "win": "chatgpt",
+   "by": "auto",
+   "reason": "A는 확인할 수 없는 동물중독센터 번호(1577-1312)를 사실처럼 지어내 정확성에서 치명적 오류를 범한 반면 B는 검증된 응급 조치만 정확하고 간결하게 안내했다."
+  }
+ ],
+ "d3": []
+}
