@@ -4,6 +4,7 @@
 
 | Guide | Content |
 | --- | --- |
+| [Components · 구성 요소](components.md) | Every file, dependency, external service and borrowed idea / 파일·라이브러리·외부 서비스·빌려 온 아이디어 |
 | [Configuration · 구성](configuration.md) | Provider setup and desktop request flow / 제공자 설정과 요청 흐름 |
 | [Releases · 릴리스](releases.md) | Installers, signing, CI/CD and updates / 설치 파일·서명·자동 업데이트 |
 | [Web search architecture](seo.md) | Crawlable content, languages and sitemap / 검색 본문·언어·사이트맵 |
