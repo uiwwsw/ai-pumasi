@@ -114,8 +114,8 @@
    "aurora": 8
   },
   "q29": {
-   "aurora": 9,
-   "chatgpt": 6
+   "aurora": 6,
+   "chatgpt": 9
   },
   "q30": {
    "aurora": 9,
@@ -125,5 +125,6 @@
    "chatgpt": 9,
    "aurora": 8
   }
- }
+ },
+ "note": "q29 corrected after unblinding: the fabricated vet hotline number was in the aurora answer; scores swapped to match."
 }
