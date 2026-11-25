@@ -1,10 +1,12 @@
 # Aurora · 오로라
 
-**무료 AI 여러 개를 묶어 ChatGPT만큼 답하는 데스크톱 앱.**
+**여러 AI 제공자를 한 창에서 쓰고, 비싼 모델과 싼 모델에게 일을 나눠 맡기는 데스크톱 앱.**
 
-질문마다 알맞은 무료 AI를 골라 쓰고, 필요하면 여럿이 함께 답한 뒤 하나로 합칩니다(Free Auto Router). 실행 전 모델과 예상 토큰을 비교하는 기능도 그대로 있습니다.
+OpenAI·Anthropic·Gemini·Ollama 모델을 한 앱에서 부릅니다. 실행 전에 분석 모델이 쓸 만한 모델을 추천하고 예상 토큰 범위를 보여 주지만, 실행할 모델은 직접 고릅니다. 팀 모드에서는 선임 모델(기본값 Claude Opus 5.5, 유료 API 키 필요)이 일을 나누고 판정하며, 주니어 모델(Gemini Flash 무료 한도, Ollama 로컬)이 실제 작업을 합니다.
 
-[한국어](README.md) · [English](README.en.md) · [웹 데모](https://aurora-two-virid.vercel.app/) · [English overview](https://aurora-two-virid.vercel.app/en/) · [문서](docs/README.md)
+질문을 보고 모델을 알아서 고르는 자동 라우터는 아직 없습니다. 무료 모델만으로 답을 만드는 구성은 앱 밖의 [측정 스크립트](bench/README.md)로만 시험했습니다.
+
+[한국어](README.md) · [English](README.en.md) · [웹 데모](https://aurora-two-virid.vercel.app/) · [English overview](https://aurora-two-virid.vercel.app/en/) · [문서](docs/README.md) · [구성 요소](docs/components.md)
 
 개발 프리뷰 · [MIT](LICENSE) · macOS / Windows
 
@@ -14,7 +16,7 @@
 
 [브라우저 데모 열기](https://aurora-two-virid.vercel.app/) — 설치 없이 작업 정리, 모델 비교와 토큰 범위 미리보기를 체험합니다. 웹 데모는 외부 AI를 호출하지 않으며, 대화형 화면은 현재 한국어입니다.
 
-실제 제공자 연결과 텍스트 답변 실행은 설치 앱에서 사용합니다. 공개 0.1.4 프리뷰는 내부 분석을 명시적으로 요청하고 실행 모델을 직접 선택하는 흐름과, 선임·주니어 모델로 나눠 처리하는 팀 모드를 제공합니다. 팀 모드의 실제 제공자 호출은 아직 검증하지 않았습니다. 이름의 *Auto Router · Low AI*는 제품 방향이며, 완성된 자동 라우팅을 뜻하지 않습니다.
+실제 제공자 연결과 텍스트 답변 실행은 설치 앱에서 사용합니다. 공개 0.1.4 프리뷰는 내부 분석을 명시적으로 요청하고 실행 모델을 직접 선택하는 흐름과, 선임·주니어 모델로 나눠 처리하는 팀 모드를 제공합니다. 팀 모드의 실제 제공자 호출은 아직 검증하지 않았습니다.
 
 ## 다운로드 · 0.1.4
 
@@ -41,17 +43,19 @@ macOS는 DMG의 Aurora를 Applications 폴더로 옮기고, Windows는 설치 �
 
 ## 팀 모드 (0.1.4)
 
-비싼 모델은 일을 나누고 검수만, 실제 작업은 싼 모델이 합니다.
+비싼 모델은 일을 나누고 검수만, 실제 작업은 싼 모델이 합니다. Anthropic이 [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)에서 정리한 orchestrator-workers 방식을 그대로 옮긴 것입니다.
 
 1. 요청이 오면 **선임 모델**이 주니어 개발자가 혼자 끝낼 수 있는 작업 1~6개로 나눕니다.
 2. **주니어 모델**(Gemini Flash 무료 한도, Ollama 로컬 등)이 작업 하나씩만 받아 처리합니다. 대화 전체는 보내지 않습니다.
 3. 선임이 결과를 판정만 하고, 부족한 작업만 피드백과 함께 다시 시킵니다. 최대 2회차 후 주니어가 결과를 하나로 합칩니다. 선임은 최종 답을 다시 쓰지 않습니다.
 
-설정 → 팀 모드를 켜고 선임·주니어 모델을 고릅니다. 실제 API 사용이 켜져 있어야 합니다. 키는 `GEMINI_API_KEY`, Ollama는 `OLLAMA_MODEL`(기본 `qwen3`)로 지정합니다.
+설정 → 팀 모드를 켜고 선임·주니어 모델을 고릅니다. 실제 API 사용이 켜져 있어야 합니다. 선임 기본값은 Claude Opus 5.5(`ANTHROPIC_API_KEY`), OpenAI 프리셋에서는 GPT-6 Astra(`OPENAI_API_KEY`)이며, 선임 호출(계획 1번과 회차마다 판정 1번)은 그 계정에 과금됩니다. 주니어 키는 `GEMINI_API_KEY`, Ollama는 `OLLAMA_MODEL`(기본 `qwen3`)로 지정합니다. 선임에도 무료 모델을 고를 수 있지만 그 조합은 측정하지 않았습니다.
 
-### 측정 결과 (2026-11-25)
+### 앱 밖에서 한 측정 (2026-11-25)
 
-무료 모델 묶음(검색·교차 확인 포함)과 ChatGPT 무료를 같은 질문 31개로 비교한 결과, 답의 품질은 같은 수준(10점 만점 8.23 대 8.19)이었습니다. 코드·문서 작업도 동점입니다. 대신 응답이 중간값 약 38초로 ChatGPT 무료(약 10초)보다 3~4배 느립니다. 방법과 한계는 [측정 기록](bench/README.md)에 있습니다.
+이 측정은 앱의 팀 모드가 아니라 `bench/` 스크립트로 했습니다. 스크립트는 로컬 [OmniRoute](https://github.com/diegosouzapw/OmniRoute)(무료 제공자를 한 주소로 모아 주는 오픈소스 게이트웨이)를 거쳐 무료 모델 셋이 답하고 하나가 합치게 했고, 위키백과 검색과 숫자 대조 단계를 붙였습니다. 여러 모델이 답하고 하나가 합치는 구조는 [Mixture-of-Agents](https://github.com/togethercomputer/MoA)와 같습니다.
+
+같은 질문 31개에서 ChatGPT 무료(로그인 없이 받은 하루치 답)와 평균 8.23 대 8.19점으로 차이가 없었고, 코드·문서 작업도 동점이었습니다. 응답은 중간값 약 38초로 3~4배 느렸습니다. 채점은 Claude 한 명이 출처를 가리고 했고 문항이 적어 0.04점 차이는 오차 범위입니다. 이 구성은 아직 앱에 들어 있지 않습니다. 방법과 한계는 [측정 기록](bench/README.md)에 있습니다.
 
 ## 토큰 추정과 데이터
 
@@ -98,6 +102,7 @@ npm start
 - [문서 목차](docs/README.md)
 - [릴리스와 서명·자동 업데이트](docs/releases.md)
 - [구성 가이드](docs/configuration.md)
+- [구성 요소와 빌려 쓴 것들](docs/components.md)
 - [제품 비전과 실행 예산 설계](docs/product-vision.md)
 - [웹 검색 구조](docs/seo.md)
 - [기여 방법](CONTRIBUTING.md) · [Issues](https://github.com/uiwwsw/aurora/issues)
