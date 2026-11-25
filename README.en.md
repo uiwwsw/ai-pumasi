@@ -1,6 +1,8 @@
 # Aurora
 
-**A desktop AI workspace for reviewing model choices and estimated tokens before execution, in one conversation.**
+**Aurora is a free auto router: a desktop app that bundles free AI models to answer as well as ChatGPT's free tier.**
+
+It picks a suitable free model for each question and, for harder ones, lets several free models answer and merges the result. You can still compare models and estimated tokens before running.
 
 [English](README.en.md) · [한국어](README.md) · [Web demo](https://aurora-two-virid.vercel.app/) · [English overview](https://aurora-two-virid.vercel.app/en/) · [Documentation](docs/README.md)
 

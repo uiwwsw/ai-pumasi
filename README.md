@@ -1,6 +1,8 @@
 # Aurora · 오로라
 
-**하나의 대화에서 AI 모델과 예상 토큰을 실행 전에 검토하는 데스크톱 작업 공간.**
+**무료 AI 여러 개를 묶어 ChatGPT만큼 답하는 데스크톱 앱.**
+
+질문마다 알맞은 무료 AI를 골라 쓰고, 필요하면 여럿이 함께 답한 뒤 하나로 합칩니다(Free Auto Router). 실행 전 모델과 예상 토큰을 비교하는 기능도 그대로 있습니다.
 
 [한국어](README.md) · [English](README.en.md) · [웹 데모](https://aurora-two-virid.vercel.app/) · [English overview](https://aurora-two-virid.vercel.app/en/) · [문서](docs/README.md)
 

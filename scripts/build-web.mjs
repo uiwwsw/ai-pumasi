@@ -9,12 +9,12 @@ const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
 const translations = {
   ko: {
-    title: "오로라 Aurora — AI 모델 선택과 예상 토큰 검토 데모",
+    title: "오로라 Aurora — 무료 AI 여러 개를 묶어 답하는 앱 데모",
     description:
-      "오로라(Aurora)는 작업별 AI 모델과 예상 토큰을 검토하는 macOS·Windows 데스크톱 AI 작업 공간입니다. 웹 데모에서 대화 정리, 모델 비교와 토큰 예산 미리보기를 체험하세요.",
-    heading: "대화는 하나로, 모델과 토큰은 실행 전에 검토하세요.",
+      "오로라(Aurora)는 무료 AI 여러 개를 묶어 질문마다 알맞게 골라 쓰는 macOS·Windows 데스크톱 앱입니다. 웹 데모에서 대화 정리와 모델 비교를 체험하세요.",
+    heading: "무료 AI 여러 개를 묶어, ChatGPT만큼 답하게.",
     intro:
-      "오로라(Aurora, Auto Router · Low AI)는 요청 범위와 실행 모델, 예상 입력·출력 토큰을 먼저 확인하는 데스크톱 AI 작업 공간입니다. 이 페이지의 웹 데모는 외부 AI 호출 없이 로컬 미리보기로 동작합니다.",
+      "오로라(Aurora, Free Auto Router)는 질문마다 알맞은 무료 AI를 골라 쓰고, 어려운 질문은 여러 무료 AI가 함께 답한 뒤 하나로 합치는 데스크톱 앱입니다. 이 페이지의 웹 데모는 외부 AI 호출 없이 로컬 미리보기로 동작합니다.",
     demo: "데모로 돌아가기",
     overview: "제품 소개",
     download: "데스크톱 다운로드",
@@ -73,13 +73,13 @@ const translations = {
     nojs: "JavaScript를 켜면 상단에서 대화형 데모를 사용할 수 있습니다. 아래 제품 소개와 다운로드 링크는 JavaScript 없이도 읽을 수 있습니다.",
   },
   en: {
-    title: "Aurora — AI Model Selection and Token Estimate Demo",
+    title: "Aurora — Free Auto Router Demo",
     description:
-      "Review AI model choices and estimated tokens with Aurora for macOS and Windows. Try the local web demo for conversation organization and planning budgets.",
+      "Aurora is a free auto router for macOS and Windows that bundles free AI models and picks the right one for each question. Try the local web demo.",
     heading:
-      "One conversation. Review the model and token range before running.",
+      "Bundle free AI models. Answer like ChatGPT.",
     intro:
-      "Aurora (Auto Router · Low AI) is a desktop AI workspace for reviewing request scope, execution models, and estimated input and output tokens. The browser demo is a local preview without external AI calls; the interactive interface is currently in Korean.",
+      "Aurora (Free Auto Router) picks a suitable free AI model for each question and, for harder ones, lets several free models answer and merges the result. The browser demo is a local preview without external AI calls; the interactive interface is currently in Korean.",
     demo: "Open demo",
     overview: "Overview",
     download: "Download desktop app",
@@ -142,13 +142,13 @@ const escape = (s) =>
   s.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 function landingHero(lang) {
   const en = lang === "en";
-  return `<section class="landing-hero" aria-label="${en ? "Meet Aurora" : "오로라 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> AURORA · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "A little less friction.<br>A lot more possibility." : "생각은 자유롭게.<br>가능성은 더 넓게."}</p><p class="hero-description">${en ? "One conversation. The right model for each task.<br>Explore your options and estimated tokens before you begin." : "하나의 대화에서 이어지는 모든 작업.<br>실행하기 전에, 알맞은 모델과 예상 토큰을 확인하세요."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download Aurora" : "Aurora 다운로드"}</a><a class="hero-secondary" href="${en ? "/#root" : "#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Describe your task" : "요청을 입력하고"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "Review model & tokens" : "모델과 토큰을 검토한 뒤"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Choose how to proceed" : "실행 방법을 선택하세요"}</span></div><a class="hero-scroll" href="${en ? "#overview" : "#root"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
+  return `<section class="landing-hero" aria-label="${en ? "Meet Aurora" : "오로라 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> AURORA · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "A little less friction.<br>A lot more possibility." : "생각은 자유롭게.<br>가능성은 더 넓게."}</p><p class="hero-description">${en ? "Free AI models, bundled.<br>The right one for each question, several for the hard ones." : "무료 AI 여러 개를 하나로.<br>질문마다 알맞은 AI가, 어려운 건 여럿이 함께 답합니다."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download Aurora" : "Aurora 다운로드"}</a><a class="hero-secondary" href="${en ? "/#root" : "#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Describe your task" : "요청을 입력하고"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "Review model & tokens" : "모델과 토큰을 검토한 뒤"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Choose how to proceed" : "실행 방법을 선택하세요"}</span></div><a class="hero-scroll" href="${en ? "#overview" : "#root"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
 }
 const styles = `@font-face{font-family:SUITE;src:url('/fonts/SUITE-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}html{scroll-behavior:smooth}body{margin:0;color:#34342f;background:#faf9f6;font-family:SUITE,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}button,input,select,textarea{font:inherit}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,SUITE,monospace}.site-nav{height:52px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #e8e6df;background:#faf9f6}.site-nav nav{display:flex;gap:20px}.site-nav a,.site-content a,.site-footer a{color:#48684c;text-underline-offset:4px}.site-brand{font-weight:750;text-decoration:none}.site-content{max-width:1000px;margin:auto;padding:76px 28px;line-height:1.85}.site-content h1,.site-content h2{line-height:1.3;letter-spacing:-.035em}.site-content h1,.site-content>.site-hero h2{font-size:clamp(30px,4vw,48px);max-width:840px;margin:20px 0}.site-content h2{margin:54px 0 24px;font-size:28px}.site-content h3{font-size:20px;margin:0 0 12px}.site-lead{max-width:800px;color:#65665c;font-size:18px}.site-eyebrow{color:#607b64;font-size:13px;letter-spacing:.08em}.site-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.site-actions a{padding:10px 18px;border:1px solid #cdd7c7;border-radius:9px;text-decoration:none}.site-actions a:first-child{background:#607b64;color:#fff}.site-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.site-card,.site-limit{border:1px solid #e8e6df;border-radius:16px;padding:26px;background:#fffefa}.site-card p{margin:0;color:#65665c}.site-content details{border-bottom:1px solid #e8e6df;padding:18px 0}.site-content summary{cursor:pointer;font-weight:650}.site-content details p{color:#65665c}.site-footer{padding:24px 28px;border-top:1px solid #e8e6df;text-align:center;font-size:14px}.site-skip{position:absolute;left:20px;top:-100px;background:#fff;padding:12px;z-index:20}.site-skip:focus{top:5px}.site-notice{padding:16px 28px;color:#65665c}.site-web-demo .app{height:calc(100dvh - 52px)}.site-web-demo .site-content{border-top:1px solid #e8e6df}@media(max-width:680px){.site-nav{padding:0 16px;font-size:13px}.site-nav nav{gap:12px}.site-nav .site-source{display:none}.site-content{padding:48px 20px}.site-grid{grid-template-columns:1fr}.site-content h2{font-size:25px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}`;
 function body(lang) {
   const t = translations[lang];
   const tag = lang === "ko" ? "h2" : "h1";
-  return `<article class="site-content" id="overview" aria-label="${t.overview}"><header class="site-hero"><p class="site-eyebrow">AURORA · AUTO ROUTER / LOW AI</p><${tag}>${t.heading}</${tag}><p class="site-lead">${t.intro}</p><div class="site-actions"><a href="${lang === "ko" ? "#root" : "/"}">${t.open}</a><a href="${release}">${t.download}</a><a href="${repo}/blob/main/README.en.md">${t.guide}</a></div></header><section><h2>${t.featureTitle}</h2><div class="site-grid">${t.features.map(([h, p]) => `<section class="site-card"><h3>${h}</h3><p>${p}</p></section>`).join("")}</div></section><section><h2>${t.faq}</h2>${t.questions.map(([q, a]) => `<details open><summary>${q}</summary><p>${a}</p></details>`).join("")}</section><section class="site-limit"><h2>${t.limitations}</h2><p>${t.limitation}</p><a href="${release}">${t.links}</a></section></article>`;
+  return `<article class="site-content" id="overview" aria-label="${t.overview}"><header class="site-hero"><p class="site-eyebrow">AURORA · FREE AUTO ROUTER</p><${tag}>${t.heading}</${tag}><p class="site-lead">${t.intro}</p><div class="site-actions"><a href="${lang === "ko" ? "#root" : "/"}">${t.open}</a><a href="${release}">${t.download}</a><a href="${repo}/blob/main/README.en.md">${t.guide}</a></div></header><section><h2>${t.featureTitle}</h2><div class="site-grid">${t.features.map(([h, p]) => `<section class="site-card"><h3>${h}</h3><p>${p}</p></section>`).join("")}</div></section><section><h2>${t.faq}</h2>${t.questions.map(([q, a]) => `<details open><summary>${q}</summary><p>${a}</p></details>`).join("")}</section><section class="site-limit"><h2>${t.limitations}</h2><p>${t.limitation}</p><a href="${release}">${t.links}</a></section></article>`;
 }
 function head(lang, production) {
   const t = translations[lang];
