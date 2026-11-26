@@ -17,6 +17,8 @@ const EN: Record<string, string> = {
 };
 
 function detect(): Lang {
+  // Outside a window (tests, build scripts) the Korean source text is used.
+  if (typeof window === "undefined") return "ko";
   try {
     const saved = localStorage.getItem(LANG_KEY);
     if (saved === "ko" || saved === "en") return saved;

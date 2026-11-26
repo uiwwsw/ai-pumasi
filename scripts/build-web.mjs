@@ -3,18 +3,18 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 export const origin = "https://aurora-two-virid.vercel.app";
-const release = "https://github.com/uiwwsw/aurora/releases/tag/v0.1.8";
-const repo = "https://github.com/uiwwsw/aurora";
+const release = "https://github.com/uiwwsw/ai-pumasi/releases/tag/v0.1.8";
+const repo = "https://github.com/uiwwsw/ai-pumasi";
 const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
 const translations = {
   ko: {
-    title: "오로라 Aurora — 여러 AI 제공자를 한 창에서 쓰는 데스크톱 앱 데모",
+    title: "AI품앗이 AI Pumasi — 여러 AI 제공자를 한 창에서 쓰는 데스크톱 앱 데모",
     description:
-      "오로라(Aurora)는 OpenAI·Anthropic·Gemini·Ollama 모델을 한 창에서 쓰고, 유료 총괄 모델과 무료 작업 모델에게 일을 나눠 맡기는 macOS·Windows 데스크톱 앱입니다. 웹 데모에서 대화 정리와 모델 비교를 체험하세요.",
+      "AI품앗이(AI Pumasi)는 OpenAI·Anthropic·Gemini·Ollama 모델을 한 창에서 쓰고, 유료 총괄 모델과 무료 작업 모델에게 일을 나눠 맡기는 macOS·Windows 데스크톱 앱입니다. 웹 데모에서 대화 정리와 모델 비교를 체험하세요.",
     heading: "여러 AI를 한 창에서, 일은 나눠서.",
     intro:
-      "오로라(Aurora)는 실행 전에 분석 모델의 추천과 예상 토큰 범위를 보여 주고, 실행할 모델은 직접 고르게 하는 데스크톱 앱입니다. 팀 모드에서는 유료 총괄 모델(기본 Claude Opus 5.5)이 일을 나누고 판정하며 Gemini Flash 무료 한도나 Ollama가 작업을 처리합니다. 모델을 알아서 고르는 자동 라우터는 아직 없습니다. 이 페이지의 웹 데모는 외부 AI 호출 없이 로컬 미리보기로 동작합니다.",
+      "AI품앗이(AI Pumasi)는 실행 전에 분석 모델의 추천과 예상 토큰 범위를 보여 주고, 실행할 모델은 직접 고르게 하는 데스크톱 앱입니다. 팀 모드에서는 유료 총괄 모델(기본 Claude Opus 5.5)이 일을 나누고 판정하며 Gemini Flash 무료 한도나 Ollama가 작업을 처리합니다. 모델을 알아서 고르는 자동 라우터는 아직 없습니다. 이 페이지의 웹 데모는 외부 AI 호출 없이 로컬 미리보기로 동작합니다.",
     demo: "데모로 돌아가기",
     overview: "제품 소개",
     download: "데스크톱 다운로드",
@@ -60,7 +60,7 @@ const translations = {
         "0.1.2부터 Windows 업데이트를 지원하며 기존 0.1.1 이하 버전은 새 설치 파일로 교체해야 합니다. macOS 0.1.8은 Developer ID 서명과 Apple 공증을 적용했습니다. Windows 설치 파일은 개발자 인증서로 서명하지 않아 운영체제의 보안 확인이 나타날 수 있습니다.",
       ],
     ],
-    featureTitle: "오로라에서 할 수 있는 일",
+    featureTitle: "AI품앗이에서 할 수 있는 일",
     faq: "자주 묻는 질문",
     limitations: "개발 프리뷰의 범위",
     limitation:
@@ -73,13 +73,13 @@ const translations = {
     nojs: "JavaScript를 켜면 상단에서 대화형 데모를 사용할 수 있습니다. 아래 제품 소개와 다운로드 링크는 JavaScript 없이도 읽을 수 있습니다.",
   },
   en: {
-    title: "Aurora — Desktop App for Several AI Providers",
+    title: "AI Pumasi — Desktop App for Several AI Providers",
     description:
-      "Aurora is a macOS and Windows app for OpenAI, Anthropic, Gemini and Ollama models, with a team mode where a paid lead model plans and free worker models do the tasks. Try the local web demo.",
+      "AI Pumasi is a macOS and Windows app for OpenAI, Anthropic, Gemini and Ollama models, with a team mode where a paid lead model plans and free worker models do the tasks. Try the local web demo.",
     heading:
       "Several AI providers in one window, with the work split up.",
     intro:
-      "Aurora shows an analyzer model's recommendation and an estimated token range before you run a request, and you pick the model yourself. In team mode a paid lead model (Claude Opus 5.5 by default) plans and judges while Gemini Flash's free tier or a local Ollama model does the tasks. There is no automatic router yet. The browser demo is a local preview without external AI calls; the interactive interface is currently in Korean.",
+      "AI Pumasi shows an analyzer model's recommendation and an estimated token range before you run a request, and you pick the model yourself. In team mode a paid lead model (Claude Opus 5.5 by default) plans and judges while Gemini Flash's free tier or a local Ollama model does the tasks. There is no automatic router yet. The browser demo is a local preview without external AI calls; the interactive interface is currently in Korean.",
     demo: "Open demo",
     overview: "Overview",
     download: "Download desktop app",
@@ -109,7 +109,7 @@ const translations = {
         "No. It previews conversation organization, model comparison and estimated token ranges locally. Provider API connections are configured in the installed desktop app.",
       ],
       [
-        "Does Aurora automatically switch execution models?",
+        "Does AI Pumasi automatically switch execution models?",
         "No. The public 0.1.8 preview requires an explicit analysis action and manual execution-model selection. A recommendation is separate from an execution request.",
       ],
       [
@@ -142,7 +142,7 @@ const escape = (s) =>
   s.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 function landingHero(lang) {
   const en = lang === "en";
-  return `<section class="landing-hero" aria-label="${en ? "Meet Aurora" : "오로라 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> AURORA · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Several AI providers.<br>One desktop window." : "여러 AI 제공자를<br>한 창에서."}</p><p class="hero-description">${en ? "A paid lead model splits the work.<br>Free models do the tasks." : "유료 총괄 모델이 일을 나누고<br>무료 모델이 작업을 처리합니다."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download Aurora" : "Aurora 다운로드"}</a><a class="hero-secondary" href="${en ? "/#root" : "#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Describe your task" : "요청을 입력하고"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "Review model & tokens" : "모델과 토큰을 검토한 뒤"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Choose how to proceed" : "실행 방법을 선택하세요"}</span></div><a class="hero-scroll" href="${en ? "#overview" : "#root"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
+  return `<section class="landing-hero" aria-label="${en ? "Meet AI Pumasi" : "AI품앗이 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> AURORA · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Several AI providers.<br>One desktop window." : "여러 AI 제공자를<br>한 창에서."}</p><p class="hero-description">${en ? "A paid lead model splits the work.<br>Free models do the tasks." : "유료 총괄 모델이 일을 나누고<br>무료 모델이 작업을 처리합니다."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download AI Pumasi" : "AI Pumasi 다운로드"}</a><a class="hero-secondary" href="${en ? "/#root" : "#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Describe your task" : "요청을 입력하고"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "Review model & tokens" : "모델과 토큰을 검토한 뒤"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Choose how to proceed" : "실행 방법을 선택하세요"}</span></div><a class="hero-scroll" href="${en ? "#overview" : "#root"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
 }
 const styles = `@font-face{font-family:SUITE;src:url('/fonts/SUITE-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}html{scroll-behavior:smooth}body{margin:0;color:#34342f;background:#faf9f6;font-family:SUITE,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}button,input,select,textarea{font:inherit}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,SUITE,monospace}.site-nav{height:52px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #e8e6df;background:#faf9f6}.site-nav nav{display:flex;gap:20px}.site-nav a,.site-content a,.site-footer a{color:#48684c;text-underline-offset:4px}.site-brand{font-weight:750;text-decoration:none}.site-content{max-width:1000px;margin:auto;padding:76px 28px;line-height:1.85}.site-content h1,.site-content h2{line-height:1.3;letter-spacing:-.035em}.site-content h1,.site-content>.site-hero h2{font-size:clamp(30px,4vw,48px);max-width:840px;margin:20px 0}.site-content h2{margin:54px 0 24px;font-size:28px}.site-content h3{font-size:20px;margin:0 0 12px}.site-lead{max-width:800px;color:#65665c;font-size:18px}.site-eyebrow{color:#607b64;font-size:13px;letter-spacing:.08em}.site-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.site-actions a{padding:10px 18px;border:1px solid #cdd7c7;border-radius:9px;text-decoration:none}.site-actions a:first-child{background:#607b64;color:#fff}.site-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.site-card,.site-limit{border:1px solid #e8e6df;border-radius:16px;padding:26px;background:#fffefa}.site-card p{margin:0;color:#65665c}.site-content details{border-bottom:1px solid #e8e6df;padding:18px 0}.site-content summary{cursor:pointer;font-weight:650}.site-content details p{color:#65665c}.site-footer{padding:24px 28px;border-top:1px solid #e8e6df;text-align:center;font-size:14px}.site-skip{position:absolute;left:20px;top:-100px;background:#fff;padding:12px;z-index:20}.site-skip:focus{top:5px}.site-notice{padding:16px 28px;color:#65665c}.site-web-demo .app{height:calc(100dvh - 52px)}.site-web-demo .site-content{border-top:1px solid #e8e6df}@media(max-width:680px){.site-nav{padding:0 16px;font-size:13px}.site-nav nav{gap:12px}.site-nav .site-source{display:none}.site-content{padding:48px 20px}.site-grid{grid-template-columns:1fr}.site-content h2{font-size:25px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}`;
 function body(lang) {
@@ -158,12 +158,12 @@ function head(lang, production) {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: t.title,
-    alternateName: "오로라",
+    alternateName: "AI품앗이",
     url: canonical,
     description: t.description,
     isPartOf: {
       "@type": "WebSite",
-      name: "Aurora",
+      name: "AI Pumasi",
       url: origin + "/",
       inLanguage: ["ko", "en"],
     },
@@ -174,7 +174,7 @@ function head(lang, production) {
   });
   const hash = createHash("sha256").update(schema).digest("base64");
   const csp = `default-src 'self'; script-src 'self' 'sha256-${hash}'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'`;
-  return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="${csp}"><title>${t.title}</title><meta name="description" content="${escape(t.description)}"><meta name="robots" content="${production ? "index,follow,max-image-preview:large" : "noindex,nofollow"}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="ko" href="${origin}/"><link rel="alternate" hreflang="en" href="${origin}/en/"><link rel="alternate" hreflang="x-default" href="${origin}/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="theme-color" content="#607b64"><meta property="og:type" content="website"><meta property="og:site_name" content="Aurora"><meta property="og:title" content="${t.title}"><meta property="og:description" content="${escape(t.description)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${lang === "ko" ? "ko_KR" : "en_US"}"><meta property="og:locale:alternate" content="${lang === "ko" ? "en_US" : "ko_KR"}"><meta property="og:image" content="${origin}/social-preview.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Aurora desktop workspace preview"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${t.title}"><meta name="twitter:description" content="${escape(t.description)}"><meta name="twitter:image" content="${origin}/social-preview.png">${verification}<script type="application/ld+json">${schema}</script><style>${styles}</style>`;
+  return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="${csp}"><title>${t.title}</title><meta name="description" content="${escape(t.description)}"><meta name="robots" content="${production ? "index,follow,max-image-preview:large" : "noindex,nofollow"}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="ko" href="${origin}/"><link rel="alternate" hreflang="en" href="${origin}/en/"><link rel="alternate" hreflang="x-default" href="${origin}/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="theme-color" content="#607b64"><meta property="og:type" content="website"><meta property="og:site_name" content="AI Pumasi"><meta property="og:title" content="${t.title}"><meta property="og:description" content="${escape(t.description)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${lang === "ko" ? "ko_KR" : "en_US"}"><meta property="og:locale:alternate" content="${lang === "ko" ? "en_US" : "ko_KR"}"><meta property="og:image" content="${origin}/social-preview.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="AI Pumasi desktop workspace preview"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${t.title}"><meta name="twitter:description" content="${escape(t.description)}"><meta name="twitter:image" content="${origin}/social-preview.png">${verification}<script type="application/ld+json">${schema}</script><style>${styles}</style>`;
 }
 export async function buildWeb({
   inputDir = "dist",
@@ -195,12 +195,12 @@ export async function buildWeb({
   ].map((m) => m[0].replaceAll('"./assets/', '"/assets/'));
   for (const lang of ["ko", "en"]) {
     const t = translations[lang];
-    const nav = `<a class="site-skip" href="#overview">${t.overview}</a><header class="site-nav"><a class="site-brand" href="/"><span class="site-brand-icon" aria-hidden="true">✦</span> Aurora</a><nav aria-label="${t.overview}"><a href="${lang === "ko" ? "#overview" : "/"}">${lang === "ko" ? t.overview : t.demo}</a><a class="site-source" href="${repo}">GitHub</a><a href="${t.other}" lang="${lang === "ko" ? "en" : "ko"}" hreflang="${lang === "ko" ? "en" : "ko"}">${t.language}</a></nav></header>`;
+    const nav = `<a class="site-skip" href="#overview">${t.overview}</a><header class="site-nav"><a class="site-brand" href="/"><span class="site-brand-icon" aria-hidden="true">✦</span> AI Pumasi</a><nav aria-label="${t.overview}"><a href="${lang === "ko" ? "#overview" : "/"}">${lang === "ko" ? t.overview : t.demo}</a><a class="site-source" href="${repo}">GitHub</a><a href="${t.other}" lang="${lang === "ko" ? "en" : "ko"}" hreflang="${lang === "ko" ? "en" : "ko"}">${t.language}</a></nav></header>`;
     const demo =
       lang === "ko"
-        ? `<section class="demo-shell" aria-label="Aurora web preview"><div class="demo-chrome"><span><i></i><i></i><i></i></span><p>Aurora <span>/</span> Web preview</p><a href="#overview">제품 소개 ↗</a></div><div id="root"><section class="site-notice"><h1>${t.heading}</h1><p>${t.browser}</p></section></div><noscript><p class="site-notice">${t.nojs}</p></noscript></section>`
+        ? `<section class="demo-shell" aria-label="AI Pumasi web preview"><div class="demo-chrome"><span><i></i><i></i><i></i></span><p>AI Pumasi <span>/</span> Web preview</p><a href="#overview">제품 소개 ↗</a></div><div id="root"><section class="site-notice"><h1>${t.heading}</h1><p>${t.browser}</p></section></div><noscript><p class="site-notice">${t.nojs}</p></noscript></section>`
         : "";
-    const html = `<!doctype html><html lang="${lang}"><head>${head(lang, production)}${lang === "ko" ? assets.join("") : ""}<link rel="stylesheet" href="/landing.css"></head><body class="${lang === "ko" ? "site-web-demo" : "site-english"}">${nav}${landingHero(lang)}${demo}${body(lang)}<footer class="site-footer">Aurora · <a href="${repo}/blob/main/LICENSE">MIT</a> · <a href="${release}">${t.download}</a></footer></body></html>`;
+    const html = `<!doctype html><html lang="${lang}"><head>${head(lang, production)}${lang === "ko" ? assets.join("") : ""}<link rel="stylesheet" href="/landing.css"></head><body class="${lang === "ko" ? "site-web-demo" : "site-english"}">${nav}${landingHero(lang)}${demo}${body(lang)}<footer class="site-footer">AI Pumasi · <a href="${repo}/blob/main/LICENSE">MIT</a> · <a href="${release}">${t.download}</a></footer></body></html>`;
     const file = path.join(
       outputDir,
       lang === "ko" ? "index.html" : "en/index.html",
@@ -221,7 +221,7 @@ export async function buildWeb({
   );
   await writeFile(
     path.join(outputDir, "404.html"),
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Page not found — Aurora</title><style>${styles}</style></head><body><main class="site-content"><h1>Page not found</h1><a href="/">Aurora demo</a> · <a href="/en/">English overview</a></main></body></html>`,
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Page not found — AI Pumasi</title><style>${styles}</style></head><body><main class="site-content"><h1>Page not found</h1><a href="/">AI Pumasi demo</a> · <a href="/en/">English overview</a></main></body></html>`,
   );
 }
 if (

@@ -1,4 +1,4 @@
-# Aurora documentation · 문서
+# AI Pumasi documentation · 문서
 
 [한국어 README](../README.md) · [English README](../README.en.md) · [Demo](https://aurora-two-virid.vercel.app/) · [English overview](https://aurora-two-virid.vercel.app/en/)
 

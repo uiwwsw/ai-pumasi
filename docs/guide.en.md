@@ -1,10 +1,10 @@
-# Aurora guide
+# AI Pumasi guide
 
 [Back to README](../README.en.md)
 
 ## Quick start
 
-1. Put the keys for the providers you use in a `.env` file. The installed app reads `~/Library/Application Support/Aurora/.env` on macOS and `%APPDATA%/Aurora/.env` on Windows, and also accepts environment variables.
+1. Put the keys for the providers you use in a `.env` file. The installed app reads `~/Library/Application Support/AI Pumasi/.env` on macOS and `%APPDATA%/AI Pumasi/.env` on Windows, and also accepts environment variables.
 
    ```bash
    OPENAI_API_KEY=...        # OpenAI models
@@ -77,7 +77,7 @@ Windows checks at startup and every six hours, downloads in the background and o
 Requires Node.js 24 or newer.
 
 ```bash
-git clone https://github.com/uiwwsw/aurora.git
+git clone https://github.com/uiwwsw/ai-pumasi.git
 cd aurora
 npm ci
 cp .env.example .env   # add keys (optional)

@@ -1,9 +1,10 @@
 import type { EnsembleResult } from "./routing";
+import { t } from "./i18n";
 export type Tier = "light" | "standard" | "advanced";
 export const tierNames: Record<Tier, string> = {
-  light: "경량",
-  standard: "표준",
-  advanced: "고성능",
+  light: t("경량"),
+  standard: t("표준"),
+  advanced: t("고성능"),
 };
 export type Message = {
   id: string;
@@ -58,14 +59,20 @@ export function remainingPercent(used: number | null): number | null {
     : Math.max(0, Math.min(100, 100 - used));
 }
 export function resetText(at: number | null, now: number): string {
-  if (at === null) return "초기화 시각 확인 안 됨";
+  if (at === null) return t("초기화 시각 확인 안 됨");
   const minutes = Math.ceil((at - now) / 60000);
-  if (minutes <= 0) return "초기화 확인 필요";
+  if (minutes <= 0) return t("초기화 확인 필요");
   if (minutes >= 1440)
-    return `${Math.floor(minutes / 1440)}일 ${Math.floor((minutes % 1440) / 60)}시간 후 초기화`;
+    return t("{d}일 {h}시간 후 초기화", {
+      d: Math.floor(minutes / 1440),
+      h: Math.floor((minutes % 1440) / 60),
+    });
   return minutes >= 60
-    ? `${Math.floor(minutes / 60)}시간 ${minutes % 60}분 후 초기화`
-    : `${minutes}분 후 초기화`;
+    ? t("{h}시간 {m}분 후 초기화", {
+        h: Math.floor(minutes / 60),
+        m: minutes % 60,
+      })
+    : t("{m}분 후 초기화", { m: minutes });
 }
 export function tokens(text: string): number {
   return Math.ceil(
@@ -88,9 +95,9 @@ export function recommend(prompt: string) {
         ? "light"
         : "standard";
   const reasons = {
-    light: "짧은 변환·정리 작업이므로 경량 모델부터 권장합니다.",
-    standard: "일반적인 작성·문제 해결에 적합한 표준 모델을 권장합니다.",
-    advanced: "복잡한 조건과 검토가 필요해 고성능 모델을 권장합니다.",
+    light: t("짧은 변환·정리 작업이므로 경량 모델부터 권장합니다."),
+    standard: t("일반적인 작성·문제 해결에 적합한 표준 모델을 권장합니다."),
+    advanced: t("복잡한 조건과 검토가 필요해 고성능 모델을 권장합니다."),
   };
   return { tier, reason: reasons[tier], tokens: tokens(prompt) };
 }
@@ -151,8 +158,8 @@ export function propose(
     ? {
         bundleId: current.id,
         reason: changed
-          ? "이전 작업과 다른 주제로 보여요."
-          : "지금 작업이 마무리된 것 같아요.",
+          ? t("이전 작업과 다른 주제로 보여요.")
+          : t("지금 작업이 마무리된 것 같아요."),
       }
     : null;
 }
@@ -231,5 +238,8 @@ export function makePreview(
   prompt: string,
   tier: Tier = recommend(prompt).tier,
 ): string {
-  return `선택한 모델 등급 · ${tierNames[tier]}\n\n요청을 로컬 작업 흐름에 기록했습니다. 현재는 규칙 기반 추천과 정리 제안을 확인하는 미리보기입니다.\nAI 모델이 질문을 수행한 결과가 아니며, 실제 토큰이나 계정 한도는 차감되지 않습니다.`;
+  return t(
+    "선택한 모델 등급 · {tier}\n\n요청을 로컬 작업 흐름에 기록했습니다. 현재는 규칙 기반 추천과 정리 제안을 확인하는 미리보기입니다.\nAI 모델이 질문을 수행한 결과가 아니며, 실제 토큰이나 계정 한도는 차감되지 않습니다.",
+    { tier: tierNames[tier] },
+  );
 }

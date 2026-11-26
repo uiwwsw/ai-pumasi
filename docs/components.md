@@ -1,10 +1,10 @@
 # 구성 요소와 빌려 쓴 것들
 
-Aurora 저장소에 들어 있는 파일, 의존하는 라이브러리와 외부 서비스, 그리고 아이디어를 빌려 온 기존 프로젝트를 정리했다. 기준은 0.1.4 공개 버전과 main 브랜치다.
+AI Pumasi 저장소에 들어 있는 파일, 의존하는 라이브러리와 외부 서비스, 그리고 아이디어를 빌려 온 기존 프로젝트를 정리했다. 기준은 0.1.4 공개 버전과 main 브랜치다.
 
 먼저 범위를 분명히 해 둔다.
 
-- Aurora는 새로운 라우팅 알고리즘을 만들지 않았다. 앱 안의 "추천"은 분석용 모델에게 어떤 모델이 좋을지 물어보는 프롬프트 한 번이고, 실행 모델은 사람이 고른다.
+- AI품앗이는 새로운 라우팅 알고리즘을 만들지 않았다. 앱 안의 "추천"은 분석용 모델에게 어떤 모델이 좋을지 물어보는 프롬프트 한 번이고, 실행 모델은 사람이 고른다.
 - 팀 모드의 총괄 모델 기본값은 Claude Opus 5.5(OpenAI 프리셋에서는 GPT-6 Astra)로, 유료 API 키가 필요하다. 무료로 돌아가는 쪽은 작업 모델(Gemini Flash 무료 한도, Ollama 로컬)뿐이다. 총괄 모델에 무료 모델을 고를 수는 있지만 그 조합은 측정하지 않았다.
 - `bench/`는 측정 기록이다. 무료 모델 묶음의 투표 규칙은 0.1.6부터 앱의 묶음 투표(`electron/ensemble.cjs`)에 들어 있다.
 
@@ -88,12 +88,12 @@ aurora/
 
 ## 빌려 온 아이디어
 
-Aurora의 구조는 이미 알려진 방식들을 가져와 작게 붙인 것이다.
+AI품앗이의 구조는 이미 알려진 방식들을 가져와 작게 붙인 것이다.
 
 - **팀 모드 (총괄 모델이 나누고 작업 모델이 처리, 총괄 모델이 판정):** Anthropic의 [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)에 정리된 orchestrator-workers와 evaluator-optimizer 패턴 그대로다.
 - **`bench/`의 "여러 모델이 답하고 하나가 합치기":** Together AI의 [Mixture-of-Agents](https://github.com/togethercomputer/MoA)(2024)와 같은 구조다. 여러 답을 모아 합치는 연구로는 [LLM-Blender](https://github.com/yuchenlin/LLM-Blender)(2023)도 있다.
-- **질문마다 모델 고르기:** 학습된 라우터는 LMSYS의 [RouteLLM](https://github.com/lm-sys/RouteLLM), 서비스로는 [OpenRouter](https://openrouter.ai)의 `openrouter/auto`가 있다. Aurora는 라우터를 학습하지 않았고, 분석 모델에게 묻는 방식이라 이것들보다 단순하다.
-- **여러 제공자를 하나의 주소로:** [LiteLLM](https://github.com/BerriAI/litellm) 같은 게이트웨이가 하는 일이다. Aurora의 `providers.cjs`는 네 제공자만 직접 연결한 작은 어댑터다.
+- **질문마다 모델 고르기:** 학습된 라우터는 LMSYS의 [RouteLLM](https://github.com/lm-sys/RouteLLM), 서비스로는 [OpenRouter](https://openrouter.ai)의 `openrouter/auto`가 있다. AI품앗이는 라우터를 학습하지 않았고, 분석 모델에게 묻는 방식이라 이것들보다 단순하다.
+- **여러 제공자를 하나의 주소로:** [LiteLLM](https://github.com/BerriAI/litellm) 같은 게이트웨이가 하는 일이다. AI품앗이의 `providers.cjs`는 네 제공자만 직접 연결한 작은 어댑터다.
 - **검색 결과를 붙여 답하기, 다른 모델로 사실 대조:** 일반적인 RAG와 자기 검증(self-verification) 방식이다.
 
 문서 구성은 [nanochat](https://github.com/karpathy/nanochat) README의 파일 구조 설명과 감사의 말 형식을 참고했다.

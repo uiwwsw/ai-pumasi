@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "id": "aurora",
-  "name": "오로라",
-  "en": "Aurora",
+  "name": "AI품앗이",
+  "en": "AI Pumasi",
   "category": "개발 도구",
   "symbol": "✦",
   "color": "#c0cfa5",
@@ -20,11 +20,11 @@
   "links": [
     {
       "platform": "source",
-      "url": "https://github.com/uiwwsw/aurora"
+      "url": "https://github.com/uiwwsw/ai-pumasi"
     },
     {
       "platform": "package",
-      "url": "https://github.com/uiwwsw/aurora/releases/tag/v0.1.8"
+      "url": "https://github.com/uiwwsw/ai-pumasi/releases/tag/v0.1.8"
     },
     {
       "platform": "web",
