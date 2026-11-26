@@ -12,7 +12,7 @@
   ],
   "healthchecks": [
     "https://pumasi-agent.vercel.app/health.json",
-    "https://pumasi-agent.vercel.app/en/",
+    "https://pumasi-agent.vercel.app/ko/",
     "https://pumasi-agent.vercel.app/sitemap.xml"
   ]
 }

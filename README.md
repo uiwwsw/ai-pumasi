@@ -2,9 +2,9 @@
 
 <img src="https://raw.githubusercontent.com/uiwwsw/pumasi-agent/main/build/icon.svg" alt="Pumasi Agent" width="96" height="96">
 
-<h1>품앗이 에이전트 · Pumasi Agent</h1>
+<h1>Pumasi Agent</h1>
 
-<p>무료 AI 여러 개에 같은 질문을 풀게 하고, 투표로 답을 고르는 데스크톱 앱</p>
+<p><b>Free AI models, working as a team.</b><br>Several free models take the same question and vote on the answer. When you need more hands, other users lend theirs.</p>
 
 <p>
 <a href="https://github.com/uiwwsw/pumasi-agent/releases"><img alt="release" src="https://img.shields.io/github/v/release/uiwwsw/pumasi-agent?include_prereleases&style=flat-square&label=release"></a>
@@ -16,43 +16,53 @@
 <a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/uiwwsw/pumasi-agent?style=flat-square"></a>
 </p>
 
-<p><a href="https://pumasi-agent.vercel.app/">웹 데모</a> · <a href="#설치">다운로드</a> · <a href="docs/guide.md">사용 안내</a> · <a href="docs/components.md">구성 요소</a> · <a href="bench/README.md">측정 기록</a> · <a href="CHANGELOG.md">변경 기록</a> · <a href="README.en.md">English</a></p>
+<p><a href="https://pumasi-agent.vercel.app/">Web demo</a> · <a href="#install">Download</a> · <a href="docs/guide.en.md">Guide</a> · <a href="docs/components.md">Components</a> · <a href="bench/README.md">Measurements</a> · <a href="CHANGELOG.md">Changelog</a> · <a href="README.ko.md">한국어</a></p>
 
 </div>
 
-<img src="docs/images/scorecard.svg" alt="같은 시험 성적: 품앗이 에이전트 무료 묶음 29/30, 28/30, 23.4/25 대 ChatGPT 무료 23/30, 24/30, 13.4/25">
+<img src="docs/images/scorecard.en.svg" alt="Same exams: Pumasi Agent free bundle 29/30, 28/30, 23.4/25 vs ChatGPT free 23/30, 24/30, 13.4/25">
 
-<img src="https://raw.githubusercontent.com/uiwwsw/pumasi-agent/main/docs/images/workspace.png" alt="Pumasi Agent 작업 공간">
+<img src="https://raw.githubusercontent.com/uiwwsw/pumasi-agent/main/docs/images/workspace.en.png" alt="Pumasi Agent workspace">
 
 
-## 하는 일
+## Why it's different
 
-- **묶음 투표:** 무료 모델 2~5개가 같은 질문을 풀고, 모델마다 측정한 실력만큼 무게를 준 투표로 답을 고릅니다. 남은 모델이 모두 반대해도 결과가 바뀌지 않으면 그 자리에서 확정합니다.
-- **팀 모드:** 총괄 모델(예: Claude Opus)이 일을 작업 1~6개로 나누고 승인만 합니다. 작업과 합치기는 무료 모델이 합니다.
-- **자동 (무료) 모델:** NVIDIA·OpenRouter·Groq·Google 무료 키를 넣으면, 쓸 수 있는 무료 모델 중 성적이 높은 것부터 씁니다. 한도에 걸린 곳은 건너뜁니다.
-- **실패하면 다시 맡기기:** 빈 답, 잘린 답, 시간 초과는 같은 모델에 한 번 더, 그다음 다른 모델에 넘깁니다.
-- **토큰 미리 보기:** 실행 전에 예상 토큰과 예산 대비 비율을, 끝나면 실제 사용량을 보여 줍니다.
-- **키 관리:** 설정에서 넣은 API 키는 OS 키체인으로 암호화해 저장하고, 다시 화면에 보여 주지 않습니다.
-- OpenAI, Anthropic, Gemini, Ollama, OpenAI 호환 서버 연결
-- 대화 묶기·보관·휴지통, 기기 내 저장(기본 꺼짐)
-- 한국어·영어 화면, macOS(서명·공증)·Windows 설치 파일, 자동 업데이트
+**Free models that outscore ChatGPT's free tier. No paid model involved.** The bundle on the scorecard is four free models (Nemotron 3.5 Super, Nemotron 3 Ultra, Nemotron 3.5 Lightning and Gemini 3.1 Flash-Lite) called through free APIs. They answer on their own and vote; there is no paid leader or judge. We gave that bundle and ChatGPT free the same three exams, all graded by a program. The bundle scored 29/30, 28/30 and 23.4/25. ChatGPT free scored 23, 24 and 13.4. The questions, answers and graders are in [bench/](bench/README.md), so you can rerun them.
 
-파일 수정이나 터미널 실행은 하지 않습니다. 텍스트 질문과 답만 합니다. 성적표의 측정 방법과 원자료는 [측정 기록](bench/README.md)에 있습니다.
+**Borrow hands, not keys.** With Pumasi, your team mode can hand tasks to other users. Their app takes one task, runs it on a free key they chose to lend, and sends back the result. The task and the result are sealed between the two devices: the relay only moves ciphertext, and the helper's screen shows a token count and nothing else. No one's key ever leaves their machine. Helping earns points; posting spends them.
 
-## 다음 기능: 품앗이
+**Optional team mode, if you have a paid key.** This is a separate mode, not how the scorecard was made. A lead model you pick (Claude Opus, GPT, or a free model) splits the work into up to six tasks and signs off, while free models write and merge the answers. A paid lead spends its expensive output tokens on planning and approval only.
 
-내가 돕기를 누르면 내 앱이 다른 사람 팀의 작업 모델 한 명이 됩니다. 작업 하나를 내 키와 토큰으로 처리하고 결과만 넘깁니다. 작업 글과 결과는 암호화되어 앱 안의 AI만 다루고, 화면과 서버에는 보이지 않습니다. 돕는 만큼 점수가 쌓이고, 내 문제를 올릴 때 씁니다. [설계](docs/pumasi-network.md)
+**Done as soon as the vote is decided.** If the models still running can no longer change the outcome, the vote closes and the stragglers are cancelled.
 
-## 설치
+**Free tiers run out. The app keeps going.** Add free keys from NVIDIA, OpenRouter, Groq or Google. When one provider hits its rate limit, the request moves to the next, and the Auto (free) model always starts with the best-scoring model you can reach.
 
-| 운영체제 | 설치 파일 |
+**Your keys stay yours.** API keys are encrypted with the OS keychain, never shown again, and masked out of model answers and error messages.
+
+## Also in the box
+
+- OpenAI, Anthropic, Gemini, Ollama and any OpenAI-compatible server
+- Token estimate and budget share before a run, real usage after
+- Failed, empty or cut-off answers are retried, then passed to another model
+- Conversations you can group, archive and restore; saving stays on your device and is off by default
+- English and Korean interface; signed and notarized for macOS, installer for Windows, automatic updates
+
+## Limits, honestly
+
+- Text in, text out. It does not edit files or run commands.
+- Pumasi is invite-only while in preview.
+- The bundle matches the best single free model; beating it by a wide margin is not proven yet. The measurement notes say exactly where it wins and where it doesn't.
+
+## Install
+
+| Platform | Installer |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-windows-x64.exe) |
 
-Windows 설치 파일은 개발자 인증서로 서명하지 않아 SmartScreen 경고가 나올 수 있습니다. 키 설정, 팀 모드 사용법, 데이터 처리, 소스에서 실행하는 방법은 [사용 안내](docs/guide.md)에 있습니다.
+The Windows installer is not signed with a developer certificate, so SmartScreen may warn. Setting up keys, team mode, Pumasi, data handling and running from source: see the [guide](docs/guide.en.md).
 
-## 라이선스
+## License
 
-[MIT](LICENSE). SUITE 글꼴은 [별도 라이선스](public/fonts/LICENSE)를 따릅니다. 쓴 라이브러리와 참고한 프로젝트는 [구성 요소](docs/components.md)에 있습니다.
+[MIT](LICENSE). The SUITE font has a [separate license](public/fonts/LICENSE). Libraries used and projects referenced are listed in [components](docs/components.md) (Korean).

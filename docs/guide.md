@@ -1,6 +1,6 @@
 # Pumasi Agent 사용 안내
 
-[README로 돌아가기](../README.md)
+[README로 돌아가기](../README.ko.md)
 
 ## 빠른 시작
 

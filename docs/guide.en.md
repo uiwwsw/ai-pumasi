@@ -1,6 +1,6 @@
 # Pumasi Agent guide
 
-[Back to README](../README.en.md)
+[Back to README](../README.md)
 
 ## Quick start
 

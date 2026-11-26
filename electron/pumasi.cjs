@@ -14,7 +14,7 @@ const DONATABLE = {
   openrouter: "OPENROUTER_API_KEY",
   google: "GEMINI_API_KEY",
 };
-const DEFAULT_SERVER = "https://pumasi.movvcorp.duckdns.org";
+const DEFAULT_SERVER = "https://pumasi-agent.duckdns.org";
 const HELP_MAX_OUTPUT = 4096;
 
 // ---------- sealing ----------

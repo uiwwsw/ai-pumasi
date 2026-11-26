@@ -3,7 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 export const origin = "https://pumasi-agent.vercel.app";
-const release = "https://github.com/uiwwsw/pumasi-agent/releases/tag/v0.1.9";
+const release = "https://github.com/uiwwsw/pumasi-agent/releases/tag/v0.1.10";
 const repo = "https://github.com/uiwwsw/pumasi-agent";
 const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
@@ -17,11 +17,11 @@ const translations = {
     "overview": "제품 소개",
     "download": "데스크톱 다운로드",
     "language": "English",
-    "other": "/en/",
+    "other": "/",
     "features": [
       [
         "묶음 투표",
-        "무료 모델 2~5개가 같은 질문을 풀고, 측정한 실력만큼 무게를 준 투표로 답을 고릅니다. 남은 모델이 모두 반대해도 결과가 바뀌지 않으면 그 자리에서 확정합니다. 같은 시험에서 무료 묶음이 ChatGPT 무료보다 높은 점수를 받았고, 문항과 채점기는 저장소에 공개했습니다."
+        "무료 모델 2~5개가 같은 질문을 풀고, 측정한 실력만큼 무게를 준 투표로 답을 고릅니다. 남은 모델이 모두 반대해도 결과가 바뀌지 않으면 그 자리에서 확정합니다. 유료 모델 없이 무료 모델 4개만으로 같은 시험에서 ChatGPT 무료보다 높은 점수를 받았고, 문항과 채점기는 저장소에 공개했습니다."
       ],
       [
         "무료 제공자 자동 라우터",
@@ -29,7 +29,7 @@ const translations = {
       ],
       [
         "비싼 모델에는 비싼 일만",
-        "팀 모드에서 유료 총괄 모델은 일을 작업 1~6개로 나누고 승인 여부만 정합니다. 답을 쓰고 합치는 일은 무료 모델이 하므로 비싼 출력 토큰이 적게 나갑니다."
+        "팀 모드에서 고른 총괄 모델(유료·무료 모두 가능)이 일을 작업 1~6개로 나누고 승인 여부만 정합니다. 답을 쓰고 합치는 일은 무료 모델이 하므로 비싼 출력 토큰이 적게 나갑니다."
       ],
       [
         "키는 기기 안에서 잠가 둡니다",
@@ -61,7 +61,7 @@ const translations = {
     "featureTitle": "품앗이 에이전트에서 할 수 있는 일",
     "faq": "자주 묻는 질문",
     "limitations": "개발 프리뷰의 범위",
-    "limitation": "공개 0.1.9 프리뷰는 텍스트 답변만 지원하며 파일 수정·셸 실행은 하지 않습니다. 개인이 만드는 개발 프리뷰이며, 측정 결과는 공개한 시험에 대한 것입니다.",
+    "limitation": "공개 0.1.10 프리뷰는 텍스트 답변만 지원하며 파일 수정·셸 실행은 하지 않습니다. 개인이 만드는 개발 프리뷰이며, 측정 결과는 공개한 시험에 대한 것입니다.",
     "browser": "브라우저 데모 · 외부 AI 호출 없음",
     "open": "웹 데모 열기",
     "source": "소스와 문서",
@@ -70,59 +70,59 @@ const translations = {
     "nojs": "JavaScript를 켜면 상단에서 대화형 데모를 사용할 수 있습니다. 아래 제품 소개와 다운로드 링크는 JavaScript 없이도 읽을 수 있습니다."
   },
   "en": {
-    "title": "Pumasi Agent — Free AI Models That Solve Together and Vote",
-    "description": "Pumasi Agent is a macOS and Windows desktop app that asks several free AI models the same question and picks the answer by vote. It also has a team mode where a paid lead model splits the work, and an automatic router across free providers.",
-    "heading": "Several free AI models solve together and vote on the answer.",
-    "intro": "Pumasi Agent asks several free AI models the same question and picks the answer by a vote weighted by each model's measured skill. Once the result can no longer change, it stops waiting for the rest. Add free keys from NVIDIA, OpenRouter, Groq or Google and it moves past rate-limited providers on its own. In team mode a paid lead model only splits and approves the work while free models do it. The browser demo on this page is a local preview with no external AI calls.",
+    "title": "Pumasi Agent: free AI models, working as a team",
+    "description": "Pumasi Agent is a macOS and Windows app that puts several free AI models on the same question and lets them vote. On the same exams the free bundle outscored ChatGPT's free tier. With Pumasi, other users can lend their free keys to take a task off your hands.",
+    "heading": "Free AI models, working as a team.",
+    "intro": "Pumasi Agent gives the same question to several free models and lets them vote, weighted by how well each one has actually scored. The vote closes the moment the result can't change. When a free tier runs dry, the request moves to the next provider. And with Pumasi, other users can take a task from your team and run it on their own free keys, sealed so that neither the relay nor the helper can read it. The browser demo on this page runs locally and calls no AI.",
     "demo": "Open demo",
     "overview": "Overview",
     "download": "Download desktop app",
     "language": "한국어",
-    "other": "/",
+    "other": "/ko/",
     "features": [
       [
-        "Bundle vote",
-        "Two to five free models answer the same question, and a vote weighted by measured skill picks the answer. When the remaining models could not change the outcome, it settles right away. On the same exams the free bundle scored higher than ChatGPT free; questions and graders are public in the repository."
+        "Outscores ChatGPT's free tier",
+        "Four free models on free APIs, no paid model anywhere. Same three exams, graded by a program: the free bundle scored 29/30, 28/30 and 23.4/25. ChatGPT free scored 23, 24 and 13.4. Questions and graders are public, so you can check."
       ],
       [
-        "Automatic router for free providers",
-        "When several providers serve the same free model, a rate-limited one rests for a while and the request moves to another. The Auto (free) model starts with the best-scoring free model available right now."
+        "Borrow hands, not keys",
+        "Pumasi lets other users run one of your tasks on a free key they chose to lend. The task and the answer are sealed between two devices. The relay moves ciphertext; the helper sees a token count."
       ],
       [
-        "Expensive models do only the expensive part",
-        "In team mode the paid lead model splits the work into one to six tasks and approves the results. Free models write and merge the answers, so few expensive output tokens are spent."
+        "Optional team mode with a lead you pick",
+        "Separate from the vote. In team mode a lead you pick, paid or free, splits the work and signs off; free models write and merge the answers, so a paid lead spends tokens only on judgment."
       ],
       [
-        "Keys stay locked on your device",
-        "API keys are encrypted with the OS keychain and never shown again, to you, to a model or in a log. You see the estimated tokens and budget share before a run and the actual usage after."
+        "Keys stay on your machine",
+        "API keys are encrypted with the OS keychain, never displayed again, and masked out of answers and error messages. Paid keys are never lent."
       ]
     ],
     "questions": [
       [
         "Does the browser demo call an AI provider?",
-        "No. The web page is a local preview of the interface. Real AI connections use keys you add in the installed app's settings."
+        "No. It is a local preview of the interface. Real calls use keys you add in the desktop app."
       ],
       [
         "Are free models really enough?",
-        "It depends on the question. On a fresh reasoning exam and AIME 2026 the free bundle scored higher than ChatGPT free, but beating the best single model by a wide margin is still being tested. Methods and raw data are in the repository's benchmark notes."
+        "For a lot of questions, yes. On our reasoning exam and AIME 2026 the free bundle beat ChatGPT free. It matches the best single free model; beating that by a wide margin is still being tested. Methods and raw data are in the repository."
       ],
       [
-        "Where are my keys stored?",
-        "On this device, encrypted with the OS keychain. Saved keys are never displayed again and are masked in anything sent to or returned from a model."
+        "Who can read a task I hand to Pumasi?",
+        "The helper's AI model and its provider. The relay can't, and the helper's screen shows only a token count. Because a stranger's model reads it, the app refuses to post text that looks like an email, a phone number or a key."
       ],
       [
-        "Where is conversation data stored?",
-        "Saving conversations is off by default. When on, it stays on this device. The web preview does not send conversations to AI providers."
+        "Where are my keys and conversations stored?",
+        "On this device. Keys are encrypted with the OS keychain. Saving conversations is off by default."
       ],
       [
         "How do updates and installation warnings work?",
-        "The macOS installers are Developer ID signed, notarized by Apple and update automatically. The Windows installer is not signed with a developer certificate, so a security prompt may appear the first time. Conversations and settings from the Aurora versions (up to 0.1.8) carry over."
+        "macOS builds are signed with a Developer ID, notarized by Apple and update automatically. The Windows installer is not signed with a developer certificate, so a security prompt may appear the first time."
       ]
     ],
-    "featureTitle": "What Pumasi Agent does",
+    "featureTitle": "Why it's different",
     "faq": "Frequently asked questions",
     "limitations": "Developer preview limitations",
-    "limitation": "The public 0.1.9 preview gives text answers only; it does not edit files or run shell commands. It is built by one person, and the measurements cover the published exams only.",
+    "limitation": "The public 0.1.10 preview answers in text only; it does not edit files or run commands. Pumasi is invite-only during the preview. Built by one person; the measurements cover the published exams only.",
     "browser": "Local browser demo · No external AI calls",
     "open": "Open demo",
     "source": "Source and documentation",
@@ -131,21 +131,24 @@ const translations = {
     "nojs": "Enable JavaScript to use the interactive demo. Product information and downloads remain accessible without it."
   }
 };
+// English is the main page (with the live demo) at "/"; Korean lives at "/ko/".
+const MAIN = "en";
+const pathOf = (lang) => (lang === MAIN ? "/" : `/${lang}/`);
 const escape = (s) =>
   s.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 function landingHero(lang) {
   const en = lang === "en";
-  return `<section class="landing-hero" aria-label="${en ? "Meet Pumasi Agent" : "품앗이 에이전트 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> PUMASI AGENT · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Free AI models,<br>solving together." : "무료 AI 여럿이<br>함께 풉니다."}</p><p class="hero-description">${en ? "They answer the same question<br>and vote on the result." : "같은 질문을 각자 풀고<br>투표로 답을 정합니다."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download Pumasi Agent" : "품앗이 에이전트 다운로드"}</a><a class="hero-secondary" href="${en ? "/#root" : "#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Ask a question" : "질문하면"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "Free models solve it" : "무료 모델들이 각자 풀고"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "A vote picks the answer" : "투표로 답을 정합니다"}</span></div><a class="hero-scroll" href="${en ? "#overview" : "#root"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
+  return `<section class="landing-hero" aria-label="${en ? "Meet Pumasi Agent" : "품앗이 에이전트 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> PUMASI AGENT · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Free AI models,<br>working as a team." : "무료 AI 여럿이<br>함께 풉니다."}</p><p class="hero-description">${en ? "They vote on the answer.<br>Other users can lend a hand." : "같은 질문을 각자 풀고<br>투표로 답을 정합니다."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download Pumasi Agent" : "품앗이 에이전트 다운로드"}</a><a class="hero-secondary" href="${lang === MAIN ? "#root" : "/#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Ask a question" : "질문하면"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "Free models each answer" : "무료 모델들이 각자 풀고"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "The vote settles it" : "투표로 답을 정합니다"}</span></div><a class="hero-scroll" href="${lang === MAIN ? "#root" : "#overview"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
 }
 const styles = `@font-face{font-family:SUITE;src:url('/fonts/SUITE-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}html{scroll-behavior:smooth}body{margin:0;color:#34342f;background:#faf9f6;font-family:SUITE,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}button,input,select,textarea{font:inherit}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,SUITE,monospace}.site-nav{height:52px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #e8e6df;background:#faf9f6}.site-nav nav{display:flex;gap:20px}.site-nav a,.site-content a,.site-footer a{color:#48684c;text-underline-offset:4px}.site-brand{font-weight:750;text-decoration:none}.site-content{max-width:1000px;margin:auto;padding:76px 28px;line-height:1.85}.site-content h1,.site-content h2{line-height:1.3;letter-spacing:-.035em}.site-content h1,.site-content>.site-hero h2{font-size:clamp(30px,4vw,48px);max-width:840px;margin:20px 0}.site-content h2{margin:54px 0 24px;font-size:28px}.site-content h3{font-size:20px;margin:0 0 12px}.site-lead{max-width:800px;color:#65665c;font-size:18px}.site-eyebrow{color:#607b64;font-size:13px;letter-spacing:.08em}.site-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.site-actions a{padding:10px 18px;border:1px solid #cdd7c7;border-radius:9px;text-decoration:none}.site-actions a:first-child{background:#607b64;color:#fff}.site-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.site-card,.site-limit{border:1px solid #e8e6df;border-radius:16px;padding:26px;background:#fffefa}.site-card p{margin:0;color:#65665c}.site-content details{border-bottom:1px solid #e8e6df;padding:18px 0}.site-content summary{cursor:pointer;font-weight:650}.site-content details p{color:#65665c}.site-footer{padding:24px 28px;border-top:1px solid #e8e6df;text-align:center;font-size:14px}.site-skip{position:absolute;left:20px;top:-100px;background:#fff;padding:12px;z-index:20}.site-skip:focus{top:5px}.site-notice{padding:16px 28px;color:#65665c}.site-web-demo .app{height:calc(100dvh - 52px)}.site-web-demo .site-content{border-top:1px solid #e8e6df}@media(max-width:680px){.site-nav{padding:0 16px;font-size:13px}.site-nav nav{gap:12px}.site-nav .site-source{display:none}.site-content{padding:48px 20px}.site-grid{grid-template-columns:1fr}.site-content h2{font-size:25px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}`;
 function body(lang) {
   const t = translations[lang];
-  const tag = lang === "ko" ? "h2" : "h1";
-  return `<article class="site-content" id="overview" aria-label="${t.overview}"><header class="site-hero"><p class="site-eyebrow">PUMASI AGENT · DEVELOPER PREVIEW</p><${tag}>${t.heading}</${tag}><p class="site-lead">${t.intro}</p><div class="site-actions"><a href="${lang === "ko" ? "#root" : "/"}">${t.open}</a><a href="${release}">${t.download}</a><a href="${repo}/blob/main/README.en.md">${t.guide}</a></div></header><section><h2>${t.featureTitle}</h2><div class="site-grid">${t.features.map(([h, p]) => `<section class="site-card"><h3>${h}</h3><p>${p}</p></section>`).join("")}</div></section><section><h2>${t.faq}</h2>${t.questions.map(([q, a]) => `<details open><summary>${q}</summary><p>${a}</p></details>`).join("")}</section><section class="site-limit"><h2>${t.limitations}</h2><p>${t.limitation}</p><a href="${release}">${t.links}</a></section></article>`;
+  const tag = lang === MAIN ? "h2" : "h1";
+  return `<article class="site-content" id="overview" aria-label="${t.overview}"><header class="site-hero"><p class="site-eyebrow">PUMASI AGENT · DEVELOPER PREVIEW</p><${tag}>${t.heading}</${tag}><p class="site-lead">${t.intro}</p><div class="site-actions"><a href="${lang === MAIN ? "#root" : "/"}">${t.open}</a><a href="${release}">${t.download}</a><a href="${repo}/blob/main/README.md">${t.guide}</a></div></header><section><h2>${t.featureTitle}</h2><div class="site-grid">${t.features.map(([h, p]) => `<section class="site-card"><h3>${h}</h3><p>${p}</p></section>`).join("")}</div></section><section><h2>${t.faq}</h2>${t.questions.map(([q, a]) => `<details open><summary>${q}</summary><p>${a}</p></details>`).join("")}</section><section class="site-limit"><h2>${t.limitations}</h2><p>${t.limitation}</p><a href="${release}">${t.links}</a></section></article>`;
 }
 function head(lang, production) {
   const t = translations[lang];
-  const canonical = origin + (lang === "en" ? "/en/" : "/");
+  const canonical = origin + pathOf(lang);
   // Only claims visible in the product overview are included. No fabricated ratings or offers.
   const schema = JSON.stringify({
     "@context": "https://schema.org",
@@ -167,7 +170,7 @@ function head(lang, production) {
   });
   const hash = createHash("sha256").update(schema).digest("base64");
   const csp = `default-src 'self'; script-src 'self' 'sha256-${hash}'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'`;
-  return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="${csp}"><title>${t.title}</title><meta name="description" content="${escape(t.description)}"><meta name="robots" content="${production ? "index,follow,max-image-preview:large" : "noindex,nofollow"}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="ko" href="${origin}/"><link rel="alternate" hreflang="en" href="${origin}/en/"><link rel="alternate" hreflang="x-default" href="${origin}/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="theme-color" content="#607b64"><meta property="og:type" content="website"><meta property="og:site_name" content="Pumasi Agent"><meta property="og:title" content="${t.title}"><meta property="og:description" content="${escape(t.description)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${lang === "ko" ? "ko_KR" : "en_US"}"><meta property="og:locale:alternate" content="${lang === "ko" ? "en_US" : "ko_KR"}"><meta property="og:image" content="${origin}/social-preview.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Pumasi Agent desktop workspace preview"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${t.title}"><meta name="twitter:description" content="${escape(t.description)}"><meta name="twitter:image" content="${origin}/social-preview.png">${verification}<script type="application/ld+json">${schema}</script><style>${styles}</style>`;
+  return `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="${csp}"><title>${t.title}</title><meta name="description" content="${escape(t.description)}"><meta name="robots" content="${production ? "index,follow,max-image-preview:large" : "noindex,nofollow"}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="ko" href="${origin}/ko/"><link rel="alternate" hreflang="en" href="${origin}/"><link rel="alternate" hreflang="x-default" href="${origin}/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="theme-color" content="#607b64"><meta property="og:type" content="website"><meta property="og:site_name" content="Pumasi Agent"><meta property="og:title" content="${t.title}"><meta property="og:description" content="${escape(t.description)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${lang === "ko" ? "ko_KR" : "en_US"}"><meta property="og:locale:alternate" content="${lang === "ko" ? "en_US" : "ko_KR"}"><meta property="og:image" content="${origin}/social-preview.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Pumasi Agent desktop workspace preview"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${t.title}"><meta name="twitter:description" content="${escape(t.description)}"><meta name="twitter:image" content="${origin}/social-preview.png">${verification}<script type="application/ld+json">${schema}</script><style>${styles}</style>`;
 }
 export async function buildWeb({
   inputDir = "dist",
@@ -188,23 +191,23 @@ export async function buildWeb({
   ].map((m) => m[0].replaceAll('"./assets/', '"/assets/'));
   for (const lang of ["ko", "en"]) {
     const t = translations[lang];
-    const nav = `<a class="site-skip" href="#overview">${t.overview}</a><header class="site-nav"><a class="site-brand" href="/"><img class="site-brand-icon" src="/favicon.svg" width="28" height="28" alt=""> ${lang === "ko" ? "품앗이 에이전트" : "Pumasi Agent"}</a><nav aria-label="${t.overview}"><a href="${lang === "ko" ? "#overview" : "/"}">${lang === "ko" ? t.overview : t.demo}</a><a class="site-source" href="${repo}">GitHub</a><a href="${t.other}" lang="${lang === "ko" ? "en" : "ko"}" hreflang="${lang === "ko" ? "en" : "ko"}">${t.language}</a></nav></header>`;
+    const nav = `<a class="site-skip" href="#overview">${t.overview}</a><header class="site-nav"><a class="site-brand" href="/"><img class="site-brand-icon" src="/favicon.svg" width="28" height="28" alt=""> ${lang === "ko" ? "품앗이 에이전트" : "Pumasi Agent"}</a><nav aria-label="${t.overview}"><a href="${lang === MAIN ? "#overview" : "/"}">${lang === MAIN ? t.overview : t.demo}</a><a class="site-source" href="${repo}">GitHub</a><a href="${t.other}" lang="${lang === "ko" ? "en" : "ko"}" hreflang="${lang === "ko" ? "en" : "ko"}">${t.language}</a></nav></header>`;
     const demo =
-      lang === "ko"
-        ? `<section class="demo-shell" aria-label="Pumasi Agent web preview"><div class="demo-chrome"><span><i></i><i></i><i></i></span><p>Pumasi Agent <span>/</span> Web preview</p><a href="#overview">제품 소개 ↗</a></div><div id="root"><section class="site-notice"><h1>${t.heading}</h1><p>${t.browser}</p></section></div><noscript><p class="site-notice">${t.nojs}</p></noscript></section>`
+      lang === MAIN
+        ? `<section class="demo-shell" aria-label="Pumasi Agent web preview"><div class="demo-chrome"><span><i></i><i></i><i></i></span><p>Pumasi Agent <span>/</span> Web preview</p><a href="#overview">${t.overview} ↗</a></div><div id="root"><section class="site-notice"><h1>${t.heading}</h1><p>${t.browser}</p></section></div><noscript><p class="site-notice">${t.nojs}</p></noscript></section>`
         : "";
-    const html = `<!doctype html><html lang="${lang}"><head>${head(lang, production)}${lang === "ko" ? assets.join("") : ""}<link rel="stylesheet" href="/landing.css"></head><body class="${lang === "ko" ? "site-web-demo" : "site-english"}">${nav}${landingHero(lang)}${demo}${body(lang)}<footer class="site-footer">Pumasi Agent · <a href="${repo}/blob/main/LICENSE">MIT</a> · <a href="${release}">${t.download}</a></footer></body></html>`;
+    const html = `<!doctype html><html lang="${lang}"><head>${head(lang, production)}${lang === MAIN ? assets.join("") : ""}<link rel="stylesheet" href="/landing.css"></head><body class="${lang === MAIN ? "site-web-demo" : "site-korean"}">${nav}${landingHero(lang)}${demo}${body(lang)}<footer class="site-footer">Pumasi Agent · <a href="${repo}/blob/main/LICENSE">MIT</a> · <a href="${release}">${t.download}</a></footer></body></html>`;
     const file = path.join(
       outputDir,
-      lang === "ko" ? "index.html" : "en/index.html",
+      lang === MAIN ? "index.html" : `${lang}/index.html`,
     );
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, html);
   }
-  const alternate = `<xhtml:link rel="alternate" hreflang="ko" href="${origin}/"/><xhtml:link rel="alternate" hreflang="en" href="${origin}/en/"/><xhtml:link rel="alternate" hreflang="x-default" href="${origin}/"/>`;
+  const alternate = `<xhtml:link rel="alternate" hreflang="ko" href="${origin}/ko/"/><xhtml:link rel="alternate" hreflang="en" href="${origin}/"/><xhtml:link rel="alternate" hreflang="x-default" href="${origin}/"/>`;
   await writeFile(
     path.join(outputDir, "sitemap.xml"),
-    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url><loc>${origin}/</loc>${alternate}</url><url><loc>${origin}/en/</loc>${alternate}</url></urlset>`,
+    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url><loc>${origin}/</loc>${alternate}</url><url><loc>${origin}/ko/</loc>${alternate}</url></urlset>`,
   );
   await writeFile(
     path.join(outputDir, "robots.txt"),

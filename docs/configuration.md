@@ -1,6 +1,6 @@
 # Desktop provider configuration · 제공자 구성
 
-[English README](../README.en.md) · [한국어 README](../README.md)
+[English README](../README.md) · [한국어 README](../README.ko.md)
 
 The web demo is local-only. Use the installed desktop application for provider-backed text responses. The following inputs are contributor and user configuration contracts; never commit real values.
 
