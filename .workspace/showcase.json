@@ -24,7 +24,7 @@
     },
     {
       "platform": "package",
-      "url": "https://github.com/uiwwsw/aurora/releases/tag/v0.1.6"
+      "url": "https://github.com/uiwwsw/aurora/releases/tag/v0.1.7"
     },
     {
       "platform": "web",
@@ -33,7 +33,7 @@
   ],
   "evidence": {
     "verifiedAt": "2026-11-26",
-    "note": "측정 기록 bench/README.md: 공개 시험 AIME 2026 무료 묶음 28/30 대 ChatGPT 무료 24/30, LiveBench 논리 퍼즐 23.4 대 13.4(공식 채점), 자체 추론 시험 29 대 23. 묶음 투표·사용량 기반 토큰 추정·OpenAI 호환 서버는 v0.1.6 앱에 포함. 릴리스 검증은 v0.1.6 배포 후 갱신."
+    "note": "측정 기록 bench/README.md: 공개 시험 AIME 2026 무료 묶음 28/30 대 ChatGPT 무료 24/30, LiveBench 논리 퍼즐 23.4 대 13.4(공식 채점), 자체 추론 시험 29 대 23. 묶음 투표·사용량 기반 토큰 추정은 v0.1.6부터, 암호화한 API 키 관리·무료 제공자 여러 곳 자동 전환·자동(무료) 모델은 v0.1.7 앱에 포함."
   },
   "visibility": "public"
 }

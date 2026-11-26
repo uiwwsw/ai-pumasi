@@ -9,7 +9,10 @@
    ```bash
    OPENAI_API_KEY=...        # OpenAI 모델
    ANTHROPIC_API_KEY=...     # Claude 모델, 팀 모드 총괄 모델 기본값
-   GEMINI_API_KEY=...        # Gemini Flash (무료 한도 있음)
+   GEMINI_API_KEY=...        # Gemini Flash·Flash Lite (무료 한도 있음)
+   NVIDIA_API_KEY=...        # Nemotron Super·Ultra·Lightning (무료)
+   OPENROUTER_API_KEY=...    # Nemotron 무료 예비 경로
+   GROQ_API_KEY=...          # GPT-OSS 120B (무료)
    OLLAMA_MODEL=qwen3        # 내 컴퓨터의 Ollama 모델 이름 (기본 qwen3)
    ```
 

@@ -27,7 +27,7 @@ test("role defaults are independent, validated, and provider-specific", () => {
     ).live,
     false,
   );
-  assert.equal(models.length, 14);
+  assert.equal(models.length, 15);
 });
 test("missing key blocks a call before any network traffic", async () => {
   let calls = 0;
@@ -41,18 +41,28 @@ test("missing key blocks a call before any network traffic", async () => {
     /OPENAI_API_KEY/,
   );
   assert.equal(calls, 0);
+  const s = await status({ ANTHROPIC_API_KEY: "test" }, async () => {
+    throw new Error("down");
+  });
   assert.deepEqual(
-    await status({ ANTHROPIC_API_KEY: "test" }, async () => {
-      throw new Error("down");
-    }),
+    {
+      openai: s.openai,
+      anthropic: s.anthropic,
+      gemini: s.gemini,
+      ollama: s.ollama,
+      compat: s.compat,
+      auto: s.auto,
+    },
     {
       openai: false,
       anthropic: true,
       gemini: false,
       ollama: false,
       compat: false,
+      auto: false,
     },
   );
+  assert.ok(Object.values(s.models).every((v) => v === false));
 });
 test("OpenAI adapter uses fixed endpoint, selected model, no store, usage and cap", async () => {
   let seen: any;
@@ -339,11 +349,14 @@ test("team mode retries a rate-limited worker, then falls back to another free m
     },
     { ANTHROPIC_API_KEY: "t", GEMINI_API_KEY: "g" },
   );
-  // Ollama is down in this harness, so the only free model fails twice and the task is marked failed.
+  // The Gemini key also unlocks Gemini 3.1 Flash Lite through Google's free host, so after two
+  // rate-limited tries the task moves there and succeeds.
   const result = await run;
   assert.equal(gemini, 2);
-  assert.equal(result.tasks[0].failed, true);
-  assert.equal(workers(calls).length, 2);
+  assert.equal(result.tasks[0].failed, false);
+  const w = workers(calls);
+  assert.equal(w.length, 3);
+  assert.equal(w[2].body.model, "gemini-3.1-flash-lite");
 });
 
 test("lead and worker JSON modes are requested only where supported", async () => {
@@ -446,7 +459,7 @@ test("compat request rejects when neither KEY nor URL is set", async () => {
       env: {},
       fetchImpl: () => calls++,
     }),
-    /AURORA_OPENAI_COMPAT/,
+    /무료 제공자 키가 없습니다/,
   );
   assert.equal(calls, 0);
 });
@@ -458,7 +471,7 @@ test("compat request rejects when URL is invalid (not localhost/https)", async (
       env: { AURORA_OPENAI_COMPAT_URL: "http://evil.example/x" },
       fetchImpl: () => calls++,
     }),
-    /AURORA_OPENAI_COMPAT_URL/,
+    /무료 제공자 키가 없습니다/,
   );
   assert.equal(calls, 0);
 });

@@ -1,6 +1,6 @@
 {
   "name": "aurora-desktop",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "type": "module",
   "description": "Desktop app for OpenAI, Anthropic, Gemini and Ollama models, with a team mode where a paid lead model plans and free worker models do the tasks.",

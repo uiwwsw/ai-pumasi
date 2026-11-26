@@ -1721,6 +1721,15 @@ html[data-theme="dark"] .composer {
   padding: 14px 0;
   border-bottom: 1px solid var(--line);
 }
+.secret-settings h4 {
+  margin: 22px 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.secret-head small + small {
+  margin-top: 3px;
+}
 .secret-head strong {
   display: block;
   font-size: 12px;

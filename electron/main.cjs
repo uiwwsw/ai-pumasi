@@ -8,6 +8,7 @@ const {
   dialog,
   Menu,
   safeStorage,
+  shell,
 } = require("electron");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -78,7 +79,8 @@ else
     });
     // Exact saved values never leave the main process, even inside an error or a model result.
     const scrub = (value, env) => {
-      if (typeof value === "string") return redact(value, env, { patterns: false });
+      if (typeof value === "string")
+        return redact(value, env, { patterns: false });
       if (Array.isArray(value)) return value.map((v) => scrub(v, env));
       if (value && typeof value === "object")
         return Object.fromEntries(
@@ -102,12 +104,29 @@ else
       try {
         return secrets.set(name, value);
       } catch (error) {
-        throw new Error(redact(error?.message ?? "저장하지 못했습니다.", { [name]: value }));
+        throw new Error(
+          redact(error?.message ?? "저장하지 못했습니다.", { [name]: value }),
+        );
       }
     });
     ipcMain.handle("aurora:secrets-remove", (event, name) => {
       if (!authorized(event)) throw new Error("Forbidden");
       return secrets.remove(name);
+    });
+    // Where each provider hands out keys. The window names a provider; it never passes a URL.
+    const SIGNUP = {
+      nvidia: "https://build.nvidia.com/settings/api-keys",
+      groq: "https://console.groq.com/keys",
+      openrouter: "https://openrouter.ai/settings/keys",
+      gemini: "https://aistudio.google.com/apikey",
+      openai: "https://platform.openai.com/api-keys",
+      anthropic: "https://console.anthropic.com/settings/keys",
+    };
+    ipcMain.handle("aurora:open-signup", (event, host) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      if (!Object.hasOwn(SIGNUP, host))
+        throw new Error("알 수 없는 제공자입니다.");
+      return shell.openExternal(SIGNUP[host]);
     });
     ipcMain.handle("aurora:secrets-compat-url", (event, url) => {
       if (!authorized(event)) throw new Error("Forbidden");
@@ -169,16 +188,18 @@ else
         // Count calls per stage so the next team estimate knows how many of each to expect.
         const calls = { plan: 0, work: 0, review: 0, merge: 0 };
         const env = secrets.env();
-        const result = await guarded(env, () => require("./team.cjs").orchestrate(payload, {
-          env,
-          onProgress: (e) =>
-            event.sender.send("aurora:team-progress", scrub(e, env)),
-          stats: stats(),
-          onUsage: (u) => {
-            if (u.kind in calls) calls[u.kind] += 1;
-            usage().record(u);
-          },
-        }));
+        const result = await guarded(env, () =>
+          require("./team.cjs").orchestrate(payload, {
+            env,
+            onProgress: (e) =>
+              event.sender.send("aurora:team-progress", scrub(e, env)),
+            stats: stats(),
+            onUsage: (u) => {
+              if (u.kind in calls) calls[u.kind] += 1;
+              usage().record(u);
+            },
+          }),
+        );
         usage().recordRun({
           lead: payload.lead,
           worker: payload.worker,

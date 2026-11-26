@@ -6,6 +6,7 @@ import {
   BUNDLE_MIN,
   bundleModels,
   modelById,
+  modelReady,
   type EnsembleResult,
   type ProviderStatus,
   type RoutingSettings,
@@ -29,8 +30,7 @@ const nameOf = (id: string) => modelById(id)?.name ?? id;
 export function bundleReady(r: RoutingSettings, status: ProviderStatus) {
   return (
     r.ensemble &&
-    r.ensembleModels.filter((id) => status[modelById(id)?.provider]).length >=
-      BUNDLE_MIN
+    r.ensembleModels.filter((id) => modelReady(id, status)).length >= BUNDLE_MIN
   );
 }
 
@@ -51,7 +51,7 @@ export function EnsembleSettings({
         ? r.ensembleModels.filter((x) => x !== id)
         : [...r.ensembleModels, id].slice(0, BUNDLE_MAX),
     }));
-  const usable = picked.filter((id) => status[modelById(id)?.provider]).length;
+  const usable = picked.filter((id) => modelReady(id, status)).length;
   return (
     <>
       <label className="setting-row">
@@ -91,7 +91,7 @@ export function EnsembleSettings({
           </div>
           {bundleModels.map((m) => {
             const on = picked.includes(m.id);
-            const available = !!status[m.provider];
+            const available = modelReady(m.id, status);
             return (
               <label
                 key={m.id}
@@ -112,7 +112,7 @@ export function EnsembleSettings({
                     : m.provider === "ollama"
                       ? "실행 안 됨"
                       : m.provider === "compat"
-                        ? "서버 설정 없음"
+                        ? "무료 제공자 키 없음"
                         : "키 없음"}
                 </small>
               </label>

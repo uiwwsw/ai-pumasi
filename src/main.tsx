@@ -45,6 +45,7 @@ import {
   ROUTING_KEY,
   type RoutingSettings,
   type ProviderStatus,
+  modelReady,
   type TeamResult,
   type Analysis,
   type Completion,
@@ -205,6 +206,7 @@ function App() {
     gemini: false,
     ollama: false,
     compat: false,
+    auto: false,
   });
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
@@ -458,7 +460,7 @@ function App() {
       setAIError("");
       setWorkers({});
       const picked = routing.ensembleModels.filter(
-        (id) => providerStatus[modelById(id).provider],
+        (id) => modelReady(id, providerStatus),
       );
       setNotice(`묶음 투표 · ${picked.length}개 모델에 동시에 묻는 중`);
       const off = window.auroraAI.onTeamProgress?.((e) => {
@@ -1280,7 +1282,7 @@ function App() {
                     disabled={
                       busy ||
                       !routing.live ||
-                      !providerStatus[modelById(routing.analyzer).provider]
+                      !modelReady(routing.analyzer, providerStatus)
                     }
                     onClick={analyze}
                   >
@@ -1395,7 +1397,7 @@ function App() {
                       !pending.decision ||
                       (routing.live &&
                         !bundleReady(routing, providerStatus) &&
-                        !providerStatus[modelById(pending.modelId).provider])
+                        !modelReady(pending.modelId, providerStatus))
                     }
                     onClick={proceed}
                   >
@@ -1605,8 +1607,8 @@ function App() {
                     {providerStatus.anthropic ? "감지됨 (미검증)" : "없음"} ·
                     Gemini 키{" "}
                     {providerStatus.gemini ? "감지됨 (미검증)" : "없음"} ·
-                    OpenAI 호환 서버{" "}
-                    {providerStatus.compat ? "설정됨 (미검증)" : "없음"}. 키는
+                    무료 제공자{" "}
+                    {providerStatus.compat ? "연결됨 (미검증)" : "없음"}. 키는
                     아래 API 키에서 넣거나 환경 변수로 줄 수 있습니다. 모델 접근
                     권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과 별도로
                     이 기기에 유지됩니다.

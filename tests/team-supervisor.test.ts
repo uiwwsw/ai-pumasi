@@ -131,7 +131,8 @@ test("when every model cuts off, the longest partial is kept and marked incomple
     ),
   );
   const out = await r.result;
-  assert.equal(r.workerCalls.length, 4);
+  // Gemini Flash, Gemini 3.1 Flash Lite (Google host, same key) and Ollama: two tries each.
+  assert.equal(r.workerCalls.length, 6);
   assert.equal(out.text, "더 긴 잘린 답입니다");
   assert.equal(out.tasks[0].failed, false);
   assert.equal(out.tasks[0].incomplete, true);
