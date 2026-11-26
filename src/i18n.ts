@@ -58,4 +58,6 @@ export function modelName(name: string) {
     .replace("(무료)", "(free)");
 }
 
-if (typeof document !== "undefined") document.title = appName();
+// The desktop window takes its title from the UI language; the web pages keep their own.
+if (typeof document !== "undefined" && typeof window !== "undefined" && window.auroraAI)
+  document.title = appName();
