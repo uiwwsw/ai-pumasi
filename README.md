@@ -40,16 +40,22 @@
 - OpenAI, Anthropic, Gemini, Ollama 모델에 텍스트 요청
 - 팀 모드: 총괄 모델이 나누고, 작업 모델이 처리하고, 총괄 모델이 판정 (최대 2회차)
 - 막힌 작업 다시 맡기기: 빈 답·잘린 답·시간 초과 재시도, 모델별 기록에 따른 순서 조정, 작업별 진행 표시
-- 요청 전 예상 토큰 범위, 응답 후 실제 사용량 표시
+- 묶음 투표: 무료 모델 2~5개가 같은 질문을 풀고, 측정한 실력만큼 무게를 준 투표로 답을 고름 (서술형은 가장 강한 모델이 합침)
+- 내 사용량으로 배우는 토큰 추정: 실제 쓴 토큰을 기기 안에 기록해 다음 요청이 예산의 몇 %를 쓸지 표시 (켜고 끄기)
+- OpenAI 호환 서버 연결: a local gateway 같은 게이트웨이를 `.env`에 적으면 그 뒤의 무료 모델을 묶음과 팀에 씀
+- 응답 후 실제 사용량 표시
 - 대화를 작업 단위로 묶기, 보관·휴지통·복원, 기기 내 저장(기본 꺼짐)
 - macOS(서명·공증)·Windows x64 설치 파일, 자동 업데이트
 
 ## 다음에 오는 것
 
-- **무료 모델 묶음을 앱 안으로:** 무료 모델 여러 개가 같은 질문을 풀고, 모델별 실력에 따라 무게를 준 투표로 답을 고릅니다. 측정에서 단순 다수결이 놓친 문항을 이 방식은 맞혔습니다.
-- **내 사용량으로 배우는 토큰 추정:** 실제로 쓴 토큰을 기기 안에 기록해, 다음 요청이 예산의 몇 %를 쓸지 내 사용 패턴으로 알려 줍니다. 켜고 끌 수 있습니다.
-- 질문을 보고 모델과 팀 구성을 알아서 고르는 자동 라우터
-- 스트리밍 응답, 파일 첨부, 영어 화면, OpenRouter·Groq 같은 OpenAI 호환 주소
+차례대로 만들어 버전마다 배포합니다.
+
+1. **앱 설정에서 OpenRouter·Groq 주소 추가:** 지금은 `.env`에 서버 하나를 적어야 합니다. 설정 화면에서 여러 주소와 키를 바로 넣게 합니다.
+2. **스트리밍 응답:** 답이 다 만들어질 때까지 기다리지 않고 쓰는 대로 보입니다.
+3. **자동 라우터:** 질문을 보고 단일 모델·팀·묶음 투표 중 어떤 방식이 맞는지 골라 줍니다.
+4. **파일 첨부:** 문서를 붙여 질문합니다.
+5. **영어 화면.**
 
 ## 이런 분께 맞습니다
 
@@ -59,9 +65,9 @@
 
 | 운영체제 | 설치 파일 |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.6/Aurora-0.1.6-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.6/Aurora-0.1.6-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.6/Aurora-0.1.6-windows-x64.exe) |
 
 Windows 설치 파일은 개발자 인증서로 서명하지 않아 SmartScreen 경고가 나올 수 있습니다. 키 설정, 팀 모드 사용법, 데이터 처리, 소스에서 실행하는 방법은 [사용 안내](docs/guide.md)에 있습니다.
 
