@@ -188,6 +188,7 @@ function team(
   leadFn: (kind: "plan" | "review", body: any) => any,
   workerFn: (body: any) => any = () => chatReply("결과 텍스트"),
   env: any = { ANTHROPIC_API_KEY: "t", GEMINI_API_KEY: "g" },
+  onUsage?: (u: any) => void,
 ) {
   const calls: any[] = [];
   const run = orchestrate(
@@ -199,6 +200,7 @@ function team(
     },
     {
       env,
+      onUsage,
       sleep: async () => {},
       fetchImpl: async (url: string, opts: any) => {
         if (url.endsWith("/api/tags")) throw new Error("no ollama");
@@ -344,4 +346,58 @@ test("lead and worker JSON modes are requested only where supported", async () =
   );
   await run;
   assert.equal(workers(calls)[0].body.response_format, undefined);
+});
+test("a finished response reports token counts and input length, never text", async () => {
+  const seen: any[] = [];
+  await request(
+    { ...payload, context: [{ role: "user", text: "이전 질문" }] },
+    {
+      env: { OPENAI_API_KEY: "unit-test-key" },
+      onUsage: (u: any) => seen.push(u),
+      fetchImpl: async () =>
+        json({
+          output: [{ content: [{ type: "output_text", text: "답" }] }],
+          usage: { input_tokens: 22, output_tokens: 33 },
+        }),
+    },
+  );
+  assert.deepEqual(seen, [
+    {
+      model: "gpt-6.1-sol",
+      kind: "execute",
+      inputChars: payload.text.length + "이전 질문".length,
+      inputTokens: 22,
+      outputTokens: 33,
+    },
+  ]);
+  // A provider that reports no usage leaves nothing to learn from.
+  await request(payload, {
+    env: { OPENAI_API_KEY: "unit-test-key" },
+    onUsage: (u: any) => seen.push(u),
+    fetchImpl: async () =>
+      json({ output: [{ content: [{ type: "output_text", text: "답" }] }] }),
+  });
+  assert.equal(seen.length, 1);
+});
+test("team mode reports each stage's usage under its own kind and model", async () => {
+  const seen: any[] = [];
+  const { run } = team(
+    (kind) =>
+      leadReply(kind === "plan" ? twoTasks : '{"approved":true,"redo":[]}'),
+    undefined,
+    undefined,
+    (u: any) => seen.push(u),
+  );
+  await run;
+  assert.deepEqual(
+    seen.map((u) => `${u.kind}:${u.model}`),
+    [
+      "plan:claude-opus-5-5",
+      "work:gemini-flash-latest",
+      "work:gemini-flash-latest",
+      "review:claude-opus-5-5",
+      "merge:gemini-flash-latest",
+    ],
+  );
+  assert.ok(seen.every((u) => !("text" in u)));
 });
