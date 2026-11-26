@@ -20,6 +20,8 @@
 
 </div>
 
+<img src="docs/images/scorecard.en.svg" alt="Same exams: Aurora free bundle 29/30, 28/30, 23.4/25 vs ChatGPT free 23/30, 24/30, 13.4/25">
+
 <img src="https://raw.githubusercontent.com/uiwwsw/aurora/main/docs/images/aurora-v0.1.png" alt="Aurora workspace">
 
 
