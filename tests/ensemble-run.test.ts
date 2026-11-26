@@ -286,3 +286,51 @@ test("the bundle takes 2-5 distinct free or light models that can run", () => {
     status,
   );
 });
+
+test("measured free models on an OpenAI-compatible server vote with their measured weights", async () => {
+  const ids = [
+    "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "google/gemini-3.1-flash-lite",
+    "nvidia/nemotron-3.5-lightning-30b-a3b",
+  ];
+  const urls: string[] = [];
+  const out = await runEnsemble(
+    { models: ids, text: "3 곱하기 4는?", context: [] },
+    {
+      env: { AURORA_OPENAI_COMPAT_KEY: "unit-c" },
+      sleep: async () => {},
+      stats: createStatsStore(),
+      fetchImpl: async (url: string, init: any) => {
+        if (url.endsWith("/api/tags")) return { ok: false };
+        urls.push(url);
+        const body = JSON.parse(init.body);
+        // The strongest model stands alone against a two-model majority.
+        const text =
+          body.model === ids[0] ? "풀이\n정답: 13" : "풀이\n정답: 12";
+        return {
+          ok: true,
+          json: async () => ({
+            model: body.model.split("/").slice(1).join("/"),
+            choices: [{ message: { content: text }, finish_reason: "stop" }],
+            usage: { prompt_tokens: 5, completion_tokens: 2 },
+          }),
+        };
+      },
+    },
+  );
+  assert.deepEqual(urls, [
+    "http://127.0.0.1:8080/v1/chat/completions",
+    "http://127.0.0.1:8080/v1/chat/completions",
+    "http://127.0.0.1:8080/v1/chat/completions",
+  ]);
+  assert.deepEqual(
+    out.models.map((m: any) => [m.model, m.weight]),
+    [
+      [ids[0], 3.434],
+      [ids[1], 1.745],
+      [ids[2], 0.981],
+    ],
+  );
+  assert.equal(out.answer, "13");
+  assert.deepEqual(out.substitutions, []);
+});
