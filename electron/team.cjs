@@ -325,6 +325,11 @@ async function orchestrate(p, opts = {}) {
   }
 
   const results = new Map();
+  let helped = 0;
+  const taskPrompt = (t, prev) =>
+    t.feedback
+      ? `${t.instructions}\n\n${tr("이전 결과:")}\n${prev ?? `(${tr("없음")})`}\n\n${tr("검토 의견(이것만 고쳐서 전체 결과를 다시 작성):")}\n${t.feedback}`
+      : t.instructions;
   let todo = plan.tasks.map((t) => ({ ...t, feedback: "" }));
   let approved = false;
   let rounds = 0;
@@ -340,7 +345,37 @@ async function orchestrate(p, opts = {}) {
         round,
         state: "waiting",
       });
+    // Pumasi: other people's apps take the tasks first. Tasks nobody answered fall back to our worker.
+    const remote = new Map();
+    if (opts.remote) {
+      const prompts = todo.map((t) => taskPrompt(t, results.get(t.id)?.text).slice(0, 20000));
+      const got = await opts.remote(prompts);
+      for (const [i, t] of todo.entries()) {
+        const texts = (got.get(i) ?? []).filter((s) => String(s).trim());
+        if (!texts.length) continue;
+        if (texts.length === 1) {
+          remote.set(t.id, texts[0]);
+          continue;
+        }
+        // Two helpers answered: our worker writes the better one from both, so one bad helper cannot win.
+        try {
+          const picked = await runWorker(
+            `${t.instructions.slice(0, 6000)}\n\n${texts.map((s, n) => `--- ${n + 1} ---\n${s.slice(0, 8000)}`).join("\n\n")}`,
+            { action: "merge", job: { taskId: t.id, title: t.title, round }, minChars: minReplyChars(t.instructions.length) },
+          );
+          remote.set(t.id, picked.incomplete ? texts[0] : picked.text);
+        } catch {
+          remote.set(t.id, texts[0]);
+        }
+      }
+      helped += remote.size;
+    }
     for (const [i, t] of todo.entries()) {
+      if (remote.has(t.id)) {
+        results.set(t.id, { text: remote.get(t.id) });
+        onProgress({ stage: "worker", taskId: t.id, title: t.title, round, state: "done", model: "pumasi" });
+        continue;
+      }
       onProgress({
         stage: "work",
         round,
@@ -350,9 +385,7 @@ async function orchestrate(p, opts = {}) {
         model: p.worker,
       });
       const prev = results.get(t.id)?.text;
-      const prompt = t.feedback
-        ? `${t.instructions}\n\n${tr("이전 결과:")}\n${prev ?? `(${tr("없음")})`}\n\n${tr("검토 의견(이것만 고쳐서 전체 결과를 다시 작성):")}\n${t.feedback}`
-        : t.instructions;
+      const prompt = taskPrompt(t, prev);
       // Workers get only their own task, never the whole conversation: that is the token saving.
       try {
         const sent = prompt.slice(0, 20000);
@@ -466,6 +499,7 @@ async function orchestrate(p, opts = {}) {
     worker: p.worker,
     workersUsed: [...usedWorkers],
     substitutions,
+    pumasiTasks: helped,
   };
 }
 

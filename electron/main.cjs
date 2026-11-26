@@ -147,6 +147,104 @@ else
       if (!authorized(event)) throw forbiddenError();
       return secrets.setCompatUrl(url);
     });
+    // Pumasi. Task and result text stays in this process: the window only gets states and counts.
+    let pumasiParts;
+    const pumasi = () => {
+      if (!pumasiParts) {
+        const mod = require("./pumasi.cjs");
+        const settings = mod.createSettings(
+          path.join(app.getPath("userData"), "pumasi.json"),
+        );
+        const identity = mod.loadIdentity(
+          path.join(app.getPath("userData"), "pumasi-identity.json"),
+          safeStorage,
+        );
+        pumasiParts = { mod, settings, identity };
+      }
+      const { mod, settings, identity } = pumasiParts;
+      const api = mod.createClient({ server: settings.get().server, identity });
+      return { mod, settings, api };
+    };
+    const pumasiState = async () => {
+      const { mod, settings, api } = pumasi();
+      const s = settings.get();
+      const env = secrets.env();
+      const keys = Object.fromEntries(
+        Object.entries(mod.DONATABLE).map(([h, name]) => [h, !!env[name]]),
+      );
+      const out = {
+        server: s.server,
+        joined: s.joined,
+        donate: s.donate,
+        dailyCap: s.dailyCap,
+        usedToday: s.usedToday,
+        keys,
+      };
+      if (!s.joined) return out;
+      try {
+        return { ...out, me: await api("GET", "/v1/me") };
+      } catch (error) {
+        return { ...out, error: error.message };
+      }
+    };
+    ipcMain.handle("aurora:pumasi-state", (event) => {
+      if (!authorized(event)) throw forbiddenError();
+      return pumasiState();
+    });
+    ipcMain.handle("aurora:pumasi-update", (event, patch) => {
+      if (!authorized(event)) throw forbiddenError();
+      const clean = {};
+      if (patch && typeof patch === "object") {
+        if (typeof patch.server === "string") clean.server = patch.server;
+        if (patch.donate && typeof patch.donate === "object")
+          clean.donate = patch.donate;
+        if (patch.dailyCap !== undefined) clean.dailyCap = patch.dailyCap;
+      }
+      pumasi().settings.update(clean);
+      return pumasiState();
+    });
+    ipcMain.handle("aurora:pumasi-join", async (event, invite) => {
+      if (!authorized(event)) throw forbiddenError();
+      const { api, settings } = pumasi();
+      await api("POST", "/v1/join", {
+        invite: String(invite ?? "").trim().slice(0, 200),
+      });
+      settings.update({ joined: true });
+      return pumasiState();
+    });
+    ipcMain.handle("aurora:pumasi-open", async (event) => {
+      if (!authorized(event)) throw forbiddenError();
+      return (await pumasi().api("GET", "/v1/open")).slots;
+    });
+    let helping = false;
+    ipcMain.handle("aurora:pumasi-help", async (event, slotId) => {
+      if (!authorized(event)) throw forbiddenError();
+      if (typeof slotId !== "string" || !/^[\w-]{1,64}$/.test(slotId))
+        throw new Error(tr("알 수 없는 작업입니다."));
+      if (helping) throw new Error(tr("한 번에 하나씩만 도울 수 있습니다."));
+      helping = true;
+      const env = secrets.env();
+      try {
+        const { mod, settings, api } = pumasi();
+        return await guarded(env, () =>
+          mod.help(slotId, {
+            api,
+            env,
+            settings,
+            request: providers.request,
+            sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+            onProgress: (e) =>
+              event.sender.send("aurora:pumasi-progress", {
+                slotId: e.slotId,
+                state: e.state,
+                tokens: e.tokens,
+              }),
+          }),
+        );
+      } finally {
+        helping = false;
+      }
+    });
     let workerStats;
     // Per-model success and latency only: model ids and numbers, never keys or prompts.
     const stats = () =>
@@ -207,9 +305,25 @@ else
         // Count calls per stage so the next team estimate knows how many of each to expect.
         const calls = { plan: 0, work: 0, review: 0, merge: 0 };
         const env = secrets.env();
+        const copies = [1, 2, 3].includes(payload?.pumasi?.copies)
+          ? payload.pumasi.copies
+          : 0;
+        const remote = copies
+          ? (prompts) => {
+              const { mod, api } = pumasi();
+              return mod.runRemote(prompts, {
+                api,
+                copies,
+                sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+                onProgress: (e) =>
+                  event.sender.send("aurora:team-progress", e),
+              });
+            }
+          : undefined;
         const result = await guarded(env, () =>
           require("./team.cjs").orchestrate(payload, {
             env,
+            remote,
             onProgress: (e) =>
               event.sender.send("aurora:team-progress", scrub(e, env)),
             stats: stats(),
