@@ -1,0 +1,412 @@
+[
+ {
+  "no": 1,
+  "id": "aime-1",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Patrick started walking at a constant rate along a straight road from school to the park. One hour after Patrick left, Tanya started running along the same road from school to the park. One hour after Tanya left, Jose started bicycling along the same road from school to the park. Tanya ran at a constant rate of $2$ miles per hour faster than Patrick walked, Jose bicycled at a constant rate of $7$ miles per hour faster than Tanya ran, and all three arrived at the park at the same time. The distance from the school to the park is $\\frac{m}{n}$ miles, where $m$ and $n$ are relatively prime positive integers. Find $m + n$.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 2,
+  "id": "aime-2",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Find the number of positive integer palindromes written in base $10$ with no zero digits, and whose digits add up to $13$. For example, $42124$ has these properties. Recall that a palindrome is a number whose representation reads the same from left to right as from right to left.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 3,
+  "id": "aime-3",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "A hemisphere with radius $200$ sits on top of a horizontal circular disk with radius $200,$ and the hemisphere and disk have the same center. Let $\\mathcal T$ be the region of points P in the disk such that a sphere of radius $42$ can be placed on top of the disk at $P$ and lie completely inside the hemisphere. The area of $\\mathcal T$ divided by the area of the disk is $\\tfrac pq,$ where $p$ and $q$ are relatively prime positive integers. Find $p+q.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 4,
+  "id": "aime-4",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Find the number of integers less than or equal to 100 that are equal to $a+b+ab$ for some choice of distinct positive integers a and b.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 5,
+  "id": "aime-5",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "A plane contains points $A$ and $B$ with $AB = 1$. Point $A$ is rotated in the plane counterclockwise through an acute angle $\\theta$ around point $B$ to point $A^\\prime$. Then $B$ is rotated in the plane clockwise through angle $\\theta$ around point $A^\\prime$ to point $B^\\prime$. Suppose that $AB^\\prime = \\frac{4}{3}$. The value of $\\cos \\theta$ can be written as $\\frac{m}{n}$ , where $m$ and $n$ are relatively prime positive integers. Find $m + n$.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 6,
+  "id": "aime-6",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "A real number $x$ satisfies $\\sqrt[20]{x^{\\log_{2026}x}}=26x$. What is the number of positive divisors of the product of all possible positive values of $x$?\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 7,
+  "id": "aime-7",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "\nFind the number of functions $\\pi$ mapping the set $A =\\{1,2,3,4,5,6\\}$ onto $A$ such that for every $a \\in A,$\n\\[\n\\pi(\\pi(\\pi(\\pi(\\pi(\\pi(a)))))) = a.\n\\]\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 8,
+  "id": "aime-8",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Let $N$ be the number of positive integer divisors of $17017^{17}$ that leave a remainder of $5$ when divided by $12$. Find the remainder when $N$ is divided by $1000$.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 9,
+  "id": "aime-9",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Joanne has a blank fair six-sided die and six stickers each displaying a different integer from 1 to 6. Joanne rolls the die and then places the sticker labeled 1 on the top face of the die. She then rolls the die again, places the sticker labeled 2 on the top face, and continues this process to place the rest of the stickers in order. If the die ever lands with a sticker already on its top face, the new sticker is placed to cover the old sticker. Let $p$ be the conditional probability that at the end of the process exactly one face has been left blank, given that all the even-numbered stickers are visible on faces of the die. Then $p$ can be written as $\\tfrac mn,$ where $m$ and $n$ are relatively prime positive integers. Find $m + n.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 10,
+  "id": "aime-10",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Let $\\triangle ABC$ have side lengths $AB = 13, BC = 14,$ and $CA = 15.$ Triangle $\\triangle A'B'C'$ is obtained by rotating $\\triangle ABC$ about its circumcenter so that $\\overline{A'C'}$ is perpendicular $\\overline{BC},$ with $A'$ and $B$ not on the same side of line $B'C'.$ Find the integer closest to the area of hexagon $AA'CC'BB'.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 11,
+  "id": "aime-11",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "The integers from $1$ to $64$ are placed in some order into an $8 \\times 8$ grid of cells with one number in each cell. Let $a_{i,j}$ be the number placed in the cell in row $i$ and column $j,$ and let $M$ be the sum of the absolute differences between adjacent cells. That is,\n\\[\nM = \\sum^8_{i=1} \\sum^7_{j=1} (|a_{i,j+1} - a_{i,j}| + |a_{j+1,i} - a_{j,i}|).\n\\]\nFind the remainder when the maximum possible value of $M$ is divided by $1000.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 12,
+  "id": "aime-12",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Triangle $\\triangle ABC$ lies in plane $\\mathcal P$ with $AB = 6, AC = 4,$ and $\\angle BAC = 90^\\circ.$ Let $D$ be the reflection across $\\overline{BC}$ of the centroid of $\\triangle ABC. {}$ Four spheres, all on the same side of $\\mathcal P,$ have radii $1, 2, 3,$ and $r$ and are tangent to $\\mathcal P$ at points $A, B, C,$ and $D,$ respectively. The four spheres are also each tangent to a second plane $\\mathcal T$ and are all on the same side of $\\mathcal T.$ The value of $r$ can be written as $\\tfrac mn,$ where $m$ and $n$ are relatively prime positive integers. Find $m+n.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 13,
+  "id": "aime-13",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "For each positive integer $r$ less than $502,$ define\n\\[\nS_r=\\sum_{m\\ge 0}\\dbinom{10000}{502m+r},\n\\]\nwhere $\\binom{10000}{n}$ is defined to be $0$ when $n>10000.$ That is, $S_r$ is the sum of all binomial coefficients of the form $\\binom{10000}{k}$ for which $0\\le k\\le 10000$ and $k-r$ is a multiple of $502.$ Find the number of integers in the list $S_0,S_1,\\dots,S_{501}$ that are multiples of the prime number $503.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 14,
+  "id": "aime-14",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "In an equiangular pentagon, the sum of the squares of the side lengths equals $308,$ and the sum of the squares of the diagonal lengths equals $800.$ The square of the perimeter of the pentagon can be expressed as $m \\sqrt n,$ where $m$ and $n$ are positive integers and $n$ is not divisible by the square of any prime. Find $m + n.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 15,
+  "id": "aime-15",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Let $a, b,$ and $n$ be positive integers with both $a$ and $b$ greater than or equal to $2$ and less than or equal to $2n$. Define an $a \\times b$ cell loop in a $2n \\times 2n$ grid of cells to be the $2a + 2b - 4$ cells that surround an $(a - 2) \\times (b - 2)$ (possibly empty) rectangle of cells in the grid. For example, the following diagram shows a way to partition a $6 \\times 6$ grid of cells into $4$ cell loops.\n\n| P   P P   P | Y   Y |\n| P | R R | P | Y | Y |\n| P | R R | P | Y | Y |\n| P   P P   P | Y | Y |\n| G   G G   G | Y | Y |\n| G   G G   G | Y   Y |\n\nFind the number of ways to partition a $10 \\times 10$ grid of cells into $5$ cell loops so that every cell of the grid belongs to exactly one cell loop.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 16,
+  "id": "aime-16",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Find the sum of the $10$th terms of all arithmetic sequences of integers that have first term equal to $4$ and include both $24$ and $34$ as terms.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 17,
+  "id": "aime-17",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "The figure below shows a grid of $10$ squares in a row. Each square has a diagonal connecting its lower left vertex to its upper right vertex. A bug moves along the line segments from vertex to vertex, never traversing the same segment twice and never moving from right to left along a horizontal or diagonal segment. Let $N$ be the number of paths the bug can take from the lower left corner ($A$) to the upper right corner ($B$). One such path from $A$ to $B$ is shown by the thick line segments in the figure. Find $\\sqrt{N}$.\n\n[asy]\nsize(12cm);\ndraw((0, 0)--(0, 1));\nfor (int i = 0; i <= 9; i += 1)\n{\ndraw((i, 1)--(i + 1, 1)--(i + 1, 0)--(i, 0)--(i + 1, 1));\n}\ndraw((0, 0)--(0, 1)--(2, 1)--(2, 0)--(3, 1)--(3, 0)--(4, 1)--(4, 0)--(5, 0)--(5, 1)--(6, 1)--(6, 0)--(7, 1)--(8, 1)--(8, 0)--(10, 0)--(10, 1), red + linewidth(2));\nlabel(\"$A$\", (0, 0), dir(180));\nlabel(\"$B$\", (10, 1), dir(0));\n[/asy]\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 18,
+  "id": "aime-18",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Let $ABCDE$ be a nonconvex pentagon with internal angles $\\angle A = \\angle E = 90^\\circ$ and $\\angle B = \\angle D = 45^\\circ.$ Suppose that $DE < AB, AE = 20, BC = 14\\sqrt2,$ and points $B,C,$ and $D$ lie on the same side of line $AE.$ Suppose further that $AB$ is an integer with $AB < 2026$ and the area of pentagon $ABCDE$ is an integer multiple of $16.$ Find the number of possible values of $AB.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 19,
+  "id": "aime-19",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "For each positive integer $n$ let $f(n)$ be the value of the base-ten numeral $n$ viewed in base $b$, where $b$ is the least integer greater than the greatest digit in $n$. For example, if $n=72$, then $b=8$, and $72$ as a numeral in base $8$ equals $7\\cdot 8+2=58$; therefore $f(72)=58$. Find the number of positive integers $n$ less than $1000$ such that $f(n)=n$.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 20,
+  "id": "aime-20",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "An urn contains $n$ marbles. Each marble is either red or blue, and there are at least $7$ marbles of each color. When $7$ marbles are drawn randomly from the urn without replacement, the probability that exactly $4$ of them are red equals the probability that exactly $5$ of them are red. Find the sum of the five least values of $n$ for which this is possible.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 21,
+  "id": "aime-21",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Find the sum of all real numbers $r$ such that there is at least one point where the circle with radius $r$ centered at $(4, 39)$ is tangent to the parabola with equation $2y = x^2 - 8x + 12.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 22,
+  "id": "aime-22",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "A standard fair six-sided die is rolled repeatedly. Each time the die reads 1 or 2, Alice gets a coin; each time it reads 3 or 4, Bob gets a coin; and each time it reads 5 or 6, Carol gets a coin. The probability that Alice and Bob each receive at least two coins before Carol receives any coins can be written as $\\tfrac{m}{n},$ where $m$ and $n$ are relatively prime positive integers. Find $100m+n.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 23,
+  "id": "aime-23",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Isosceles triangle $\\triangle ABC$ has $AB = BC.$ Let $I$ be the incenter of $\\triangle ABC.$ The perimeters of $\\triangle ABC$ and $\\triangle AIC$ are in the ratio $125:6,$ and all the sides of both triangles have integer lengths. Find the minimum possible value of $AB.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 24,
+  "id": "aime-24",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Let $S$ denote the value of the infinite sum\n\\[\n\\frac{1}{9} + \\frac{1}{99} + \\frac{1}{999} + \\frac{1}{9999}  + \\cdots\n\\]\nFind the remainder when the greatest integer less than or equal to $10^{100} S$ is divided by $1000.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 25,
+  "id": "aime-25",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Let $\\triangle ABC$ be a triangle with $D$ on $\\overline{BC}$ such that $\\overline{AD}$ bisects $\\angle BAC.$ Let $\\omega$ be the circle that passes through $A$ and is tangent to segment $\\overline{BC}$ at $D.$ Let $E \\neq A$ and $F \\neq A$ be the intersections of $\\omega$ with segments $\\overline{AB}$ and $\\overline{AC},$ respectively. Suppose that $AB = 200, AC = 225,$ and all of $AE, AF, BD,$ and $CD$ are positive integers. Find the sum of all possible values of $BC.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 26,
+  "id": "aime-26",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Find the greatest integer $n$ such that the cubic polynomial\n\\[\nx^{3} - \\displaystyle\\frac{n}{6}x^{2} + (n - 11)x - 400\n\\]\nhas roots $\\alpha^{2}$, $\\beta^{2}$, and $\\gamma^{2}$, where $\\alpha$, $\\beta$, and $\\gamma$ are complex numbers, and there are exactly seven different possible values for $\\alpha + \\beta + \\gamma$.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 27,
+  "id": "aime-27",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Consider a tetrahedron with two isosceles triangle faces with side lengths $5\\sqrt{10}, 5\\sqrt{10},$ and $10$ and two isosceles triangle faces with side lengths $5\\sqrt{10}, 5\\sqrt{10},$ and $18.$ The four vertices of the tetrahedron lie on a sphere with center $S,$ and the four faces of the tetrahedron are tangent to a sphere with center $R.$ The distance $RS$ can be written as $\\tfrac{m}{n},$ where $m$ and $n$ are relatively prime positive integers. Find $m + n.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 28,
+  "id": "aime-28",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Call finite sets of integers $S$ and $T$ cousins if\n- $S$ and $T$ have the same number of elements,\n- $S$ and $T$ are disjoint, and\n- the elements of $S$ can be paired with the elements of $T$ so that the elements in each pair differ by exactly $1$.\nFor example, $\\{1,2,5\\}$ and $\\{0,3,4\\}$ are cousins. Suppose that the set $S$ has exactly $4040$ cousins. Find the least number of elements the set $S$ can have.\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 29,
+  "id": "aime-29",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "For integers $a$ and $b,$ let $a \\circ b = a - b$ if $a$ is odd and $b$ is even, and $a+b$ otherwise. Find the number of sequences $a_1, a_2, a_3, \\ldots, a_n$ of positive integers such that\n\\[\na_1 + a_2 + a_3 + \\cdots + a_n = 12 \\quad \\text{and} \\quad a_1 \\circ a_2 \\circ a_3 \\circ \\cdots \\circ a_n = 0\n\\]\nwhere the operations are performed from left to right; that is, $a_1 \\circ a_2 \\circ a_3$ means $(a_1 \\circ a_2) \\circ a_3.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 30,
+  "id": "aime-30",
+  "kind": "aime",
+  "format": "boxed",
+  "prompt": "Find the number of ordered 7-tuples $(a_1, a_2, a_3, \\ldots, a_7)$ having the following properties:\n- $a_k \\in \\{1,2,3\\}$ for all $k.$\n- $a_1+a_2+a_3+a_4+a_5+a_6+a_7$ is a multiple of $3.$\n- $a_1a_2 a_4 + a_2a_3a_5 + a_3a_4 a_6 + a_4 a_5 a_7 + a_5 a_6 a_1 + a_6 a_7 a_2 + a_7 a_1 a_3$ is a multiple of $3.$\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+ },
+ {
+  "no": 31,
+  "id": "lbz-1",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Beverage, Hobby, Job, Movie-Genre, Nationality.\nThe attributes have the following possible values:\nBeverage: water, cola, milk\nHobby: sudoku, dancing, card-games\nJob: dancer, mechanic, entrepreneur\nMovie-Genre: romance, mystery, martial-arts\nNationality: turkish, chinese, japanese\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who is a dancer is the same as the person who likes card-games or the person who is a dancer is the same as the person who drinks water or both\nThe person who is a entrepreneur is the same as the person who is turkish or the person who is a entrepreneur is the same as the person who likes card-games or both\nThe person who is turkish is somewhere to the left of the person who watches mystery\nThe person who drinks milk is immediately between the person who is japanese and the person who is a dancer\nThe person who likes sudoku is on the far left or far right\nThe person who is a entrepreneur is somewhere to the right of the person who is chinese\nThe person who watches martial-arts and the person who is a entrepreneur have different parity positions\nThe person who is turkish is not the same as the person who likes sudoku\nThe person who watches martial-arts and the person who drinks cola have different parity positions\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nAt what position is the person who likes sudoku?\nAt what position is the person who drinks milk?\nWhat movie genre does the person in position 1 watch?\nWhat nationality does the person who watches mystery have?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "0405cc3d80d24b05c54ae0284daac12f64b8ec440dfc3ab8e35b0970f414e91e"
+ },
+ {
+  "no": 32,
+  "id": "lbz-2",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Food, Music-Genre, Nationality, Transport.\nThe attributes have the following possible values:\nFood: kale, lettuce, artichoke\nMusic-Genre: funk, d&b, salsa\nNationality: turkish, american, australian\nTransport: boat, bus, train\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who listens to funk and the person who eats kale have different parity positions\nThe person who listens to d&b and the person who eats artichoke have different parity positions\nEither the person who travels by train is the same as the person who is australian or the person who travels by train is the same as the person who eats artichoke, but not both\nThe person who travels by bus is somewhere between the person who is turkish and the person who travels by train\nThe person who is australian and the person who travels by boat have different parity positions\nThe person who is american is not anywhere to the left of the person who travels by bus\nThe person who eats lettuce is not anywhere to the left of the person who listens to funk\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nAt what position is the person who is turkish?\nWhat nationality does the person who travels by bus have?\nWhat transport does the person in position 2 use?\nWhat is the music genre of the person who eats artichoke?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "04207d46453963ade715fc168f3ef781edc3f5355fc03090911cb355fb73867c"
+ },
+ {
+  "no": 33,
+  "id": "lbz-3",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Food, Hobby, Music-Genre, Nationality, Sport.\nThe attributes have the following possible values:\nFood: watermelon, cherry, apple\nHobby: magic-tricks, board-games, card-games\nMusic-Genre: jazz, hip-hop, metal\nNationality: japanese, indian, german\nSport: climbing, rugby, golf\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who is german is on the immediate left or immediate right of the person who eats watermelon\nThe person who is german is somewhere to the left of the person who is indian\nThe person who likes magic-tricks is on the immediate left or immediate right of the person who is german\nThe person who eats apple is somewhere to the right of the person who is german\nThe person who plays golf is in an even position\nThe person who is german is on the immediate right of the person who listens to metal\nThe person who plays climbing is somewhere to the right of the person who plays rugby\nThe person who eats watermelon is not the same as the person who likes magic-tricks\nEither the person who plays climbing is the same as the person who likes board-games or the person who likes board-games is the same as the person who listens to hip-hop, but not both\n\nGiven this information, answer the following questions:\nWhat nationality does the person in position 3 have?\nWhat food does the person in position 2 eat?\nWhat sport does the person in position 1 play?\nWhat is the food of the person who listens to metal?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "1fdd436a43f1a7d242602871b37275ee09a69a64094f619b91bee96095846452"
+ },
+ {
+  "no": 34,
+  "id": "lbz-4",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 2 people standing in a line. From left to right, they are numbered 1 to 2.\nEach person has a set of attributes: Job, Movie-Genre, Nationality.\nThe attributes have the following possible values:\nJob: videographer, freelancer\nMovie-Genre: thriller, animation\nNationality: nigerian, pakistani\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who is pakistani is on the immediate left or immediate right of the person who is a videographer\nThe person who is a videographer is somewhere to the left of the person who watches animation\n\nGiven this information, answer the following questions:\nWhat is the job of the person who is pakistani?\nWhat is the movie genre of the person who is pakistani?\nWhat movie genre does the person in position 1 watch?\nAt what position is the person who is a videographer?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "20d48b97e524cd64f82b0e4fb3c597a37bae1d9357e9b2c93aad96b4c70e098e"
+ },
+ {
+  "no": 35,
+  "id": "lbz-5",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 4 people standing in a line. From left to right, they are numbered 1 to 4.\nEach person has a set of attributes: Beverage, Food, Hobby, Movie-Genre, Pet.\nThe attributes have the following possible values:\nBeverage: lemonade, milk, water, tea\nFood: pineapple, nectarine, zucchini, pumpkin\nHobby: dancing, baking, cooking, camping\nMovie-Genre: musical, family, romance, martial-arts\nPet: goldfish, goat, hamster, bird\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who watches family is somewhere between the person who eats nectarine and the person who watches musical\nThe person who eats nectarine is the same as the person who likes cooking or the person who eats nectarine is the same as the person who drinks lemonade or both\nThe person who has a hamster is somewhere between the person who has a goat and the person who eats pumpkin\nThe person who likes dancing is not anywhere to the right of the person who likes camping\nThe person who likes baking and the person who eats zucchini have different parity positions\nThe person who watches martial-arts is not anywhere to the right of the person who drinks water\nThe person who watches family is not anywhere to the left of the person who watches musical\nThe person who eats nectarine is somewhere between the person who watches family and the person who likes cooking\nThe person who drinks milk is not anywhere to the right of the person who eats pumpkin\nThe person who has a bird and the person who drinks milk have the same parity positions\nThe person who eats pineapple is the same as the person who drinks lemonade or the person who eats pineapple is the same as the person who watches romance or both\nThe person who has a bird and the person who eats pumpkin have different parity positions\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat is the pet of the person who watches martial-arts?\nAt what position is the person who watches martial-arts?\nWhat food does the person in position 3 eat?\nWhat is the hobby of the person who drinks tea?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "2102018493646d369865e04813606d3170a25f31f0fad3aece558969b56f97d0"
+ },
+ {
+  "no": 36,
+  "id": "lbz-6",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 5 people standing in a line. From left to right, they are numbered 1 to 5.\nEach person has a set of attributes: Beverage, Food, Job, Sport, Transport.\nThe attributes have the following possible values:\nBeverage: sprite, iced-tea, almond-milk, 7up, fanta\nFood: mango, lime, apple, kale, cabbage\nJob: pilot, journalist, manager, project-manager, scientist\nSport: cricket, climbing, rowing, rugby, biathlon\nTransport: airplane, jet-ski, trike, tram, subway\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who travels by subway is not anywhere to the right of the person who plays rugby\nThe person who eats mango is not the same as the person who drinks almond-milk\nThe person who travels by airplane is not anywhere to the right of the person who travels by tram\nThe person who drinks 7up is immediately between the person who is a journalist and the person who drinks iced-tea\nThe person who plays biathlon is somewhere to the right of the person who eats kale\nThe person who drinks almond-milk is not anywhere to the left of the person who is a pilot\nThe person who drinks 7up is not anywhere to the right of the person who is a project-manager\nThe person who drinks fanta is in an odd position\nThe person who drinks sprite and the person who eats lime have the same parity positions\nThe person who is a pilot is immediately between the person who is a project-manager and the person who travels by tram\nThe person who drinks sprite is not anywhere to the right of the person who plays rugby\nThe person who travels by jet-ski is somewhere to the left of the person who travels by trike\nThe person who plays rowing and the person who is a manager have the same parity positions\nThe person who eats apple is not anywhere to the right of the person who eats mango\nThe person who plays cricket is the same as the person who travels by tram or the person who plays cricket is the same as the person who drinks 7up or both\nThe person who plays rugby and the person who eats apple have the same parity positions\nThe person who is a project-manager is the same as the person who drinks fanta or the person who drinks fanta is the same as the person who travels by airplane or both\nThe person who is a scientist is the same as the person who drinks sprite or the person who drinks sprite is the same as the person who eats cabbage or both\nThe person who drinks almond-milk and the person who travels by trike have the same parity positions\nThe person who eats cabbage is somewhere to the left of the person who travels by subway\nThe person who eats apple is not anywhere to the left of the person who drinks 7up\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat is the transport of the person who drinks iced-tea?\nWhat is the transport of the person who is a project-manager?\nWhat beverage does the person in position 2 drink?\nWhat food does the person who drinks fanta eat?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "2a886a49a7c9afb9b30d299d6de0b67558ae1076da4178faaf08e8b24d4a2994"
+ },
+ {
+  "no": 37,
+  "id": "lbz-7",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Beverage, Movie-Genre, Sport.\nThe attributes have the following possible values:\nBeverage: milk, mirinda, water\nMovie-Genre: animation, fantasy, martial-arts\nSport: weightlifting, handball, badminton\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who drinks water is not anywhere to the left of the person who watches martial-arts\nThe person who plays badminton is somewhere to the left of the person who plays handball\nThe person who watches martial-arts is somewhere to the left of the person who watches animation\nThe person who drinks milk and the person who plays badminton have the same parity positions\nThe person who watches fantasy is not anywhere to the right of the person who plays weightlifting\nThe person who plays badminton is somewhere to the right of the person who plays weightlifting\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nAt what position is the person who watches fantasy?\nWhat movie genre does the person who plays handball watch?\nWhat movie genre does the person in position 2 watch?\nAt what position is the person who plays handball?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "320bb578a63d6412919fcb69b962e8419d8782f1a4ebe54758cac3cc2474c82b"
+ },
+ {
+  "no": 38,
+  "id": "lbz-8",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Food, Hobby, Job, Music-Genre.\nThe attributes have the following possible values:\nFood: cabbage, peach, spinach\nHobby: chess, skydiving, rock-climbing\nJob: manager, engineer, project-manager\nMusic-Genre: house, folk, r&b\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who is a manager is somewhere to the left of the person who eats peach\nThe person who is a engineer and the person who eats peach have the same parity positions\nThe person who is a engineer is on the far left or far right\nThe person who listens to house is on the immediate left or immediate right of the person who likes chess\nThe person who is a manager is not anywhere to the left of the person who likes chess\nThe person who is a manager is on the far left\nThe person who eats spinach is the same as the person who listens to r&b\nThe person who is a engineer and the person who likes skydiving have different parity positions\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nAt what position is the person who is a project-manager?\nWhat music genre does the person in position 3 listen to?\nWhat job does the person who eats spinach have?\nWhat is the job of the person who eats cabbage?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "363d6a519f6ce7572b752357e5008d054f34fb01ff1e8864326889bd2b24f626"
+ },
+ {
+  "no": 39,
+  "id": "lbz-9",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Food, Movie-Genre, Music-Genre, Nationality, Pet.\nThe attributes have the following possible values:\nFood: raspberry, cranberry, carrot\nMovie-Genre: action, western, romance\nMusic-Genre: r&b, reggae, salsa\nNationality: spanish, polish, indonesian\nPet: hedgehog, guinea-pig, mouse\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who has a hedgehog is somewhere to the right of the person who eats raspberry\nThe person who eats raspberry and the person who listens to r&b have different parity positions\nThe person who watches romance is somewhere between the person who watches action and the person who watches western\nThe person who listens to r&b is in an odd position\nThe person who listens to reggae is somewhere to the right of the person who is indonesian\nThe person who listens to r&b is on the immediate left or immediate right of the person who has a guinea-pig\nThe person who watches western is not anywhere to the right of the person who watches romance\nThe person who watches romance is not anywhere to the left of the person who listens to salsa\nThe person who is indonesian is on the immediate left or immediate right of the person who is polish\nEither the person who eats carrot is the same as the person who listens to salsa or the person who has a guinea-pig is the same as the person who eats carrot, but not both\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat pet does the person in position 3 have?\nWhat is the food of the person who watches western?\nWhat nationality does the person in position 3 have?\nWhat food does the person in position 2 eat?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "40a8ca9e0abcfe1a1ddcdcc44ca837131ed669f51eafcb1d27b361da7d8d1165"
+ },
+ {
+  "no": 40,
+  "id": "lbz-10",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Hobby, Movie-Genre, Nationality, Pet, Sport.\nThe attributes have the following possible values:\nHobby: sudoku, board-games, video-games\nMovie-Genre: time-travel, adventure, comedy\nNationality: mexican, american, german\nPet: pony, ferret, rat\nSport: golf, biathlon, badminton\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who likes sudoku is not the same as the person who is american\nThe person who is german is not anywhere to the left of the person who is mexican\nThe person who plays badminton and the person who has a ferret have the same parity positions\nThe person who watches adventure and the person who likes video-games have different parity positions\nThe person who is german is somewhere between the person who plays biathlon and the person who watches time-travel\nThe person who likes sudoku is not anywhere to the left of the person who has a rat\nThe person who likes video-games is somewhere to the left of the person who has a ferret\nThe person who plays golf is somewhere to the right of the person who plays biathlon\nThe person who has a pony is not anywhere to the right of the person who is mexican\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat nationality does the person who plays biathlon have?\nWhat is the hobby of the person who watches comedy?\nWhat is the hobby of the person who plays badminton?\nWhat movie genre does the person who likes board-games watch?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "4d307a56c0beed06090c18b6a431f82f1292d895bdc3186452a36eb33bc6f095"
+ },
+ {
+  "no": 41,
+  "id": "lbz-11",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 5 people standing in a line. From left to right, they are numbered 1 to 5.\nEach person has a set of attributes: Food, Job, Movie-Genre, Pet, Transport.\nThe attributes have the following possible values:\nFood: pumpkin, cucumber, lime, pomegranate, carrot\nJob: journalist, librarian, mechanic, entrepreneur, writer\nMovie-Genre: sports, disaster, martial-arts, satire, horror\nPet: mouse, rabbit, lizard, rat, hedgehog\nTransport: trike, subway, helicopter, quad-bike, scooter\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who travels by trike and the person who is a entrepreneur have the same parity positions\nThe person who watches sports is somewhere between the person who has a rabbit and the person who travels by quad-bike\nThe person who eats pomegranate is on the immediate left or immediate right of the person who travels by subway\nThe person who travels by trike is somewhere to the right of the person who watches horror\nThe person who travels by subway is the same as the person who eats pomegranate or the person who watches martial-arts is the same as the person who travels by subway or both\nThe person who eats cucumber is not anywhere to the right of the person who has a lizard\nThe person who watches horror and the person who travels by scooter have the same parity positions\nThe person who travels by scooter and the person who has a rat have the same parity positions\nThe person who is a writer is not the same as the person who travels by quad-bike\nThe person who travels by scooter is not anywhere to the right of the person who eats pomegranate\nThe person who is a writer is in an even position\nThe person who is a journalist is not anywhere to the left of the person who is a entrepreneur\nThe person who eats pomegranate is not the same as the person who has a rabbit or the person who travels by trike is not the same as the person who eats pomegranate or both\nThe person who eats cucumber is the same as the person who is a mechanic or the person who eats cucumber is the same as the person who watches disaster or both\nThe person who is a librarian is somewhere to the left of the person who travels by helicopter\nEither the person who travels by helicopter is the same as the person who watches sports or the person who is a librarian is the same as the person who travels by helicopter, but not both\nThe person who has a hedgehog is on the immediate left or immediate right of the person who is a writer\nThe person who is a entrepreneur is somewhere to the right of the person who eats pomegranate\nThe person who watches satire is somewhere between the person who has a hedgehog and the person who has a lizard\nThe person who is a librarian is not anywhere to the left of the person who watches satire\nThe person who eats carrot is somewhere to the right of the person who eats lime\nThe person who travels by subway is not the same as the person who eats lime\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat is the pet of the person who eats cucumber?\nWhat transport does the person who is a journalist use?\nWhat food does the person in position 1 eat?\nWhat is the job of the person who watches disaster?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "5089fbc10efdb431bffe2c78c406a442285ebf32fca0ccadc6898b7d2b9b5891"
+ },
+ {
+  "no": 42,
+  "id": "lbz-12",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Hobby, Movie-Genre, Sport.\nThe attributes have the following possible values:\nHobby: gardening, rock-climbing, singing\nMovie-Genre: drama, fantasy, comedy\nSport: baseball, cricket, water-polo\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who watches comedy and the person who plays water-polo have different parity positions\nThe person who likes rock-climbing is somewhere between the person who watches comedy and the person who likes singing\nThe person who watches fantasy is not anywhere to the left of the person who watches comedy\nThe person who plays baseball is not anywhere to the right of the person who watches fantasy\nThe person who plays baseball and the person who watches fantasy have different parity positions\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat is the movie genre of the person who plays cricket?\nAt what position is the person who watches drama?\nAt what position is the person who watches fantasy?\nWhat sport does the person who likes singing play?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "51c63d38da594f139bba62f7fc0391fe5bfff81b15282260dba35e281d22ec38"
+ },
+ {
+  "no": 43,
+  "id": "lbz-13",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Hobby, Sport, Transport.\nThe attributes have the following possible values:\nHobby: gardening, baking, cooking\nSport: lacrosse, cricket, parkour\nTransport: scooter, quad-bike, helicopter\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who travels by scooter is on the immediate left of the person who likes baking\nThe person who plays parkour is not anywhere to the left of the person who plays lacrosse\nThe person who likes gardening is somewhere to the right of the person who likes cooking\nThe person who travels by helicopter is on the far right\nThe person who plays lacrosse and the person who likes gardening have the same parity positions\nThe person who plays cricket and the person who travels by quad-bike have different parity positions\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat hobby does the person who travels by helicopter do?\nWhat sport does the person who travels by scooter play?\nWhat transport does the person in position 1 use?\nWhat is the hobby of the person who travels by scooter?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "56ecba920668f36eb6a07e04c7e8478344029034ff2b1034be54c3934e083329"
+ },
+ {
+  "no": 44,
+  "id": "lbz-14",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 4 people standing in a line. From left to right, they are numbered 1 to 4.\nEach person has a set of attributes: Food, Hobby, Job, Music-Genre, Sport.\nThe attributes have the following possible values:\nFood: corn, broccoli, artichoke, carrot\nHobby: baking, card-games, photography, writing\nJob: electrician, writer, designer, teacher\nMusic-Genre: jazz, folk, gospel, classical\nSport: badminton, skateboarding, rowing, cycling\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who eats artichoke is on the immediate left of the person who plays badminton\nThe person who plays rowing is the same as the person who listens to folk\nThe person who is a designer is in an odd position\nThe person who eats broccoli is somewhere to the right of the person who listens to jazz\nThe person who likes card-games is the same as the person who eats artichoke\nThe person who is a writer is somewhere to the right of the person who plays badminton\nThe person who eats broccoli is not anywhere to the left of the person who is a teacher\nThe person who likes photography is the same as the person who plays cycling\nThe person who eats carrot is somewhere to the left of the person who listens to folk\nThe person who eats corn is on the far right\nThe person who listens to classical is not anywhere to the right of the person who listens to gospel\nThe person who is a writer is somewhere to the left of the person who likes baking\nThe person who listens to jazz is the same as the person who plays badminton\n\nGiven this information, answer the following questions:\nWhat food does the person in position 1 eat?\nWhat is the job of the person who eats carrot?\nWhat hobby does the person in position 4 do?\nWhat is the job of the person who likes photography?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "5c484e793c5fbab10f9d42025bd34db662a33f04ccf3f2157fad7fba1d3fe843"
+ },
+ {
+  "no": 45,
+  "id": "lbz-15",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 5 people standing in a line. From left to right, they are numbered 1 to 5.\nEach person has a set of attributes: Food, Job, Movie-Genre, Music-Genre, Sport.\nThe attributes have the following possible values:\nFood: lemon, blueberry, cranberry, cauliflower, pepper\nJob: police-officer, manager, nurse, designer, dancer\nMovie-Genre: spy, romance, satire, superhero, musical\nMusic-Genre: disco, country, techno, salsa, rock\nSport: lacrosse, weightlifting, tennis, cricket, golf\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who plays tennis and the person who listens to salsa have different parity positions\nThe person who eats blueberry is on the immediate left or immediate right of the person who listens to rock\nThe person who watches superhero is not anywhere to the right of the person who plays weightlifting\nThe person who eats lemon is not anywhere to the right of the person who is a nurse\nThe person who watches romance is not anywhere to the left of the person who watches spy\nThe person who listens to disco is somewhere to the right of the person who eats cauliflower\nThe person who watches spy is the same as the person who eats blueberry or the person who watches spy is the same as the person who listens to salsa or both\nThe person who listens to techno is not anywhere to the left of the person who is a dancer\nThe person who watches romance is on the immediate left or immediate right of the person who watches musical\nThe person who listens to salsa is on the immediate left or immediate right of the person who watches superhero\nThe person who plays lacrosse is not anywhere to the left of the person who watches superhero\nThe person who plays golf is on the far left or far right\nThe person who watches superhero is somewhere to the right of the person who is a designer\nThe person who eats pepper is on the immediate left or immediate right of the person who is a manager\nThe person who is a designer is not anywhere to the left of the person who is a nurse\nThe person who listens to techno is in an even position\nThe person who plays weightlifting is on the far left or far right\nThe person who watches musical is on the immediate left or immediate right of the person who eats lemon\nThe person who is a dancer is somewhere to the right of the person who listens to rock\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat movie genre does the person who plays tennis watch?\nWhat job does the person in position 3 have?\nWhat job does the person in position 2 have?\nAt what position is the person who listens to salsa?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "5dfee88d04c7497f9f4ee44138fed2f9298ed523ed05bde479293eb0cb06ee2f"
+ },
+ {
+  "no": 46,
+  "id": "lbz-16",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 5 people standing in a line. From left to right, they are numbered 1 to 5.\nEach person has a set of attributes: Hobby, Movie-Genre, Nationality, Pet, Transport.\nThe attributes have the following possible values:\nHobby: cooking, baking, puzzles, writing, gardening\nMovie-Genre: horror, spy, time-travel, action, musical\nNationality: italian, colombian, dutch, argentine, egyptian\nPet: rabbit, goat, hedgehog, turtle, fish\nTransport: scooter, snowmobile, ship, trike, motorbike\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who is dutch and the person who has a hedgehog have the same parity positions\nThe person who has a fish is somewhere to the left of the person who travels by snowmobile\nThe person who travels by snowmobile is somewhere between the person who travels by trike and the person who travels by motorbike\nThe person who watches spy is on the immediate left or immediate right of the person who watches action\nEither the person who has a rabbit is the same as the person who watches musical or the person who has a rabbit is the same as the person who travels by motorbike, but not both\nThe person who is egyptian is on the immediate left or immediate right of the person who watches time-travel\nThe person who likes cooking is not anywhere to the left of the person who likes gardening\nThe person who has a goat is on the immediate left or immediate right of the person who travels by snowmobile\nThe person who travels by snowmobile is not the same as the person who has a hedgehog\nThe person who travels by trike and the person who has a hedgehog have different parity positions\nThe person who likes writing is not the same as the person who has a fish or the person who has a fish is not the same as the person who watches action or both\nThe person who travels by ship is somewhere to the left of the person who has a hedgehog\nThe person who travels by scooter is not anywhere to the right of the person who has a hedgehog\nThe person who has a goat is somewhere to the right of the person who has a hedgehog\nThe person who travels by motorbike and the person who likes gardening have different parity positions\nThe person who watches action is somewhere to the right of the person who is dutch\nThe person who has a turtle is not anywhere to the right of the person who has a hedgehog\nThe person who likes puzzles is somewhere between the person who likes gardening and the person who is italian\nThe person who watches horror is somewhere between the person who has a turtle and the person who is colombian\nEither the person who is italian is the same as the person who likes writing or the person who is italian is the same as the person who has a turtle, but not both\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat pet does the person who travels by motorbike have?\nWhat is the nationality of the person who travels by ship?\nAt what position is the person who watches spy?\nWhat pet does the person who watches musical have?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "608656e6120f3941c236aa3291c9fe64a52a1fda70be7d0814a1104a88af33ff"
+ },
+ {
+  "no": 47,
+  "id": "lbz-17",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 5 people standing in a line. From left to right, they are numbered 1 to 5.\nEach person has a set of attributes: Hobby, Job, Music-Genre, Nationality, Sport.\nThe attributes have the following possible values:\nHobby: hiking, skydiving, filmmaking, magic-tricks, drawing\nJob: lawyer, security-guard, accountant, musician, freelancer\nMusic-Genre: metal, salsa, techno, ambient, folk\nNationality: egyptian, nigerian, russian, spanish, french\nSport: basketball, biathlon, golf, volleyball, tennis\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who listens to metal and the person who is a accountant have the same parity positions\nThe person who plays volleyball is not anywhere to the left of the person who is a lawyer\nEither the person who plays tennis is the same as the person who is a lawyer or the person who is a lawyer is the same as the person who is french, but not both\nThe person who listens to salsa is not anywhere to the left of the person who plays volleyball\nThe person who listens to salsa is not anywhere to the right of the person who likes filmmaking\nThe person who likes magic-tricks is not anywhere to the right of the person who plays tennis\nThe person who plays tennis is not anywhere to the right of the person who likes filmmaking\nThe person who is russian is not anywhere to the right of the person who likes drawing\nThe person who likes drawing is not anywhere to the right of the person who listens to techno\nThe person who likes drawing and the person who plays basketball have different parity positions\nThe person who is egyptian and the person who listens to techno have the same parity positions\nThe person who likes skydiving is not anywhere to the left of the person who likes filmmaking\nThe person who listens to folk is somewhere between the person who is russian and the person who is a accountant\nThe person who is a lawyer and the person who plays volleyball have different parity positions\nThe person who likes filmmaking is not anywhere to the right of the person who plays basketball\nEither the person who is spanish is the same as the person who is a musician or the person who is spanish is the same as the person who listens to folk, but not both\nThe person who is egyptian and the person who likes drawing have the same parity positions\nThe person who is a freelancer and the person who plays golf have different parity positions\nThe person who listens to ambient and the person who plays golf have different parity positions\nThe person who listens to metal is somewhere between the person who is a freelancer and the person who listens to ambient\nThe person who likes filmmaking is somewhere between the person who is russian and the person who is spanish\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat is the music genre of the person who is russian?\nAt what position is the person who is a musician?\nWhat music genre does the person who plays biathlon listen to?\nWhat music genre does the person who plays volleyball listen to?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "6bd178380f1808eadda3b1565ac385a0ed891cb438a611a8142e9002ac35bbe4"
+ },
+ {
+  "no": 48,
+  "id": "lbz-18",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 4 people standing in a line. From left to right, they are numbered 1 to 4.\nEach person has a set of attributes: Beverage, Food, Hobby, Music-Genre, Nationality.\nThe attributes have the following possible values:\nBeverage: coffee, sprite, mirinda, soy-milk\nFood: broccoli, nectarine, avocado, lemon\nHobby: filmmaking, card-games, traveling, board-games\nMusic-Genre: classical, electronic, pop, folk\nNationality: american, australian, mexican, chinese\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who likes board-games is not anywhere to the right of the person who is mexican\nThe person who likes card-games is the same as the person who eats broccoli or the person who drinks sprite is the same as the person who likes card-games or both\nThe person who is mexican is not anywhere to the right of the person who drinks coffee\nThe person who eats nectarine is not anywhere to the left of the person who listens to pop\nThe person who is australian is not the same as the person who drinks soy-milk\nThe person who likes filmmaking is not anywhere to the right of the person who listens to pop\nEither the person who listens to folk is the same as the person who drinks coffee or the person who listens to folk is the same as the person who is american, but not both\nThe person who eats broccoli and the person who drinks soy-milk have the same parity positions\nThe person who drinks mirinda and the person who listens to folk have the same parity positions\nThe person who listens to pop is in an odd position\nThe person who eats nectarine and the person who drinks sprite have the same parity positions\nThe person who likes board-games is somewhere between the person who drinks sprite and the person who likes card-games\nEither the person who is mexican is the same as the person who listens to electronic or the person who listens to electronic is the same as the person who drinks sprite, but not both\nThe person who listens to pop and the person who eats lemon have different parity positions\nThe person who likes filmmaking is somewhere to the left of the person who drinks sprite\nEither the person who likes filmmaking is the same as the person who drinks coffee or the person who eats broccoli is the same as the person who likes filmmaking, but not both\nThe person who is american is somewhere to the left of the person who is mexican\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat nationality does the person in position 3 have?\nAt what position is the person who likes card-games?\nWhat beverage does the person in position 2 drink?\nWhat is the hobby of the person who eats avocado?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "709c3cb6f68c39f7fac17d28cbfef62a41eb2ab52cb44d2b35c402395d0126c4"
+ },
+ {
+  "no": 49,
+  "id": "lbz-19",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 2 people standing in a line. From left to right, they are numbered 1 to 2.\nEach person has a set of attributes: Hobby, Job, Nationality.\nThe attributes have the following possible values:\nHobby: cooking, chess\nJob: engineer, chef\nNationality: thai, canadian\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who is a engineer is not anywhere to the left of the person who likes chess\nThe person who likes cooking is somewhere to the left of the person who is thai\n\nGiven this information, answer the following questions:\nWhat nationality does the person who is a chef have?\nAt what position is the person who is thai?\nWhat job does the person in position 1 have?\nWhat is the nationality of the person who likes chess?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "743aa0ae2d518d95d45ab8b77a7e9ffde5a03c07da8a6af9e81a4e3689aeef0c"
+ },
+ {
+  "no": 50,
+  "id": "lbz-20",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 5 people standing in a line. From left to right, they are numbered 1 to 5.\nEach person has a set of attributes: Movie-Genre, Music-Genre, Nationality, Pet, Transport.\nThe attributes have the following possible values:\nMovie-Genre: adventure, western, satire, crime, horror\nMusic-Genre: dubstep, techno, disco, salsa, soul\nNationality: british, indonesian, australian, french, canadian\nPet: dog, turtle, lizard, guinea-pig, rabbit\nTransport: ship, snowmobile, car, skateboard, scooter\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who watches horror is somewhere to the left of the person who has a dog\nThe person who is indonesian is the same as the person who travels by snowmobile or the person who is indonesian is the same as the person who has a dog or both\nThe person who listens to soul is on the immediate left or immediate right of the person who is british\nThe person who travels by car is on the immediate left or immediate right of the person who watches crime\nThe person who is french is somewhere between the person who watches crime and the person who travels by snowmobile\nThe person who has a guinea-pig is on the far left or far right\nThe person who listens to dubstep is not the same as the person who is australian or the person who listens to dubstep is not the same as the person who watches horror or both\nThe person who travels by snowmobile is in an even position\nThe person who has a guinea-pig is the same as the person who watches satire or the person who has a guinea-pig is the same as the person who is indonesian or both\nThe person who is canadian is somewhere to the left of the person who is british\nThe person who watches horror is somewhere to the left of the person who listens to salsa\nThe person who watches adventure is not the same as the person who has a lizard\nThe person who listens to dubstep is on the immediate left or immediate right of the person who has a rabbit\nThe person who travels by scooter is the same as the person who is australian or the person who travels by scooter is the same as the person who watches horror or both\nThe person who watches satire is the same as the person who travels by skateboard or the person who is indonesian is the same as the person who watches satire or both\nThe person who listens to salsa is the same as the person who has a turtle or the person who listens to salsa is the same as the person who watches western or both\nThe person who travels by ship is somewhere to the left of the person who has a lizard\nThe person who is british is the same as the person who travels by skateboard or the person who watches satire is the same as the person who is british or both\nThe person who listens to salsa and the person who is canadian have different parity positions\nThe person who listens to dubstep is the same as the person who has a turtle or the person who has a turtle is the same as the person who travels by car or both\nThe person who listens to disco is on the immediate left or immediate right of the person who watches adventure\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat music genre does the person in position 1 listen to?\nWhat is the nationality of the person who watches satire?\nAt what position is the person who watches satire?\nWhat is the pet of the person who travels by ship?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "7456b78b84937f3f7d137c1af263bfbb1987075e6d093f1bcaf89751e9d30b9c"
+ },
+ {
+  "no": 51,
+  "id": "lbz-21",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 4 people standing in a line. From left to right, they are numbered 1 to 4.\nEach person has a set of attributes: Food, Job, Movie-Genre, Pet.\nThe attributes have the following possible values:\nFood: pear, cucumber, spinach, plum\nJob: nurse, security-guard, scientist, freelancer\nMovie-Genre: martial-arts, disaster, family, thriller\nPet: ferret, goldfish, snake, chinchilla\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who has a ferret is immediately between the person who is a nurse and the person who has a snake\nThe person who watches disaster is somewhere to the left of the person who watches thriller\nThe person who watches thriller is somewhere to the left of the person who is a scientist\nThe person who watches family is in an even position\nThe person who watches family is somewhere to the left of the person who has a goldfish\nThe person who eats plum is on the immediate left or immediate right of the person who eats spinach\nThe person who eats cucumber is immediately between the person who is a scientist and the person who eats spinach\nThe person who eats spinach is somewhere to the left of the person who is a freelancer\n\nGiven this information, answer the following questions:\nAt what position is the person who eats cucumber?\nWhat food does the person who is a security-guard eat?\nWhat is the pet of the person who watches disaster?\nWhat is the pet of the person who watches thriller?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "763d6bf2ce815f919798705460bf9199302ffc581f1aec7031275ec60bdb36a3"
+ },
+ {
+  "no": 52,
+  "id": "lbz-22",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 3 people standing in a line. From left to right, they are numbered 1 to 3.\nEach person has a set of attributes: Beverage, Hobby, Nationality, Sport.\nThe attributes have the following possible values:\nBeverage: mirinda, 7up, sprite\nHobby: skydiving, board-games, sudoku\nNationality: thai, canadian, mexican\nSport: soccer, parkour, ice-hockey\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who plays ice-hockey is not anywhere to the right of the person who is thai\nThe person who drinks mirinda is somewhere to the left of the person who drinks 7up\nThe person who is mexican is the same as the person who likes skydiving\nThe person who likes board-games is on the far left or far right\nThe person who plays ice-hockey is somewhere to the right of the person who is canadian\nThe person who plays soccer is immediately between the person who drinks sprite and the person who is mexican\n\nGiven this information, answer the following questions:\nWhat beverage does the person in position 3 drink?\nWhat sport does the person in position 2 play?\nAt what position is the person who likes skydiving?\nWhat hobby does the person in position 2 do?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "7f1b41d1cdf3a3cf65c6107f8bb29f112137dc875cff80dc667c4cab83c4037a"
+ },
+ {
+  "no": 53,
+  "id": "lbz-23",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 2 people standing in a line. From left to right, they are numbered 1 to 2.\nEach person has a set of attributes: Beverage, Job, Movie-Genre.\nThe attributes have the following possible values:\nBeverage: juice, coffee\nJob: musician, fisherman\nMovie-Genre: fantasy, satire\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who watches satire is somewhere to the left of the person who watches fantasy\nThe person who drinks coffee is in an even position\nThe person who is a fisherman is somewhere to the right of the person who is a musician\n\nGiven this information, answer the following questions:\nAt what position is the person who watches satire?\nWhat is the job of the person who drinks coffee?\nWhat beverage does the person in position 2 drink?\nWhat job does the person who drinks juice have?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "84650f1042abf3d267bb79b6d1e1d899d27327a11ab81f1079121734a68306b1"
+ },
+ {
+  "no": 54,
+  "id": "lbz-24",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 4 people standing in a line. From left to right, they are numbered 1 to 4.\nEach person has a set of attributes: Beverage, Hobby, Movie-Genre, Pet.\nThe attributes have the following possible values:\nBeverage: juice, milk, soy-milk, cola\nHobby: photography, camping, singing, gardening\nMovie-Genre: family, comedy, adventure, satire\nPet: goldfish, ferret, frog, chinchilla\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who drinks milk is somewhere between the person who likes gardening and the person who drinks soy-milk\nThe person who watches family is in an even position\nThe person who watches satire is on the far right\nEither the person who has a goldfish is the same as the person who drinks juice or the person who watches adventure is the same as the person who has a goldfish, but not both\nEither the person who has a goldfish is the same as the person who likes gardening or the person who has a goldfish is the same as the person who drinks cola, but not both\nEither the person who watches comedy is the same as the person who drinks cola or the person who drinks cola is the same as the person who has a frog, but not both\nThe person who watches family is not the same as the person who has a ferret\nThe person who drinks milk is not anywhere to the left of the person who drinks juice\nThe person who likes singing is on the immediate left or immediate right of the person who has a goldfish\nThe person who drinks soy-milk and the person who likes photography have the same parity positions\nThe person who drinks cola is on the far right\nIn the above, 'parity position' means the evenness or oddness of the person's position in the line.\nGiven this information, answer the following questions:\nWhat is the beverage of the person who has a ferret?\nWhat movie genre does the person who drinks cola watch?\nWhat is the movie genre of the person who has a goldfish?\nAt what position is the person who watches family?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "8701a5c0c217906a7982be7725249353ee02d5fad80c6f8fc9ad22241072b89d"
+ },
+ {
+  "no": 55,
+  "id": "lbz-25",
+  "kind": "lb_zebra",
+  "format": "solution",
+  "prompt": "There are 4 people standing in a line. From left to right, they are numbered 1 to 4.\nEach person has a set of attributes: Food, Job, Pet, Transport.\nThe attributes have the following possible values:\nFood: grapefruit, potato, spinach, tomato\nJob: software-developer, journalist, firefighter, fisherman\nPet: lizard, snake, guinea-pig, chinchilla\nTransport: airplane, car, quad-bike, van\nEach person has a unique value for each attribute.\nYou know the following about the people:\nThe person who has a lizard is somewhere between the person who eats spinach and the person who eats grapefruit\nThe person who is a journalist is somewhere to the left of the person who has a guinea-pig\nThe person who eats potato is not anywhere to the left of the person who eats spinach\nThe person who is a journalist is somewhere to the right of the person who travels by van\nEither the person who has a lizard is the same as the person who is a fisherman or the person who has a lizard is the same as the person who eats grapefruit, but not both\nThe person who has a lizard is somewhere between the person who is a software-developer and the person who has a snake\nThe person who travels by van is somewhere to the right of the person who travels by car\nThe person who travels by quad-bike is somewhere to the left of the person who eats tomato\nEither the person who has a guinea-pig is the same as the person who is a software-developer or the person who has a guinea-pig is the same as the person who eats grapefruit, but not both\n\nGiven this information, answer the following questions:\nAt what position is the person who has a chinchilla?\nWhat is the food of the person who travels by van?\nWhat transport does the person in position 3 use?\nAt what position is the person who eats spinach?\nThink step by step and explain your reasoning, then output your answers in order in the format:\n<solution>answer1, answer2, answer3, ...</solution>\nFor instance, if there were 3 questions and the answers were A, B, and C, the output would be:\n<solution>A, B, C</solution>\nIf the answer to a question is a number, be sure to put it in numerical form (e.g. '3' instead of 'three').\n",
+  "source_id": "87af7bdf47fa02d0fc18d13cf81cda012d1edb0c3458a2dd4ab4f9ca3113988c"
+ }
+]
