@@ -69,6 +69,12 @@ else
       event.senderFrame?.url === "aurora://app/index.html" &&
       BrowserWindow.fromWebContents(event.sender);
     const inFlight = new Set();
+    let workerStats;
+    // Per-model success and latency only: model ids and numbers, never keys or prompts.
+    const stats = () =>
+      (workerStats ??= require("./worker-stats.cjs").createStatsStore({
+        file: path.join(app.getPath("userData"), "worker-stats.json"),
+      }));
     ipcMain.handle("aurora:ai-status", (event) => {
       if (!authorized(event)) throw new Error("Forbidden");
       return providers.status();
@@ -92,6 +98,7 @@ else
       try {
         return await require("./team.cjs").orchestrate(payload, {
           onProgress: (e) => event.sender.send("aurora:team-progress", e),
+          stats: stats(),
         });
       } finally {
         inFlight.delete(id);
