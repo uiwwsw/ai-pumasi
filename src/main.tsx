@@ -57,6 +57,7 @@ import {
   ensembleMessage,
 } from "./ensemble";
 import { SecretSettings } from "./secrets";
+import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import {
   project,
   projectTeam,
@@ -220,6 +221,7 @@ function App() {
       .catch(() => setAIError("API 키 설정 상태를 확인하지 못했습니다."));
   useEffect(() => {
     void refreshStatus();
+    void window.auroraAI?.setLang?.(getLang());
   }, []);
   useEffect(() => {
     try {
@@ -461,8 +463,8 @@ function App() {
       setBusy(true);
       setAIError("");
       setWorkers({});
-      const picked = routing.ensembleModels.filter(
-        (id) => modelReady(id, providerStatus),
+      const picked = routing.ensembleModels.filter((id) =>
+        modelReady(id, providerStatus),
       );
       setNotice(`묶음 투표 · ${picked.length}개 모델에 동시에 묻는 중`);
       const off = window.auroraAI.onTeamProgress?.((e) => {
@@ -723,9 +725,9 @@ function App() {
         <div className="window-space" />
         <div className="brand">
           <span className="brand-mark">
-            a<span>✦</span>
+            품<span>✦</span>
           </span>
-          <strong>Aurora</strong>
+          <strong>{appName()}</strong>
           <button
             className="icon-button"
             aria-label="사이드바 접기"
@@ -854,7 +856,7 @@ function App() {
                 <Menu size={18} />
               </button>
             )}
-            <span>Aurora</span>
+            <span>{appName()}</span>
             <ChevronRight size={13} />
             <strong>
               {auto ? "하나의 대화" : (legacyChat?.title ?? "새 세션")}
@@ -1608,18 +1610,35 @@ function App() {
                     Claude 키{" "}
                     {providerStatus.anthropic ? "감지됨 (미검증)" : "없음"} ·
                     Gemini 키{" "}
-                    {providerStatus.gemini ? "감지됨 (미검증)" : "없음"} ·
-                    무료 제공자{" "}
-                    {providerStatus.compat ? "연결됨 (미검증)" : "없음"}. 키는
-                    아래 API 키에서 넣거나 환경 변수로 줄 수 있습니다. 모델 접근
-                    권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과 별도로
-                    이 기기에 유지됩니다.
+                    {providerStatus.gemini ? "감지됨 (미검증)" : "없음"} · 무료
+                    제공자 {providerStatus.compat ? "연결됨 (미검증)" : "없음"}.
+                    키는 아래 API 키에서 넣거나 환경 변수로 줄 수 있습니다. 모델
+                    접근 권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과
+                    별도로 이 기기에 유지됩니다.
                   </p>
                 </section>
                 <SecretSettings
                   status={providerStatus}
                   onChanged={() => void refreshStatus()}
                 />
+                <label className="setting-row">
+                  <span>
+                    <strong>{t("화면 언어")}</strong>
+                    <small>
+                      {t(
+                        "바꾸면 화면을 다시 불러옵니다. 대화와 설정은 그대로입니다.",
+                      )}
+                    </small>
+                  </span>
+                  <select
+                    aria-label={t("화면 언어")}
+                    value={getLang()}
+                    onChange={(e) => setLang(e.target.value as Lang)}
+                  >
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                  </select>
+                </label>
                 <label className="setting-row">
                   <span>
                     <strong>대화 관리 모드</strong>
@@ -1794,7 +1813,8 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
       <div className="message-author">
         {message.role === "assistant" ? (
           <>
-            <span className="assistant-symbol">✦</span>Aurora
+            <span className="assistant-symbol">✦</span>
+            {appName()}
             <span className="sample-tag">
               {message.live ? "API 응답" : "로컬 미리보기"}
             </span>

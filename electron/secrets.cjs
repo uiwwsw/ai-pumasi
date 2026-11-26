@@ -89,9 +89,20 @@ function createSecretStore({ file, safeStorage, now = Date.now }) {
       const keys = {};
       for (const name of SECRET_NAMES) {
         const entry = data.keys?.[name];
-        keys[name] = entry
-          ? { set: true, savedAt: entry.savedAt ?? null }
-          : { set: false };
+        // A key this app can no longer open (OS keychain reset, or the app renamed) must be
+        // entered again; checked here so the window never shows it as working.
+        let readable = !!entry;
+        if (entry && available())
+          try {
+            safeStorage.decryptString(Buffer.from(entry.enc, "base64"));
+          } catch {
+            readable = false;
+          }
+        keys[name] = !entry
+          ? { set: false }
+          : readable
+            ? { set: true, savedAt: entry.savedAt ?? null }
+            : { set: false, stale: true };
       }
       return { encryption: available(), keys, compatUrl: data.compatUrl ?? "" };
     },

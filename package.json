@@ -1,9 +1,9 @@
 {
-  "name": "aurora-desktop",
+  "name": "ai-pumasi-desktop",
   "version": "0.1.8",
   "private": true,
   "type": "module",
-  "description": "Desktop app for OpenAI, Anthropic, Gemini and Ollama models, with a team mode where a paid lead model plans and free worker models do the tasks.",
+  "description": "AI Pumasi (AI품앗이): a desktop app where several free AI models work together, vote on the answer and stop as soon as the result is settled.",
   "main": "electron/main.cjs",
   "scripts": {
     "build": "tsc --noEmit && vite build",
@@ -44,11 +44,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uiwwsw/aurora.git"
+    "url": "git+https://github.com/uiwwsw/ai-pumasi.git"
   },
   "bugs": {
-    "url": "https://github.com/uiwwsw/aurora/issues"
+    "url": "https://github.com/uiwwsw/ai-pumasi/issues"
   },
-  "homepage": "https://github.com/uiwwsw/aurora#readme",
+  "homepage": "https://github.com/uiwwsw/ai-pumasi#readme",
   "author": "uiwwsw"
 }

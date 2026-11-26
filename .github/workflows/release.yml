@@ -80,28 +80,28 @@ jobs:
           VERSION=$(node -p 'require("./package.json").version')
           MOUNT="$RUNNER_TEMP/aurora-dmg"
           mkdir -p "$MOUNT"
-          hdiutil attach "distribution/$VERSION/Aurora-$VERSION-mac-$ARCH.dmg" -nobrowse -readonly -mountpoint "$MOUNT"
+          hdiutil attach "distribution/$VERSION/AI-Pumasi-$VERSION-mac-$ARCH.dmg" -nobrowse -readonly -mountpoint "$MOUNT"
           trap 'hdiutil detach "$MOUNT"' EXIT
-          ditto "$MOUNT/Aurora.app" "$RUNNER_TEMP/aurora-installed/Aurora.app"
-          node scripts/package-smoke.mjs "$RUNNER_TEMP/aurora-installed/Aurora.app/Contents/MacOS/Aurora"
+          ditto "$MOUNT/AI Pumasi.app" "$RUNNER_TEMP/aurora-installed/AI Pumasi.app"
+          node scripts/package-smoke.mjs "$RUNNER_TEMP/aurora-installed/AI Pumasi.app/Contents/MacOS/AI Pumasi"
       - name: Install and launch Windows EXE
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $version = node -p 'require("./package.json").version'
-          $installer = Get-Item "distribution/$version/Aurora-$version-windows-x64.exe"
-          $target = Join-Path $env:RUNNER_TEMP 'AuroraInstalled'
+          $installer = Get-Item "distribution/$version/AI-Pumasi-$version-windows-x64.exe"
+          $target = Join-Path $env:RUNNER_TEMP 'AIPumasiInstalled'
           $process = Start-Process -FilePath $installer.FullName -ArgumentList '/S', "/D=$target" -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
-          node scripts/package-smoke.mjs "$target/Aurora.exe"
+          node scripts/package-smoke.mjs "$target/AI Pumasi.exe"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: installers-${{ matrix.platform }}-${{ matrix.arch }}
           path: |
-            distribution/*/Aurora-*.dmg
-            distribution/*/Aurora-*.zip
-            distribution/*/Aurora-*.exe
+            distribution/*/AI-Pumasi-*.dmg
+            distribution/*/AI-Pumasi-*.zip
+            distribution/*/AI-Pumasi-*.exe
             distribution/*/*.blockmap
             distribution/*/latest*.yml
             distribution/*/build-info-*.json

@@ -41,11 +41,11 @@ jobs:
         shell: pwsh
         run: |
           $version = node -p 'require("./package.json").version'
-          $installer = Get-Item "distribution/$version/Aurora-$version-windows-x64.exe"
-          $target = Join-Path $env:RUNNER_TEMP 'AuroraInstalled'
+          $installer = Get-Item "distribution/$version/AI-Pumasi-$version-windows-x64.exe"
+          $target = Join-Path $env:RUNNER_TEMP 'AIPumasiInstalled'
           $process = Start-Process -FilePath $installer.FullName -ArgumentList '/S', "/D=$target" -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
-          node scripts/package-smoke.mjs "$target/Aurora.exe"
+          node scripts/package-smoke.mjs "$target/AI Pumasi.exe"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build Store submission package
         if: inputs.store_identity_name != ''
@@ -58,7 +58,7 @@ jobs:
         with:
           name: installers-win-x64
           path: |
-            distribution/*/Aurora-*.exe
+            distribution/*/AI-Pumasi-*.exe
             distribution/*/*.blockmap
             distribution/*/latest.yml
             distribution/*/build-info-*.json

@@ -176,9 +176,11 @@ export function SecretSettings({
     const fromEnv = !saved?.set && !!row.envFlag?.(status);
     const label = saved?.set
       ? `저장됨 · ${day(saved.savedAt)}`
-      : fromEnv
-        ? "환경 변수에서 사용 중"
-        : "없음";
+      : saved?.stale
+        ? "저장된 키를 열 수 없어 다시 넣어야 합니다"
+        : fromEnv
+          ? "환경 변수에서 사용 중"
+          : "없음";
     return (
       <div className="secret-row" key={row.name}>
         <div className="secret-head">

@@ -1,6 +1,8 @@
 const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("auroraAI", {
   status: () => ipcRenderer.invoke("aurora:ai-status"),
+  // The UI language, so main-process messages and dialogs match the window.
+  setLang: (lang) => ipcRenderer.invoke("aurora:set-lang", lang),
   request: (payload) => ipcRenderer.invoke("aurora:ai-request", payload),
   team: (payload) => ipcRenderer.invoke("aurora:team-run", payload),
   ensemble: (payload) => ipcRenderer.invoke("aurora:ensemble-run", payload),

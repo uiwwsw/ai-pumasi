@@ -109,7 +109,10 @@ export type SecretName =
 /** What the window may know about saved keys: set or not, and when. Never the value. */
 export type SecretsState = {
   encryption: boolean;
-  keys: Record<SecretName, { set: boolean; savedAt?: string | null }>;
+  keys: Record<
+    SecretName,
+    { set: boolean; savedAt?: string | null; stale?: boolean }
+  >;
   compatUrl: string;
 };
 export type Completion = {
@@ -236,6 +239,7 @@ export interface AIBridge {
     clear(): Promise<UsageHistory>;
   };
   status(): Promise<ProviderStatus>;
+  setLang?(lang: "ko" | "en"): Promise<void>;
   secrets?: {
     list(): Promise<SecretsState>;
     set(name: SecretName, value: string): Promise<SecretsState>;
