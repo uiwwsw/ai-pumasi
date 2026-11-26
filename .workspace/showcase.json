@@ -11,6 +11,7 @@
   "features": [
     "OpenAI·Anthropic·Gemini·Ollama를 한 앱에서 호출",
     "분석 모델의 추천을 보고 실행 모델은 직접 선택",
+    "멈추거나 잘린 답을 다시 시키는 주니어 감독",
     "유료 선임이 나누고 무료 주니어가 처리하는 팀 모드",
     "실행 전 모델별 예상 토큰 범위 비교",
     "관련 대화를 묶고 보관하는 작업 정리",
@@ -24,7 +25,7 @@
     },
     {
       "platform": "package",
-      "url": "https://github.com/uiwwsw/aurora/releases/tag/v0.1.4"
+      "url": "https://github.com/uiwwsw/aurora/releases/tag/v0.1.5"
     },
     {
       "platform": "web",
@@ -33,7 +34,7 @@
   ],
   "evidence": {
     "verifiedAt": "2026-11-26",
-    "note": "측정 기록 bench/README.md(bench/ 스크립트가 a local gateway로 실행, 앱 미반영): 자동 채점 추론 시험 30문항(seed 20261126)에서 무료 묶음 다수결 29점, ChatGPT 무료(로그인 없음, 문항마다 새 대화) 23점, Nemotron 3.5 Super 단독 30점. 일반 질문 31개 8.23 대 8.19, 코드·문서 동점. 묶음 응답은 일반 질문 중간값 37.8초, 추론 문항 약 10분. 팀 모드 선임 기본값 claude-opus-5-5(src/routing.ts). v0.1.4 설치 파일과 웹 데모는 2026-11-25 확인."
+    "note": "측정 기록 bench/README.md(bench/ 스크립트가 a local gateway로 실행, 앱 미반영): 자동 채점 추론 시험 30문항(seed 20261126)에서 무료 묶음 다수결 29점, ChatGPT 무료(로그인 없음, 문항마다 새 대화) 23점, Nemotron 3.5 Super 단독 30점. 일반 질문 31개 8.23 대 8.19, 코드·문서 동점. 묶음 응답은 일반 질문 중간값 37.8초, 추론 문항 약 10분. 팀 모드 선임 기본값 claude-opus-5-5(src/routing.ts). v0.1.5 macOS arm64·x64 서명·공증(staple 검증), Windows EXE 다운로드 HTTP 200, 웹 데모 0.1.5 반영 확인(2026-11-26)."
   },
   "visibility": "public"
 }
