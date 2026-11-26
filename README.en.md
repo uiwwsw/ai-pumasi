@@ -23,11 +23,17 @@
 <img src="https://raw.githubusercontent.com/uiwwsw/aurora/main/docs/images/aurora-v0.1.png" alt="Aurora workspace">
 
 
-## Strengths
+## How it differs
 
-- Not tied to one model such as Claude: the lead and the worker can each be a model from a different provider.
-- With Gemini Flash's free tier or a local Ollama model as both lead and worker, you can run a team without a paid key. Answer quality for that setup has not been measured yet.
-- Workers receive only their task, never the whole conversation. A failed worker call falls through to another free model.
+Running several models as a team is common. [OpenCode](https://opencode.ai/docs/agents/) has a desktop app where each agent can use its own model, free models included, and [Roo Code](https://docs.roocode.com/features/boomerang-tasks)'s orchestrator mode assigns models per mode. Lead-and-sub-agent desktop apps such as [Orkas](https://github.com/Orkas-AI/Orkas) also exist. The differences you can verify in Aurora's code are these:
+
+- **Capped lead output:** the lead model only returns a task list and an approve/redo verdict as JSON. It never rewrites the answer, and a worker merges the results. Output tokens from the expensive model stay small by design (`electron/team.cjs`).
+- **Free-tier fallbacks:** a worker call that fails with 429 or 5xx is retried once and then sent to another free model that has a key.
+- **Visible cost:** an estimated token range before a run, and lead and worker usage shown separately after it.
+- **Not a coding tool:** a desktop app that answers general questions and document tasks without file or shell access. The interface is in Korean.
+- **Published measurement:** the method and raw data comparing a free-model bundle with ChatGPT's free tier on the same Korean questions are public ([measurement notes](bench/README.md)).
+
+These differences are small and easy for other tools to copy. Until the app itself shows a free-model bundle beating a single model, Aurora has no clear differentiator.
 
 ## What works now
 
@@ -48,15 +54,16 @@
 
 ## Where it stands
 
-A developer preview built by one person. There are no known users or production deployments yet.
+A developer preview built by one person. There are no known users or production deployments.
 
-| Compared with | Where they are ahead | Where Aurora differs |
-| --- | --- | --- |
-| [Cherry Studio](https://github.com/CherryHQ/cherry-studio), [Msty](https://msty.ai), [Jan](https://jan.ai) (desktop apps) | dozens of providers, knowledge bases, MCP, side-by-side model answers, streaming | a lead/worker team mode is a built-in feature |
-| [Open WebUI](https://github.com/open-webui/open-webui), [LibreChat](https://github.com/danny-avila/librechat), [LobeHub](https://github.com/lobehub/lobe-chat) (self-hosted web) | agents, MCP, RAG, multiple users, large user base | one installed app, no server |
-| [CrewAI](https://github.com/crewAIInc/crewAI), [AutoGen](https://github.com/microsoft/autogen), [LangGraph](https://github.com/langchain-ai/langgraph) (frameworks) | roles, tools and flows designed freely in code | team set up in a settings screen without code |
+| Compared with | Where they are ahead |
+| --- | --- |
+| [OpenCode](https://opencode.ai), [Roo Code](https://roocode.com) (coding agents) | per-agent models, free models, file and terminal work, large user base |
+| [Orkas](https://github.com/Orkas-AI/Orkas), [Agent Teams AI](https://github.com/777genius/agent-teams-ai) (team desktop apps) | parallel sub-agents, local models, tool execution |
+| [Cherry Studio](https://github.com/CherryHQ/cherry-studio), [Msty](https://msty.ai), [Jan](https://jan.ai) (chat apps) | dozens of providers, knowledge bases, MCP, streaming, side-by-side answers |
+| [Open WebUI](https://github.com/open-webui/open-webui), [LibreChat](https://github.com/danny-avila/librechat) (self-hosted) | agents, RAG, multiple users |
 
-Team mode is the [orchestrator-workers](https://www.anthropic.com/engineering/building-effective-agents) pattern Anthropic describes; it is not a new technique. In measurements outside the app, a majority vote of free models scored 29 of 30 on a reasoning exam (ChatGPT free: 23), but one free model alone scored 30. There is no evidence yet that bundling improved the answers. Details are in the [measurement notes](bench/README.md) (Korean).
+In measurements outside the app, a majority vote of free models scored 29 of 30 on a reasoning exam (ChatGPT free: 23), but one free model alone scored 30. There is no evidence yet that bundling improved the answers.
 
 ## Install
 
