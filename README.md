@@ -20,6 +20,8 @@
 
 </div>
 
+<img src="docs/images/scorecard.svg" alt="같은 시험 성적: 오로라 무료 묶음 29/30, 28/30, 23.4/25 대 ChatGPT 무료 23/30, 24/30, 13.4/25">
+
 <img src="https://raw.githubusercontent.com/uiwwsw/aurora/main/docs/images/aurora-v0.1.png" alt="Aurora 작업 공간">
 
 
