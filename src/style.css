@@ -1507,6 +1507,13 @@ html[data-theme="dark"] .composer {
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
+.worker-board.in-dialog {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+}
 .worker-row.is-retry .worker-state,
 .worker-row.is-switch .worker-state,
 .worker-row.is-substituted .worker-state,
