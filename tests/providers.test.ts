@@ -505,6 +505,7 @@ test("substituted helper: various routed model scenarios", () => {
   assert.equal(substituted("nvidia/model-x", "other/model-y"), true);
   // When no routing prefix (no "/" in want)
   assert.equal(substituted("model-x", "model-y"), true);
+});
 test("a finished response reports token counts and input length, never text", async () => {
   const seen: any[] = [];
   await request(
