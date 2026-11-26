@@ -13,7 +13,7 @@ The web demo is local-only. Use the installed desktop application for provider-b
 | `GEMINI_API_KEY` | Credential for the Gemini adapter (default team-mode worker) |
 | `OLLAMA_MODEL` | Model name for a local Ollama at `127.0.0.1:11434` (default `qwen3`); no key needed |
 
-For source execution, copy `.env.example` to a Git-ignored `.env`. For an installed app, place `.env` in its standard application-data directory: `~/Library/Application Support/AI Pumasi` on macOS or `%APPDATA%/AI Pumasi` on Windows. Environment variables are also accepted. Restart the app after changing configuration.
+For source execution, copy `.env.example` to a Git-ignored `.env`. For an installed app, place `.env` in its standard application-data directory: `~/Library/Application Support/Pumasi Agent` on macOS or `%APPDATA%/Pumasi Agent` on Windows. Environment variables are also accepted. Restart the app after changing configuration.
 
 Use only your own credentials, keep them out of screenshots and issues, and apply the provider's access and spending controls. A detected input does not prove connectivity, model access or available quota. Credentials are handled in Electron's main process rather than conversation storage or renderer state.
 

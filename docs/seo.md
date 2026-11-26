@@ -1,6 +1,6 @@
 # Web search architecture
 
-The web preview uses one public origin: `https://ai-pumasi.vercel.app`.
+The web preview uses one public origin: `https://pumasi-agent.vercel.app`.
 
 - `/` keeps the Korean interactive demo and includes a visible, static product overview that does not require JavaScript.
 - `/en/` provides a static English overview and links to the Korean interactive interface.

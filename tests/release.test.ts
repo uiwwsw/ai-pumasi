@@ -35,7 +35,7 @@ function fixture(fn: (root: string, files: string[]) => void) {
     mkdirSync(dir);
     const entries = [];
     for (const ext of platform === "mac" ? ["dmg", "zip"] : ["exe"]) {
-      const name = `AI-Pumasi-0.1.2-${platform === "mac" ? "mac" : "windows"}-${arch}.${ext}`;
+      const name = `Pumasi-Agent-0.1.2-${platform === "mac" ? "mac" : "windows"}-${arch}.${ext}`;
       const bytes = Buffer.alloc(1000001, arch === "arm64" ? 1 : 2);
       writeFileSync(path.join(dir, name), bytes);
       files.push(path.join(dir, name));
@@ -78,7 +78,7 @@ function verify(cwd: string) {
     env: {
       ...process.env,
       GITHUB_REF: "refs/tags/v0.1.2",
-      GITHUB_REPOSITORY: "uiwwsw/ai-pumasi",
+      GITHUB_REPOSITORY: "uiwwsw/pumasi-agent",
     },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],

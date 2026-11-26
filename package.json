@@ -1,9 +1,9 @@
 {
-  "name": "ai-pumasi-desktop",
+  "name": "pumasi-agent-desktop",
   "version": "0.1.9",
   "private": true,
   "type": "module",
-  "description": "AI Pumasi (AI품앗이): a desktop app where several free AI models work together, vote on the answer and stop as soon as the result is settled.",
+  "description": "Pumasi Agent (품앗이 에이전트): a desktop app where several free AI models work together, vote on the answer and stop as soon as the result is settled.",
   "main": "electron/main.cjs",
   "scripts": {
     "build": "tsc --noEmit && vite build",
@@ -44,11 +44,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uiwwsw/ai-pumasi.git"
+    "url": "git+https://github.com/uiwwsw/pumasi-agent.git"
   },
   "bugs": {
-    "url": "https://github.com/uiwwsw/ai-pumasi/issues"
+    "url": "https://github.com/uiwwsw/pumasi-agent/issues"
   },
-  "homepage": "https://github.com/uiwwsw/ai-pumasi#readme",
+  "homepage": "https://github.com/uiwwsw/pumasi-agent#readme",
   "author": "uiwwsw"
 }

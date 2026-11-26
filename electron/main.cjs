@@ -16,12 +16,14 @@ const fs = require("node:fs");
 const providers = require("./providers.cjs");
 const { createSecretStore, redact } = require("./secrets.cjs");
 const { tr } = require("./i18n.cjs");
-app.setName("AI Pumasi");
+app.setName("Pumasi Agent");
 app.setAppUserModelId("com.uiwwsw.aurora");
-// The app was called Aurora until 0.1.8. Keep using that folder so conversations, settings and
-// saved keys carry over; new installs get a folder under the new name.
-const legacyData = path.join(app.getPath("appData"), "Aurora");
-if (!process.env.AURORA_QA_DATA && fs.existsSync(legacyData)) {
+// The app was called Aurora until 0.1.8 and AI Pumasi in 0.1.9. Keep using the older folder so
+// conversations, settings and saved keys carry over; new installs get a folder under the new name.
+const legacyData = ["Aurora", "AI Pumasi"]
+  .map((name) => path.join(app.getPath("appData"), name))
+  .find((dir) => fs.existsSync(dir));
+if (!process.env.AURORA_QA_DATA && legacyData) {
   app.setPath("userData", legacyData);
   app.setPath("sessionData", legacyData);
 }
@@ -44,7 +46,7 @@ if (process.env.AURORA_QA_DATA) {
 }
 function createWindow() {
   const win = new BrowserWindow({
-    title: "AI Pumasi",
+    title: "Pumasi Agent",
     width: 1440,
     height: 940,
     minWidth: 800,
