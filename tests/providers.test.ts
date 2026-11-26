@@ -364,8 +364,8 @@ const compatPayload = {
 };
 
 test("compat status: various env configurations", async () => {
-  // with key only -> true
-  assert.equal((await status({ AURORA_OPENAI_COMPAT_KEY: "k" })).compat, true);
+  // key without a URL -> false: there is no default server
+  assert.equal((await status({ AURORA_OPENAI_COMPAT_KEY: "k" })).compat, false);
   // empty env -> false
   assert.equal((await status({})).compat, false);
   // evil URL -> false
@@ -391,7 +391,10 @@ test("compat status: various env configurations", async () => {
 test("compat request with key", async () => {
   let seen: any;
   const result = await request(compatPayload, {
-    env: { AURORA_OPENAI_COMPAT_KEY: "unit-test-key" },
+    env: {
+      AURORA_OPENAI_COMPAT_KEY: "unit-test-key",
+      AURORA_OPENAI_COMPAT_URL: "https://gateway.example/v1/chat/completions",
+    },
     fetchImpl: async (url: string, opts: any) => {
       seen = { url, opts, body: JSON.parse(opts.body) };
       return json({
@@ -401,7 +404,7 @@ test("compat request with key", async () => {
       });
     },
   });
-  assert.equal(seen.url, "http://127.0.0.1:8080/v1/chat/completions");
+  assert.equal(seen.url, "https://gateway.example/v1/chat/completions");
   assert.equal(seen.opts.headers.Authorization, "Bearer unit-test-key");
   assert.equal(seen.body.model, compatPayload.model);
   assert.equal(seen.body.messages[0].role, "system");
@@ -462,7 +465,10 @@ test("compat request rejects when URL is invalid (not localhost/https)", async (
 
 test("compat substituted: served model matches request without routing prefix", async () => {
   const result = await request(compatPayload, {
-    env: { AURORA_OPENAI_COMPAT_KEY: "k" },
+    env: {
+      AURORA_OPENAI_COMPAT_KEY: "k",
+      AURORA_OPENAI_COMPAT_URL: "https://gateway.example/v1/chat/completions",
+    },
     fetchImpl: async () => {
       return json({
         model: "nvidia/nemotron-3.5-super-vl-120b-a12b",
@@ -476,7 +482,10 @@ test("compat substituted: served model matches request without routing prefix", 
 
 test("compat substituted: served model is different (other/model-x)", async () => {
   const result = await request(compatPayload, {
-    env: { AURORA_OPENAI_COMPAT_KEY: "k" },
+    env: {
+      AURORA_OPENAI_COMPAT_KEY: "k",
+      AURORA_OPENAI_COMPAT_URL: "https://gateway.example/v1/chat/completions",
+    },
     fetchImpl: async () => {
       return json({
         model: "other/model-x",

@@ -39,7 +39,7 @@
 - 묶음이 처음으로 무료 단독 최고 모델보다 높았다(51.4 대 51.0). 차이는 퍼즐 칸 하나 수준이라 크지 않다.
 - ChatGPT 무료는 퍼즐 25문항 중 11문항에서 지시한 `<solution>` 형식을 무시하고 문장으로 답했다. 공식 규칙으로는 0점이라, 문장 속 최종 답을 사람이 옮겨 적어 다시 채점한 줄도 함께 적었다. 그래도 8점 뒤진다. 4문항은 해가 있는 퍼즐에 "모순" 또는 "답이 하나로 안 정해진다"고 답했고, AIME 1문항은 답 대신 문제 해석을 되물었다.
 - 가중치는 앞의 두 시험으로만 정해 `weights.json`에 미리 고정했다. 이번 시험은 가중치 결정에 쓰지 않았다. 이번에는 단순 다수결과 가중 투표 결과가 같았다.
-- ChatGPT 무료는 로그인 없이 웹에서 문항마다 새 대화로 풀었다. 웹 검색 칩은 껐다. 무료 묶음은 a local gateway로 부른 무료 모델이다.
+- ChatGPT 무료는 로그인 없이 웹에서 문항마다 새 대화로 풀었다. 웹 검색 칩은 껐다. 무료 묶음은 각 제공자의 무료 API(NVIDIA, Google)로 부른 모델이다.
 - 참고로 MathArena 공개 순위표의 AIME 2026 최상위 유료 모델은 100%다. 무료 묶음은 93%다.
 - 원자료: `reasoning/ext-20261126/` (문항, 정답, 묶음 답, ChatGPT 답 공식·너그러운 판).
 
@@ -69,7 +69,7 @@
 3. 쉬운 질문은 NVIDIA Nemotron Ultra 하나가 답하고, 어려운 질문은 Nemotron Ultra·Gemini Flash-Lite·Nemotron Lightning 셋이 답한 뒤 Nemotron Ultra가 합친다.
 4. 답에 숫자·시간·전화번호가 있으면 Gemini Flash-Lite가 대조해 틀린 부분만 고치거나 "공식 확인 필요"로 바꾼다.
 
-모든 모델은 로컬 a local gateway(무료 제공자 묶음)로 부른다. 구독 계정을 거치는 모델(GitHub Copilot, Augment, Codex)은 쓰지 않았다.
+모든 모델은 각 제공자의 무료 API로 불렀다. 유료 구독 계정을 거치는 모델은 쓰지 않았다.
 
 ## 무료 모델별 측정 (40문항)
 
@@ -91,16 +91,9 @@
 - ChatGPT 무료 답은 로그인 없이 웹에서 받은 하루치 한 번의 답이다(`results/chatgpt-*.json`). ChatGPT는 웹 검색을 썼다.
 - 일반 질문은 Claude가 출처를 가린 A/B로 채점했다(`results/duel*-scores.json`). 4차전에서 바뀐 12개는 ChatGPT 답이 이전과 같아 알아볼 수 있었으므로 ChatGPT 점수는 3차전 값을 유지했다. 3차전 q29 점수는 채점 실수를 바로잡았다.
 - 질문 31개, 채점관 1명 기준이라 0.04점 차이는 오차 범위다.
-- a local gateway 오토라우터 채점(`judge-auto.*`, `duel.json`)은 실패가 많고 순서에 따라 승자가 뒤집혀 결론에 쓰지 않았다.
-- a local gateway가 알리지 않고 다른 모델로 바꿔 답한 경우(26번)는 점수에서 뺐다.
+- 무료 모델에게 채점을 맡긴 자동 채점은 실패가 많고 순서에 따라 승자가 뒤집혀 결론에 쓰지 않았다.
+- 제공자가 알리지 않고 다른 모델로 바꿔 답한 경우(26번)는 점수에서 뺐다.
 
-## 다시 돌리기
+## 공개한 것과 하지 않은 것
 
-```bash
-node bench/run_models.mjs bench/results/raw-free.json <모델...>   # 모델별 답 수집
-node bench/grade.mjs auto                                         # 코드·문서 자동 채점
-node bench/run_aurora_search.mjs aurora-v3                        # 검색·난이도 분기 오로라
-node bench/run_verify.mjs aurora-v3 aurora-v4                     # 숫자 교차 확인
-```
-
-a local gateway 키(`the gateway key file`)는 실행 중에만 읽고 출력하지 않는다.
+문항(`items/`, `reasoning/*.json`), 시험 생성기(`reasoning/generate.py`, `generate_hard.py`, `ext_prepare.py`), 채점기(`reasoning/grade.py`, `ext_grade.py`), 투표 가중치 계산(`reasoning/calibrate.py`, `weights.json`)과 모든 모델·ChatGPT 답안은 공개한다. 각 모델에 문항을 보내는 실행기는 개인 실행 환경(키 위치, 접속 주소)에 묶여 있어 공개하지 않는다. 앱의 묶음 투표(`electron/ensemble.cjs`)가 같은 투표 규칙을 쓴다.

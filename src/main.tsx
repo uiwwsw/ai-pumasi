@@ -1605,7 +1605,7 @@ function App() {
                     OpenAI 호환 서버{" "}
                     {providerStatus.compat ? "설정됨 (미검증)" : "없음"}. 키는
                     .env 또는 환경변수로 설정하고 앱을 재시작하세요. OpenAI 호환
-                    서버(예: a local gateway)는
+                    서버(예: OpenRouter, NVIDIA)는
                     AURORA_OPENAI_COMPAT_URL·AURORA_OPENAI_COMPAT_KEY로
                     연결합니다. 모델 접근 권한은 실제 호출 시 확인됩니다. 모델
                     설정은 대화 저장과 별도로 이 기기에 유지됩니다.
