@@ -58,10 +58,10 @@
 
 차례대로 만들어 버전마다 배포합니다.
 
-1. **스트리밍 응답:** 답이 다 만들어질 때까지 기다리지 않고 쓰는 대로 보입니다.
-2. **실행 방식 자동 선택:** 질문을 보고 단일 모델·팀·묶음 투표 중 어떤 방식이 맞는지 골라 줍니다.
-3. **파일 첨부:** 문서를 붙여 질문합니다.
-4. **영어 화면.**
+1. **품앗이 게시판:** 문제를 올리면 내 앱이 일을 나눠 게시하고, 다른 사용자가 "돕기"를 누르면 그 사람의 앱이 자기 토큰으로 작업 하나를 자동으로 처리해 올립니다. 여러 사람의 결과는 투표로 고르고, 기부한 만큼 점수가 쌓입니다. [설계](docs/pumasi-network.md)
+2. **스트리밍 응답:** 답이 다 만들어질 때까지 기다리지 않고 쓰는 대로 보입니다.
+3. **실행 방식 자동 선택:** 질문을 보고 단일 모델·팀·묶음 투표 중 어떤 방식이 맞는지 골라 줍니다.
+4. **파일 첨부:** 문서를 붙여 질문합니다.
 
 ## 이런 분께 맞습니다
 
@@ -71,9 +71,9 @@
 
 | 운영체제 | 설치 파일 |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.8/AI-Pumasi-0.1.8-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.8/AI-Pumasi-0.1.8-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.8/AI-Pumasi-0.1.8-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.9/AI-Pumasi-0.1.9-windows-x64.exe) |
 
 Windows 설치 파일은 개발자 인증서로 서명하지 않아 SmartScreen 경고가 나올 수 있습니다. 키 설정, 팀 모드 사용법, 데이터 처리, 소스에서 실행하는 방법은 [사용 안내](docs/guide.md)에 있습니다.
 

@@ -1,6 +1,6 @@
 {
   "name": "ai-pumasi-desktop",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "type": "module",
   "description": "AI Pumasi (AI품앗이): a desktop app where several free AI models work together, vote on the answer and stop as soon as the result is settled.",

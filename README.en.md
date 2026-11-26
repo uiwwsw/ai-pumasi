@@ -37,7 +37,7 @@
 
 **You see the cost before you spend it.** An estimated token range and its share of your budget before a run; lead and worker usage shown separately after it.
 
-**A question app for anyone, not a coding tool.** It answers general questions and document tasks without file or terminal access. The interface is in Korean.
+**A question app for anyone, not a coding tool.** It answers general questions and document tasks without file or terminal access. The interface is in English and Korean; it follows your system language and can be switched in Settings.
 
 ## What works now
 
@@ -58,10 +58,10 @@
 
 Built in this order, each shipped in its own release.
 
-1. **Streaming responses:** see the answer as it is written.
-2. **Automatic mode choice:** picks a single model, a team or a bundle vote for each question.
-3. **File attachments.**
-4. **English interface.**
+1. **Pumasi board:** post a problem and your app splits it into tasks; when other users press "Help", their app processes one task automatically with their own tokens and posts the result. Results from several helpers are chosen by vote, and helping earns points. [Design](docs/pumasi-network.md) (Korean)
+2. **Streaming responses:** see the answer as it is written.
+3. **Automatic mode choice:** picks a single model, a team or a bundle vote for each question.
+4. **File attachments.**
 
 ## Who it is for
 
@@ -71,9 +71,9 @@ If you need an agent that edits code and runs a terminal, [OpenCode](https://ope
 
 | Platform | Installer |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.8/AI-Pumasi-0.1.8-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.8/AI-Pumasi-0.1.8-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.8/AI-Pumasi-0.1.8-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/ai-pumasi/releases/download/v0.1.9/AI-Pumasi-0.1.9-windows-x64.exe) |
 
 The Windows installer is not signed with a developer certificate, so SmartScreen may warn. Keys, team mode, data handling and running from source are covered in the [guide](docs/guide.en.md).
 
