@@ -291,7 +291,7 @@ function App() {
       <ol
         ref={extra ? boardRef : undefined}
         className={`worker-board${extra}`}
-        aria-label="주니어 진행 상황"
+        aria-label="작업 진행 상황"
         aria-live="polite"
       >
         {Object.values(workers).map((w) => (
@@ -477,7 +477,7 @@ function App() {
           context: context(p.decision),
         });
         completion = {
-          text: `${team.text}\n\n—\n팀 모드 · 선임 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 주니어 ${team.workersUsed.map((id) => modelById(id).name).join(", ") || modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? " · 선임 승인" : ""}${team.tasks.some((t) => t.failed) ? ` · 실패 작업 ${team.tasks.filter((t) => t.failed).length}개` : ""}${team.tasks.some((t) => t.incomplete) ? " · 일부 작업 출력 상한 도달" : ""}${team.warning ? `\n주의: ${team.warning}` : ""}${[...new Set((team.substitutions ?? []).map((s) => `\n주의: ${modelById(s.requested).name} 대신 ${s.servedBy ?? "다른 모델"}가 답했습니다.`))].join("")}`,
+          text: `${team.text}\n\n—\n팀 모드 · 총괄 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 작업 ${team.workersUsed.map((id) => modelById(id).name).join(", ") || modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? " · 총괄 모델 승인" : ""}${team.tasks.some((t) => t.failed) ? ` · 실패 작업 ${team.tasks.filter((t) => t.failed).length}개` : ""}${team.tasks.some((t) => t.incomplete) ? " · 일부 작업 출력 상한 도달" : ""}${team.warning ? `\n주의: ${team.warning}` : ""}${[...new Set((team.substitutions ?? []).map((s) => `\n주의: ${modelById(s.requested).name} 대신 ${s.servedBy ?? "다른 모델"}가 답했습니다.`))].join("")}`,
           model: team.lead,
           inputTokens: team.usage.lead.in + team.usage.worker.in,
           outputTokens: team.usage.lead.out + team.usage.worker.out,
@@ -1462,11 +1462,11 @@ function App() {
                   </label>
                   <label className="setting-row">
                     <span>
-                      <strong>선임 모델</strong>
+                      <strong>총괄 모델</strong>
                       <small>작업을 나누고 결과를 검수합니다.</small>
                     </span>
                     <select
-                      aria-label="선임 모델"
+                      aria-label="총괄 모델"
                       value={routing.lead}
                       onChange={(e) =>
                         setRouting((r) => ({ ...r, lead: e.target.value }))
@@ -1481,14 +1481,14 @@ function App() {
                   </label>
                   <label className="setting-row">
                     <span>
-                      <strong>주니어 모델</strong>
+                      <strong>작업 모델</strong>
                       <small>
                         나눠진 작업 하나씩만 받습니다. 대화 전체는 보내지
                         않습니다.
                       </small>
                     </span>
                     <select
-                      aria-label="주니어 모델"
+                      aria-label="작업 모델"
                       value={routing.worker}
                       onChange={(e) =>
                         setRouting((r) => ({ ...r, worker: e.target.value }))

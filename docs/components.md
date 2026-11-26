@@ -5,7 +5,7 @@ Aurora 저장소에 들어 있는 파일, 의존하는 라이브러리와 외부
 먼저 범위를 분명히 해 둔다.
 
 - Aurora는 새로운 라우팅 알고리즘을 만들지 않았다. 앱 안의 "추천"은 분석용 모델에게 어떤 모델이 좋을지 물어보는 프롬프트 한 번이고, 실행 모델은 사람이 고른다.
-- 팀 모드의 선임 모델 기본값은 Claude Opus 5.5(OpenAI 프리셋에서는 GPT-6 Astra)로, 유료 API 키가 필요하다. 무료로 돌아가는 쪽은 주니어(Gemini Flash 무료 한도, Ollama 로컬)뿐이다. 선임에 무료 모델을 고를 수는 있지만 그 조합은 측정하지 않았다.
+- 팀 모드의 총괄 모델 기본값은 Claude Opus 5.5(OpenAI 프리셋에서는 GPT-6 Astra)로, 유료 API 키가 필요하다. 무료로 돌아가는 쪽은 작업 모델(Gemini Flash 무료 한도, Ollama 로컬)뿐이다. 총괄 모델에 무료 모델을 고를 수는 있지만 그 조합은 측정하지 않았다.
 - `bench/`의 "무료 모델 묶음"은 앱 기능이 아니다. 별도 스크립트가 로컬 [OmniRoute](https://github.com/diegosouzapw/OmniRoute)를 거쳐 무료 제공자들을 부른 실험이고, 여러 무료 제공자를 하나의 주소로 모아 주는 일은 OmniRoute가 한다.
 
 ## 파일 구조
@@ -16,12 +16,12 @@ aurora/
 │   ├── main.cjs               # 창 생성, aurora:// 프로토콜, IPC 처리, 메뉴
 │   ├── preload.cjs            # 화면(renderer)에 window.auroraAI만 노출하는 다리
 │   ├── providers.cjs          # 제공자 4곳(OpenAI·Anthropic·Gemini·Ollama) 호출 어댑터
-│   ├── team.cjs               # 팀 모드: 선임이 나누고 주니어가 처리, 선임이 판정
+│   ├── team.cjs               # 팀 모드: 총괄 모델이 나누고 작업 모델이 처리, 총괄 모델이 판정
 │   └── updates.cjs            # electron-updater 연결, 업데이트 확인·재시작 안내
 ├── src/                       # 화면 (React)
 │   ├── main.tsx               # 대화·작업 정리·설정 화면 전체 (약 1,450줄 단일 파일)
 │   ├── domain.ts              # 토큰 범위 추정, 작업 묶기 규칙, 예산 비율 계산
-│   ├── routing.ts             # 모델 역할 설정(분석·실행·선임·주니어)과 타입 정의
+│   ├── routing.ts             # 모델 역할 설정(분석·실행·총괄·작업 모델)과 타입 정의
 │   ├── catalog.json           # 앱이 아는 모델 8개 목록과 등급(경량·표준·고급)
 │   └── style.css
 ├── scripts/                   # 빌드·배포 도구
@@ -53,7 +53,7 @@ aurora/
 1. 화면(`src/main.tsx`)이 `window.auroraAI.request()`를 부른다. 이 함수는 `preload.cjs`가 만든 것이고, 화면은 API 키를 보지 못한다.
 2. 메인 프로세스(`main.cjs`)가 IPC로 받아 `providers.cjs`의 `request()`로 넘긴다.
 3. `providers.cjs`는 모델 목록(`catalog.json`)에서 제공자를 찾아 환경 변수의 키(`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`)를 붙여 한 번 호출한다. 오류가 나도 자동으로 다시 보내지 않고, 제공자의 오류 본문은 화면에 넘기지 않는다.
-4. 팀 모드이면 `team.cjs`의 `orchestrate()`가 같은 `request()`를 여러 번 부른다: 선임 계획 1번 → 주니어 작업 1~6번 → 선임 판정 → 필요한 작업만 재시도(최대 2회차) → 주니어가 결과 합치기.
+4. 팀 모드이면 `team.cjs`의 `orchestrate()`가 같은 `request()`를 여러 번 부른다: 총괄 모델 계획 1번 → 작업 1~6번 → 총괄 모델 판정 → 필요한 작업만 재시도(최대 2회차) → 작업 모델이 결과 합치기.
 
 토큰 "예상"은 `domain.ts`에서 문자 수와 모델 등급만으로 계산한다. 실제 토크나이저를 쓰지 않으므로 같은 등급의 모델은 같은 범위가 나온다.
 
@@ -86,10 +86,10 @@ aurora/
 
 | 서비스 | 쓰는 곳 | 비용 |
 | --- | --- | --- |
-| OpenAI Responses API | 분석·실행·선임 | 유료 API 키 |
-| Anthropic Messages API | 분석·실행·선임 (팀 모드 선임 기본값) | 유료 API 키 |
-| Google Gemini (OpenAI 호환 주소) | 주니어 기본값 | 무료 한도 안에서 무료 |
-| [Ollama](https://ollama.com) | 주니어 (내 컴퓨터에서 실행, 기본 `qwen3`) | 무료, 대신 내 컴퓨터 자원 사용 |
+| OpenAI Responses API | 분석·실행·총괄 모델 | 유료 API 키 |
+| Anthropic Messages API | 분석·실행·총괄 모델 (팀 모드 총괄 모델 기본값) | 유료 API 키 |
+| Google Gemini (OpenAI 호환 주소) | 작업 모델 기본값 | 무료 한도 안에서 무료 |
+| [Ollama](https://ollama.com) | 작업 모델 (내 컴퓨터에서 실행, 기본 `qwen3`) | 무료, 대신 내 컴퓨터 자원 사용 |
 | [OmniRoute](https://github.com/diegosouzapw/OmniRoute) | `bench/` 스크립트만 | 무료 제공자 묶음. 앱은 쓰지 않음 |
 | 위키백과 API | `bench/run_aurora_search.mjs`만 | 무료 |
 | GitHub Releases, Vercel | 설치 파일 배포, 웹 데모 | — |
@@ -98,7 +98,7 @@ aurora/
 
 Aurora의 구조는 이미 알려진 방식들을 가져와 작게 붙인 것이다.
 
-- **팀 모드 (선임이 나누고 주니어가 처리, 선임이 판정):** Anthropic의 [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)에 정리된 orchestrator-workers와 evaluator-optimizer 패턴 그대로다.
+- **팀 모드 (총괄 모델이 나누고 작업 모델이 처리, 총괄 모델이 판정):** Anthropic의 [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)에 정리된 orchestrator-workers와 evaluator-optimizer 패턴 그대로다.
 - **`bench/`의 "여러 모델이 답하고 하나가 합치기":** Together AI의 [Mixture-of-Agents](https://github.com/togethercomputer/MoA)(2024)와 같은 구조다. 여러 답을 모아 합치는 연구로는 [LLM-Blender](https://github.com/yuchenlin/LLM-Blender)(2023)도 있다.
 - **질문마다 모델 고르기:** 학습된 라우터는 LMSYS의 [RouteLLM](https://github.com/lm-sys/RouteLLM), 서비스로는 [OpenRouter](https://openrouter.ai)의 `openrouter/auto`가 있다. Aurora는 라우터를 학습하지 않았고, 분석 모델에게 묻는 방식이라 이것들보다 단순하다.
 - **여러 제공자를 하나의 주소로:** [LiteLLM](https://github.com/BerriAI/litellm)과 OmniRoute가 하는 일이다. Aurora의 `providers.cjs`는 네 제공자만 직접 연결한 작은 어댑터다.
