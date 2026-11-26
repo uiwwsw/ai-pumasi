@@ -1,4 +1,10 @@
 // Keep updates in the main process. The renderer cannot choose a feed or installer.
+const CHANNELS = ["stable", "beta", "alpha"];
+const CHANNEL_NAMES = {
+  stable: "안정 버전",
+  beta: "베타 (새 기능 먼저)",
+  alpha: "알파 (실험 중, 불안정)",
+};
 function setupUpdates({
   app,
   autoUpdater,
@@ -9,6 +15,8 @@ function setupUpdates({
   disabled = false,
   storeDistribution = process.windowsStore === true,
   setIntervalImpl = setInterval,
+  // Where the chosen update channel is kept. Without it the channel follows the installed version.
+  channelStore = null,
 }) {
   const { tr } = require("./i18n.cjs");
   let checking = false;
@@ -86,11 +94,24 @@ function setupUpdates({
       failed();
     }
   };
+  // Channels: stable = regular GitHub releases only; beta = beta and stable; alpha = everything.
+  // A beta or alpha build stays on its own channel until the user picks another.
+  const fromVersion = /-(alpha|beta)\b/.exec(app.getVersion())?.[1] ?? "stable";
+  let channel = fromVersion;
+  try {
+    const saved = channelStore?.read();
+    if (CHANNELS.includes(saved)) channel = saved;
+  } catch {}
+  const applyChannel = () => {
+    autoUpdater.allowPrerelease = channel !== "stable";
+    if (channel !== "stable") autoUpdater.channel = channel;
+    // Setting a channel turns downgrades on in electron-updater; never move backwards.
+    autoUpdater.allowDowngrade = false;
+  };
   if (!unavailable) {
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
-    autoUpdater.allowPrerelease = true; // Pumasi Agent is currently distributed as a developer preview.
-    autoUpdater.allowDowngrade = false;
+    applyChannel();
     autoUpdater.on("update-not-available", () => {
       checking = false;
       if (manual) void tell(tr("최신 버전을 사용하고 있습니다."));
@@ -121,6 +142,29 @@ function setupUpdates({
           },
         },
         {
+          label: tr("업데이트 채널"),
+          submenu: CHANNELS.map((c) => ({
+            label: tr(CHANNEL_NAMES[c]),
+            type: "radio",
+            checked: channel === c,
+            enabled: !unavailable,
+            click: () => {
+              if (channel === c) return;
+              channel = c;
+              try {
+                channelStore?.write(c);
+              } catch {}
+              // electron-updater cannot clear a channel once set: going back to stable takes a restart.
+              if (c === "stable" && autoUpdater.channel) {
+                void tell(tr("앱을 다시 시작하면 안정 버전 채널로 바뀝니다."));
+                return;
+              }
+              applyChannel();
+              void check(true);
+            },
+          })),
+        },
+        {
           label: tr("품앗이 에이전트 {version}", { version: app.getVersion() }),
           enabled: false,
         },
@@ -140,6 +184,6 @@ function setupUpdates({
     timer.unref?.();
     app.once("before-quit", () => clearInterval(timer));
   }
-  return { check };
+  return { check, channel: () => channel };
 }
 module.exports = { setupUpdates };

@@ -37,6 +37,9 @@ try {
       .getByRole("button", { name: "이 모델로 미리보기", exact: true })
       .click();
   const settings = async () => {
+    // The usage panel starts closed after each load.
+    if (!(await page.getByLabel("사용량", { exact: true }).isVisible()))
+      await page.getByRole("button", { name: "사용량 패널 전환", exact: true }).click();
     await page
       .getByRole("button", { name: "모드 및 예산 설정", exact: true })
       .click();
@@ -44,11 +47,13 @@ try {
   const close = () =>
     page.getByRole("button", { name: "닫기", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "대화는 하나로, 생각은 자유롭게." }),
+    page.getByRole("heading", { name: "무엇을 도와드릴까요?" }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "새 세션", exact: true }),
   ).toHaveCount(0);
+  // The usage panel starts closed; open it for the estimate and settings checks.
+  await page.getByRole("button", { name: "사용량 패널 전환", exact: true }).click();
   await expect(page.getByLabel("사용량", { exact: true })).toContainText(
     "미리보기",
   );

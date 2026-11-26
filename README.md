@@ -27,9 +27,11 @@
 
 ## Why it's different
 
-**Split the work, not the bill.** Team mode turns one request into up to six tasks. A lead model plans them and signs off; free models do the tasks and merge the result. The lead can be free too, or a paid model such as Claude Opus, in which case it spends its expensive tokens on planning and approval only.
+**Two modes: Chat and Code.** Chat is for questions. Code works the way Claude Code or Codex does: open a project folder and describe the task. The agent looks around, reads and searches files on its own, then proposes changes as diffs and asks before it runs a command. Nothing is saved or run until you approve it. Code mode is in beta.
 
-**Borrow hands, not keys.** With Pumasi, your team can hand tasks to other users. Their app takes one task, runs it on a free key they chose to lend, and sends back the result. The task and the result are sealed between the two devices: the relay only moves ciphertext, and the helper's screen shows a token count and nothing else. No one's key ever leaves their machine. Helping earns points; posting spends them.
+**Split the work, not the bill.** Team mode turns one request into up to six tasks. A lead model plans them and signs off; free models do the tasks and merge the result. By default the lead is the free model with the best measured score. If it hits its limit, the next one in the ranking takes over, and you can reorder the ranking in settings. When the lead isn't sure a result is right, the runner-up checks it once; otherwise there is no extra call. You can also pick a paid lead such as Claude Opus, which then spends its tokens on planning and approval only.
+
+**Borrow hands, not keys.** Turn on Pitch in and your team hands tasks to other users. Their app takes one task, runs it on a free key they chose to lend, and sends back the result. The task and the result are sealed between the two devices: the relay only moves ciphertext, and the helper's screen shows a token count and nothing else. No one's key ever leaves their machine. Helping earns points; posting spends them.
 
 **Free models that hold their own.** Nemotron 3.5 Super, a free model you can run here, took three program-graded exams and scored 30/30, 28/30 and 23/25. ChatGPT's free tier scored 23, 24 and 13.4. Questions, answers and graders are in [bench/](bench/README.md).
 
@@ -44,19 +46,21 @@
 - Failed, empty or cut-off answers are retried, then passed to another model
 - Conversations you can group, archive and restore; saving stays on your device and is off by default
 - English and Korean interface; signed and notarized for macOS, installer for Windows, automatic updates
+- Update channels: Stable, Beta and Alpha (Help → Update channel)
 
 ## Limits, honestly
 
-- Text in, text out. It does not edit files or run commands.
-- Pumasi is invite-only while in preview.
+- Code mode is a beta: one folder at a time, each command limited to two minutes, and Pitch in doesn't work there yet.
+- The lead ranking comes from one measurement today, the reasoning exam. Separate rankings for code and writing will come once those are measured.
+- Pitch in is invite-only while in preview.
 - Bundle vote (asking several models the same question) is experimental. It spends several times the tokens and has not scored higher than Nemotron Super alone, so it is off by default and not what the scorecard shows.
 
 ## Roadmap
 
 Built and shipped one at a time, in this order.
 
-1. **A team that runs itself.** The lead is picked by measured skill, not by a vote: each kind of task (reasoning, code, writing) has its own ranking from our benchmarks, and you can reorder it in settings. If the top model hits its free limit, the next one takes over. The lead splits the work, the others do it, and the lead decides when it's done, asking the runner-up only when unsure. No extra calls to choose a lead, no paid model needed. It ships only if it beats Nemotron Super alone and today's team mode on large, multi-part tasks while using the same or fewer tokens.
-2. **Pumasi, next steps.** Help automatically while the app is idle, report and block bad results, then open sign-up.
+1. **A team that runs itself.** The ranked lead is in the 0.2.0 beta. Next it gets measured on large, multi-part tasks against Nemotron Super alone, and it goes to the stable channel only if it does better with the same or fewer tokens.
+2. **Pitch in, next steps.** Help automatically while the app is idle, report and block bad results, open sign-up, and bring it to code mode.
 3. **Rethink bundle vote.** Keep it only if the self-running team needs it; otherwise remove it.
 4. **Streaming answers.**
 5. **File attachments.**
@@ -68,6 +72,8 @@ Built and shipped one at a time, in this order.
 | macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-arm64.dmg) |
 | macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-x64.dmg) |
 | Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-windows-x64.exe) |
+
+Beta builds, with new features first, are on the [releases page](https://github.com/uiwwsw/pumasi-agent/releases). An installed app can switch under Help → Update channel.
 
 The Windows installer is not signed with a developer certificate, so SmartScreen may warn. Setting up keys, team mode, Pumasi, data handling and running from source: see the [guide](docs/guide.en.md).
 

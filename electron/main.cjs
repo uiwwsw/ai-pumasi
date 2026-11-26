@@ -187,6 +187,114 @@ else
         return { ...out, error: error.message };
       }
     };
+    // Code mode: one folder the user picked in the system dialog. The window never names a folder itself.
+    const workspace = require("./workspace.cjs").createWorkspace();
+    const codeCall = (name, fn) =>
+      ipcMain.handle(name, (event, ...args) => {
+        if (!authorized(event)) throw forbiddenError();
+        return fn(event, ...args);
+      });
+    codeCall("aurora:code-open", async (event) => {
+      // Automated UI checks cannot click the system dialog; they name a folder instead.
+      if (process.env.AURORA_QA_DATA && process.env.AURORA_QA_FOLDER)
+        return workspace.allow(process.env.AURORA_QA_FOLDER);
+      const r = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender), {
+        properties: ["openDirectory", "createDirectory"],
+      });
+      if (r.canceled || !r.filePaths[0]) return null;
+      return workspace.allow(r.filePaths[0]);
+    });
+    codeCall("aurora:code-current", () => workspace.current());
+    codeCall("aurora:code-list", (_e, rel) => workspace.list(String(rel ?? "")));
+    codeCall("aurora:code-read", (_e, rel) => workspace.read(String(rel ?? "")));
+    // The agent works in that folder. Saving and running commands wait for the user's answer.
+    const pendingAsks = new Map(); // id -> resolve(boolean)
+    let agentStop = false;
+    let agentBusy = false;
+    const runCommand = (command) =>
+      new Promise((resolve) => {
+        const root = workspace.current()?.root;
+        if (!root) return resolve({ code: null, output: tr("먼저 폴더를 열어 주세요.") });
+        const child = require("node:child_process").spawn(command, {
+          cwd: root,
+          shell: true,
+          env: process.env,
+          windowsHide: true,
+        });
+        let output = "";
+        const take = (d) => {
+          if (output.length < 200000) output += d.toString();
+        };
+        child.stdout.on("data", take);
+        child.stderr.on("data", take);
+        const timer = setTimeout(() => {
+          output += `\n${tr("2분이 지나 멈췄습니다.")}`;
+          child.kill("SIGTERM");
+        }, 120000);
+        child.on("error", (error) => {
+          clearTimeout(timer);
+          resolve({ code: null, output: output + error.message });
+        });
+        child.on("close", (code) => {
+          clearTimeout(timer);
+          resolve({ code, output });
+        });
+      });
+    codeCall("aurora:agent-run", async (event, payload) => {
+      if (agentBusy) throw new Error(tr("이미 요청을 처리 중입니다."));
+      const text = String(payload?.text ?? "").slice(0, 20000);
+      if (!text.trim()) throw new Error(tr("요청 형식 또는 출력 한도가 올바르지 않습니다."));
+      const history = (Array.isArray(payload?.history) ? payload.history : [])
+        .filter((m) => m && ["user", "assistant"].includes(m.role) && typeof m.text === "string")
+        .map((m) => ({ role: m.role, text: m.text.slice(0, 20000) }));
+      const model = typeof payload?.model === "string" ? payload.model : "auto-free";
+      const autoOrder = Array.isArray(payload?.autoOrder) ? payload.autoOrder : null;
+      agentBusy = true;
+      agentStop = false;
+      const env = secrets.env();
+      try {
+        return await guarded(env, () =>
+          require("./agent.cjs").runAgent(
+            { text, history, model, autoOrder },
+            {
+              workspace,
+              exec: runCommand,
+              stopped: () => agentStop,
+              request: ({ autoOrder: order, ...req }) =>
+                providers.request(req, {
+                  env,
+                  autoOrder: order,
+                  timeoutMs: 300000,
+                  onUsage: (u) => usage().record(u),
+                }),
+              emit: (e) => {
+                if (!event.sender.isDestroyed())
+                  event.sender.send("aurora:agent-event", scrub(e, env));
+              },
+              ask: ({ id }) =>
+                new Promise((resolve) => {
+                  if (agentStop) return resolve(false);
+                  pendingAsks.set(id, resolve);
+                }),
+            },
+          ),
+        );
+      } finally {
+        agentBusy = false;
+        for (const resolve of pendingAsks.values()) resolve(false);
+        pendingAsks.clear();
+      }
+    });
+    codeCall("aurora:agent-answer", (_e, id, allow) => {
+      const resolve = pendingAsks.get(id);
+      pendingAsks.delete(id);
+      resolve?.(allow === true);
+    });
+    codeCall("aurora:agent-stop", () => {
+      agentStop = true;
+      for (const resolve of pendingAsks.values()) resolve(false);
+      pendingAsks.clear();
+    });
     ipcMain.handle("aurora:pumasi-state", (event) => {
       if (!authorized(event)) throw forbiddenError();
       return pumasiState();
@@ -395,6 +503,12 @@ else
       macSigned:
         require("../package.json").auroraAutoUpdate?.macSigned === true,
       disabled: !!process.env.AURORA_QA_DATA,
+      channelStore: {
+        read: () =>
+          fs.readFileSync(path.join(app.getPath("userData"), "update-channel"), "utf8").trim(),
+        write: (c) =>
+          fs.writeFileSync(path.join(app.getPath("userData"), "update-channel"), c),
+      },
       storeDistribution:
         process.windowsStore === true ||
         require("../package.json").auroraDistribution === "store",

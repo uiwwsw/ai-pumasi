@@ -33,6 +33,22 @@ contextBridge.exposeInMainWorld("auroraAI", {
       return () => ipcRenderer.removeListener("aurora:pumasi-progress", h);
     },
   },
+  // Code mode: files inside the one folder picked in the system dialog.
+  code: {
+    open: () => ipcRenderer.invoke("aurora:code-open"),
+    current: () => ipcRenderer.invoke("aurora:code-current"),
+    list: (rel) => ipcRenderer.invoke("aurora:code-list", rel),
+    read: (rel) => ipcRenderer.invoke("aurora:code-read", rel),
+    // The window cannot write files itself: the agent saves a change only after the user approves it.
+    run: (payload) => ipcRenderer.invoke("aurora:agent-run", payload),
+    answer: (id, allow) => ipcRenderer.invoke("aurora:agent-answer", id, allow),
+    stop: () => ipcRenderer.invoke("aurora:agent-stop"),
+    onEvent: (fn) => {
+      const h = (_e, data) => fn(data);
+      ipcRenderer.on("aurora:agent-event", h);
+      return () => ipcRenderer.removeListener("aurora:agent-event", h);
+    },
+  },
   onTeamProgress: (fn) => {
     const h = (_e, data) => fn(data);
     ipcRenderer.on("aurora:team-progress", h);

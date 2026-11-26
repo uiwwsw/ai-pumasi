@@ -34,7 +34,7 @@ try {
   });
   const page = await app.firstWindow();
   await expect(
-    page.getByRole("heading", { name: "대화는 하나로, 생각은 자유롭게." }),
+    page.getByRole("heading", { name: "무엇을 도와드릴까요?" }),
   ).toBeVisible();
   expect(await app.evaluate(({ app }) => app.isPackaged)).toBe(true);
   const status = await page.evaluate(() => window.auroraAI.status());
@@ -48,6 +48,8 @@ try {
   });
   expect(Object.values(status.models).every((v) => v === false)).toBe(true);
   expect(Object.values(status.hosts).every((v) => v === false)).toBe(true);
+  // The usage panel starts closed.
+  await page.getByRole("button", { name: "사용량 패널 전환", exact: true }).click();
   await page
     .getByRole("button", { name: "모드 및 예산 설정", exact: true })
     .click();

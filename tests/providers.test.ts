@@ -256,13 +256,14 @@ test("team mode: lead plans and judges, workers do the work and the merge", asyn
   assert.equal(w[0].body.messages.length, 2); // system + own task only, no prior conversation
   assert.match(w[2].body.messages[1].content, /B 고치기/);
   assert.match(w[3].body.messages[0].content, /merge/);
-  // The lead never re-types worker output.
+  // The lead never re-types worker output: the review prompt asks for a verdict only. The cap is
+  // high because reasoning leads think first; only tokens actually produced are billed.
   const review = calls.find(
     (c) =>
       c.url.includes("anthropic") &&
       !c.body.system.includes("Never do the work"),
   );
-  assert.equal(review.body.max_tokens, 2048);
+  assert.equal(review.body.max_tokens, 12000);
   assert.equal(result.usage.lead.out, 12);
 });
 

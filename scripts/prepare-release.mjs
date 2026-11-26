@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, appendFileSync } from "node:fs";
 const { version } = JSON.parse(readFileSync("package.json", "utf8"));
-if (!/^\d+\.\d+\.\d+$/.test(version))
+if (!/^\d+\.\d+\.\d+(-(alpha|beta)\.\d+)?$/.test(version))
   throw new Error("Use a numeric release version.");
 const tag = `v${version}`;
 const ref = process.env.GITHUB_REF;
