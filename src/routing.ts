@@ -18,8 +18,19 @@ export type RoutingSettings = {
   team: boolean;
   lead: string;
   worker: string;
+  /** Bundle vote: ask several free or light models at once and vote. Overrides team mode. */
+  ensemble: boolean;
+  ensembleModels: string[];
 };
+/** Models a bundle may hold: free ones and each provider's light tier. */
+export const bundleModels = models.filter(
+  (m) => m.free === true || m.tier === "light",
+);
+export const BUNDLE_MIN = 2;
+export const BUNDLE_MAX = 5;
 const teamDefaults = {
+  ensemble: false,
+  ensembleModels: [] as string[],
   team: false,
   lead: "claude-opus-5-5",
   worker: "gemini-flash-latest",
@@ -56,6 +67,16 @@ export function readRouting(raw: string | null): RoutingSettings {
         worker: models.some((m) => m.id === d.worker)
           ? d.worker
           : teamDefaults.worker,
+        ensemble: d.ensemble === true,
+        ensembleModels: Array.isArray(d.ensembleModels)
+          ? [...new Set(d.ensembleModels as unknown[])]
+              .filter(
+                (id): id is string =>
+                  typeof id === "string" &&
+                  bundleModels.some((m) => m.id === id),
+              )
+              .slice(0, BUNDLE_MAX)
+          : [],
       };
   } catch {}
   return { ...presets.openai };
@@ -134,7 +155,39 @@ export type TeamResult = {
   worker: string;
   substitutions?: { requested: string; servedBy: string | null }[];
 };
+export type EnsembleModelResult = {
+  model: string;
+  weight: number;
+  ok: boolean;
+  answer: string;
+  agreed: boolean;
+  reason?: string;
+  text: string;
+  usage: { in: number; out: number };
+};
+export type EnsembleResult = {
+  kind: "vote" | "merge" | "single";
+  text: string;
+  writer: string;
+  answer: string;
+  agree: number;
+  voters: number;
+  asked: number;
+  score: number;
+  models: EnsembleModelResult[];
+  usage: {
+    total: { in: number; out: number };
+    byModel: Record<string, { in: number; out: number }>;
+  };
+  warning: string;
+  substitutions: { requested: string; servedBy: string | null }[];
+};
 export interface AIBridge {
+  ensemble?(payload: {
+    models: string[];
+    text: string;
+    context: AIRequest["context"];
+  }): Promise<EnsembleResult>;
   team?(payload: {
     lead: string;
     worker: string;

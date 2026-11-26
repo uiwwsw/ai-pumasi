@@ -18,6 +18,9 @@ const SYSTEMS = {
   review: `You are the senior lead reviewing junior results against the goal. Judge only; never rewrite or repeat the results. Do not ask to redo work that is acceptable. Reply with only compact JSON: {"approved":true|false,"redo":[{"id":"exact task id from the report","feedback":"what to fix, standalone, short"}]}`,
   merge:
     "You merge several junior results into one final answer for the user. Keep every substantive part, remove duplication, keep code blocks intact, add nothing new. Match the user language.",
+  vote: "You are one of several models answering the same request independently. Answer it well. You have no filesystem, shell, browser or external tools; never claim to have run or verified anything. Match the user language. If the request has one short definitive answer (a number, a choice, a word or a short phrase), work it out and end with one final line exactly in the form `정답: <answer>` with nothing after it. For open-ended requests (writing, explanation, code, advice) do not add that line.",
+  synthesize:
+    "Several models answered the same user request independently. Write the single best final answer to the request. Use their answers as material: keep what is correct and useful, drop mistakes, resolve disagreements by reasoning, keep code blocks intact. Do not mention the models, the other answers or this process. You have no filesystem, shell, browser or external tools. Match the user language.",
 };
 async function ollamaUp(fetchImpl) {
   try {
@@ -42,9 +45,16 @@ const JSON_ACTIONS = new Set(["plan", "review"]);
 function validate(p) {
   if (
     !p ||
-    !["analyze", "execute", "plan", "work", "review", "merge"].includes(
-      p.action,
-    ) ||
+    ![
+      "analyze",
+      "execute",
+      "plan",
+      "work",
+      "review",
+      "merge",
+      "vote",
+      "synthesize",
+    ].includes(p.action) ||
     !catalog.some((m) => m.id === p.model) ||
     typeof p.text !== "string" ||
     !p.text.trim() ||
