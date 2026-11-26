@@ -25,7 +25,7 @@
 
 ## What Aurora does well
 
-**Free models, bundled, beat ChatGPT's free tier.** On a freshly generated 30-question reasoning exam that is not on the internet, a bundle of four free models scored 29 and ChatGPT free scored 23. Answers are computed by a program and graded automatically. ChatGPT free answered "no solution" to logic puzzles that have one and missed 7 questions. Method and raw data are in the [measurement notes](bench/README.md). The bundle is being brought into the app now.
+**Free models, bundled, beat ChatGPT's free tier.** On a freshly generated 30-question reasoning exam that is not on the internet, a bundle of four free models scored 29 and ChatGPT free scored 23. Answers are computed by a program and graded automatically. ChatGPT free answered "no solution" to logic puzzles that have one and missed 7 questions. Public third-party exams agree: on AIME 2026 the bundle solved 28 of 30 and ChatGPT free 24, and on LiveBench logic puzzles it scored 23.4 to 13.4. Method and raw data are in the [measurement notes](bench/README.md). The bundle is being brought into the app now.
 
 **The expensive model only gets the expensive work.** In team mode the lead model (for example Claude Opus) splits the request into 1–6 tasks and decides whether to approve the results. It never rewrites the answer; a free worker model merges the results. The priciest output tokens stay small by design.
 
