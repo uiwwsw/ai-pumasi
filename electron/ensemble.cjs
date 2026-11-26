@@ -75,6 +75,10 @@ async function runEnsemble(p, opts = {}) {
   const now = opts.now ?? (() => Date.now());
   const stats = opts.stats ?? createStatsStore();
   const weight = opts.weight ?? ((id) => weightOf(id));
+  // Once the leading answer cannot be outvoted by the models still running, stop waiting for them.
+  const stop = new AbortController();
+  const finished = new Set();
+  const cut = (model) => stop.signal.aborted && !finished.has(model);
   const nameOf = (id) => catalog.find((m) => m.id === id)?.name ?? id;
 
   checkModels(p?.models, await providers.status(env, fetchImpl));
@@ -99,18 +103,31 @@ async function runEnsemble(p, opts = {}) {
   const call = (action, model, text, context, maxOutputTokens, timeoutMs) =>
     providers.request(
       { action, model, text, context, maxOutputTokens },
-      { env, fetchImpl, timeoutMs, onUsage: opts.onUsage },
+      {
+        env,
+        fetchImpl,
+        timeoutMs,
+        onUsage: opts.onUsage,
+        signal: action === "vote" ? stop.signal : null,
+      },
     );
+  // A model cut off by an early decision did not fail: keep it out of its track record.
+  const fair = {
+    order: (...a) => stats.order(...a),
+    record: (model, e) => (cut(model) ? undefined : stats.record(model, e)),
+  };
   const supervise = (model, prompt, job, extra) =>
     superviseModel(model, prompt, {
       call,
-      stats,
-      sleep,
+      stats: fair,
+      sleep: (ms) => (cut(model) ? Promise.resolve() : sleep(ms)),
       now,
       maxOutputTokens: MAX_OUTPUT,
       onReply: onReply(model),
       report: (state, e = {}) =>
-        onProgress({ stage: "worker", ...job, state, ...e }),
+        cut(model)
+          ? undefined
+          : onProgress({ stage: "worker", ...job, state, ...e }),
       ...extra,
     });
 
@@ -121,35 +138,81 @@ async function runEnsemble(p, opts = {}) {
       title: nameOf(model),
       state: "waiting",
     });
-  const settled = await Promise.all(
-    p.models.map(async (model) => {
-      const job = { taskId: model, title: nameOf(model) };
-      const r = await supervise(model, p.text, job, {
-        action: "vote",
-        context: p.context,
-      });
-      if (r.done) {
-        onProgress({
-          stage: "worker",
-          ...job,
-          state: "done",
-          model,
-          elapsedMs: r.elapsedMs,
-        });
-        return { model, ok: true, text: r.done.text };
-      }
-      const reason = r.error?.reason ?? failureReason(r.error);
+  const totalWeight = p.models.reduce((t, m) => t + weight(m), 0);
+  const replies = new Map();
+  // True when every finished reply has a short answer and the leader beats the runner-up even if
+  // every unfinished model joined the runner-up.
+  const decided = () => {
+    const done = [...replies.values()];
+    const ok = done.filter((r) => r.ok);
+    if (!ok.length) return false;
+    const answers = ok.map((r) => {
+      const a = extractAnswer(r.text);
+      return a && a.length <= SHORT_ANSWER ? a : "";
+    });
+    if (answers.some((a) => !a)) return false;
+    const t = tally(
+      ok.map((r, i) => ({ model: r.model, answer: answers[i] })),
+      { weight },
+    );
+    const used = done.reduce((n, r) => n + weight(r.model), 0);
+    const second = t.groups[1]?.score ?? 0;
+    return t.groups[0].score > second + (totalWeight - used) + 1e-9;
+  };
+  const run = async (model, job) => {
+    const r = await supervise(model, p.text, job, {
+      action: "vote",
+      context: p.context,
+    });
+    // Decided while this model was still working: its late reply or failure is not reported.
+    if (stop.signal.aborted) return null;
+    if (r.done) {
       onProgress({
         stage: "worker",
         ...job,
-        state: "failed",
+        state: "done",
         model,
-        reason,
-        message: r.error instanceof Error ? r.error.message : "실행 실패",
+        elapsedMs: r.elapsedMs,
       });
-      return { model, ok: false, reason, text: r.partial?.text ?? "" };
-    }),
-  );
+      return { model, ok: true, text: r.done.text };
+    }
+    const reason = r.error?.reason ?? failureReason(r.error);
+    onProgress({
+      stage: "worker",
+      ...job,
+      state: "failed",
+      model,
+      reason,
+      message: r.error instanceof Error ? r.error.message : "실행 실패",
+    });
+    return { model, ok: false, reason, text: r.partial?.text ?? "" };
+  };
+  let release;
+  const early = new Promise((resolve) => (release = resolve));
+  const runs = p.models.map(async (model) => {
+    const job = { taskId: model, title: nameOf(model) };
+    const r = await run(model, job);
+    if (stop.signal.aborted) return;
+    finished.add(model);
+    replies.set(model, r);
+    if (replies.size < p.models.length && decided()) {
+      stop.abort();
+      release();
+    }
+  });
+  await Promise.race([Promise.all(runs), early]);
+  const stoppedEarly = stop.signal.aborted;
+  const settled = p.models.map((model) => {
+    if (replies.has(model)) return replies.get(model);
+    onProgress({
+      stage: "worker",
+      taskId: model,
+      title: nameOf(model),
+      state: "stopped",
+      model,
+    });
+    return { model, ok: false, stopped: true, reason: "stopped", text: "" };
+  });
 
   const ok = settled.filter((r) => r.ok);
   if (!ok.length)
@@ -167,7 +230,12 @@ async function runEnsemble(p, opts = {}) {
   let writer;
   let warning = "";
   let result = { answer: "", agree: 0, voters: 0, score: 0, groups: [] };
-  if (ok.length === 1) {
+  if (stoppedEarly) {
+    kind = "vote";
+    result = tally(withAnswer, { weight });
+    writer = strongest(result.groups[0].models, weight);
+    text = ok.find((r) => r.model === writer).text;
+  } else if (ok.length === 1) {
     kind = "single";
     writer = ok[0].model;
     text = ok[0].text;
@@ -232,11 +300,13 @@ async function runEnsemble(p, opts = {}) {
     agree: result.agree,
     voters: result.voters,
     asked: p.models.length,
+    stoppedEarly,
     score: result.score,
     models: settled.map((r) => ({
       model: r.model,
       weight: weight(r.model),
       ok: r.ok,
+      stopped: r.stopped === true,
       answer: r.answer ?? "",
       agreed:
         kind !== "merge" &&

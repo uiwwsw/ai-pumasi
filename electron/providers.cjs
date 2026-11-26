@@ -140,6 +140,11 @@ function substituted(requested, servedBy) {
   );
 }
 const DEFAULT_TIMEOUT_MS = 120000;
+function stoppedError() {
+  const error = new Error("결과가 이미 정해져 이 요청은 멈췄습니다.");
+  error.stopped = true;
+  return error;
+}
 async function request(
   p,
   {
@@ -147,12 +152,13 @@ async function request(
     fetchImpl = fetch,
     timeoutMs = DEFAULT_TIMEOUT_MS,
     onUsage = null,
+    signal = null,
   } = {},
 ) {
   validate(p);
   const model = catalog.find((m) => m.id === p.model);
   const provider = model.provider;
-  const opts = { env, fetchImpl, timeoutMs, onUsage };
+  const opts = { env, fetchImpl, timeoutMs, onUsage, signal };
   if (provider === "auto") {
     // Strongest free model first; on a rate limit, failure or empty reply, the next one.
     const ids = autoCandidates(env);
@@ -168,7 +174,7 @@ async function request(
         last = new Error("빈 답이 와서 다음 무료 모델로 넘겼습니다.");
       } catch (error) {
         last = error;
-        if (!(error.status || error.transient)) throw error;
+        if (error.stopped || !(error.status || error.transient)) throw error;
       }
     }
     throw last;
@@ -187,14 +193,20 @@ async function request(
         return { ...r, host: route.name };
       } catch (error) {
         last = error;
-        if (!router.fail(route, error)) throw error;
+        if (error.stopped || !router.fail(route, error)) throw error;
       }
     }
     throw last;
   }
   return call(p, model, opts, null);
 }
-async function call(p, model, { env, fetchImpl, timeoutMs, onUsage }, route) {
+async function call(
+  p,
+  model,
+  { env, fetchImpl, timeoutMs, onUsage, signal },
+  route,
+) {
+  if (signal?.aborted) throw stoppedError();
   const provider = model.provider;
   let key;
   if (route) {
@@ -259,10 +271,14 @@ async function call(p, model, { env, fetchImpl, timeoutMs, onUsage }, route) {
       method: "POST",
       headers,
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: signal
+        ? AbortSignal.any([AbortSignal.timeout(timeoutMs), signal])
+        : AbortSignal.timeout(timeoutMs),
       redirect: "error",
     });
   } catch (cause) {
+    // Stopped on purpose (the vote was already decided): not a failure, never retried.
+    if (signal?.aborted) throw stoppedError();
     const timedOut =
       cause?.name === "TimeoutError" || cause?.name === "AbortError";
     const error = new Error(

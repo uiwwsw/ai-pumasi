@@ -42,7 +42,7 @@
 - Text requests to OpenAI, Anthropic, Gemini and Ollama models
 - Team mode: the lead splits the work, workers do it, the lead judges (up to two rounds)
 - Stalled-task recovery: retries for empty or cut-off replies and timeouts, model order from each model's track record, per-task progress
-- Bundle vote: 2–5 free models answer the same question and a vote weighted by measured skill picks the answer (a long answer is merged by the strongest model)
+- Bundle vote: 2–5 free models answer the same question and a vote weighted by measured skill picks the answer (a long answer is merged by the strongest model). Once the models still running could not change the result, it stops waiting for them
 - Token estimates learned from your own usage: the next request's share of your budget, from tokens you actually used, recorded on your device (can be switched off)
 - Several free hosts: add free keys from NVIDIA, OpenRouter, Groq or Google in Settings and use their free models right away. When several hosts serve the same model, a rate-limited host rests and calls move to another one automatically
 - Automatic (free) model: uses the free model with the best measured score that can run now, and moves to the next when it is out
@@ -69,9 +69,9 @@ If you need an agent that edits code and runs a terminal, [OpenCode](https://ope
 
 | Platform | Installer |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.7/Aurora-0.1.7-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.7/Aurora-0.1.7-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.7/Aurora-0.1.7-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.8/Aurora-0.1.8-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.8/Aurora-0.1.8-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.8/Aurora-0.1.8-windows-x64.exe) |
 
 The Windows installer is not signed with a developer certificate, so SmartScreen may warn. Keys, team mode, data handling and running from source are covered in the [guide](docs/guide.en.md).
 

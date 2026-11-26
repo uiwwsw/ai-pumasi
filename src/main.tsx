@@ -127,7 +127,8 @@ type WorkerRow = {
     | "switch"
     | "substituted"
     | "done"
-    | "failed";
+    | "failed"
+    | "stopped";
   model?: string;
   startedAt?: number;
   attempt?: number;
@@ -184,6 +185,7 @@ function workerLabel(w: WorkerRow): string {
     return w.servedBy ? `${txt} · ${w.servedBy}가 대신 답함` : txt;
   }
   if (w.state === "failed") return `실패 · ${getReason()}`;
+  if (w.state === "stopped") return "답이 이미 정해져 기다리지 않음";
   return model;
 }
 

@@ -42,7 +42,7 @@
 - OpenAI, Anthropic, Gemini, Ollama 모델에 텍스트 요청
 - 팀 모드: 총괄 모델이 나누고, 작업 모델이 처리하고, 총괄 모델이 판정 (최대 2회차)
 - 막힌 작업 다시 맡기기: 빈 답·잘린 답·시간 초과 재시도, 모델별 기록에 따른 순서 조정, 작업별 진행 표시
-- 묶음 투표: 무료 모델 2~5개가 같은 질문을 풀고, 측정한 실력만큼 무게를 준 투표로 답을 고름 (서술형은 가장 강한 모델이 합침)
+- 묶음 투표: 무료 모델 2~5개가 같은 질문을 풀고, 측정한 실력만큼 무게를 준 투표로 답을 고름 (서술형은 가장 강한 모델이 합침). 남은 모델이 모두 반대해도 결과가 뒤집히지 않으면 기다리지 않고 바로 확정
 - 내 사용량으로 배우는 토큰 추정: 실제 쓴 토큰을 기기 안에 기록해 다음 요청이 예산의 몇 %를 쓸지 표시 (켜고 끄기)
 - 무료 제공자 여러 곳 연결: NVIDIA·OpenRouter·Groq·Google 무료 키를 설정에 넣으면 그 무료 모델을 바로 씀. 같은 모델을 여러 곳이 주면 한도에 걸린 곳은 잠깐 쉬게 하고 다른 곳으로 자동으로 넘김
 - 자동 (무료) 모델: 지금 쓸 수 있는 무료 모델 중 측정 성적이 가장 높은 것부터 쓰고, 막히면 다음 모델로 넘김
@@ -69,9 +69,9 @@
 
 | 운영체제 | 설치 파일 |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.7/Aurora-0.1.7-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.7/Aurora-0.1.7-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.7/Aurora-0.1.7-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.8/Aurora-0.1.8-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.8/Aurora-0.1.8-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.8/Aurora-0.1.8-windows-x64.exe) |
 
 Windows 설치 파일은 개발자 인증서로 서명하지 않아 SmartScreen 경고가 나올 수 있습니다. 키 설정, 팀 모드 사용법, 데이터 처리, 소스에서 실행하는 방법은 [사용 안내](docs/guide.md)에 있습니다.
 
