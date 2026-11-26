@@ -83,6 +83,17 @@ export function readRouting(raw: string | null): RoutingSettings {
   return { ...presets.openai };
 }
 export type ProviderStatus = Record<Provider, boolean>;
+export type SecretName =
+  | "OPENAI_API_KEY"
+  | "ANTHROPIC_API_KEY"
+  | "GEMINI_API_KEY"
+  | "AURORA_OPENAI_COMPAT_KEY";
+/** What the window may know about saved keys: set or not, and when. Never the value. */
+export type SecretsState = {
+  encryption: boolean;
+  keys: Record<SecretName, { set: boolean; savedAt?: string | null }>;
+  compatUrl: string;
+};
 export type Completion = {
   text: string;
   model: string;
@@ -203,6 +214,12 @@ export interface AIBridge {
     clear(): Promise<UsageHistory>;
   };
   status(): Promise<ProviderStatus>;
+  secrets?: {
+    list(): Promise<SecretsState>;
+    set(name: SecretName, value: string): Promise<SecretsState>;
+    remove(name: SecretName): Promise<SecretsState>;
+    setCompatUrl(url: string): Promise<SecretsState>;
+  };
   request(payload: AIRequest): Promise<Completion | Analysis>;
 }
 declare global {

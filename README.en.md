@@ -44,7 +44,8 @@
 - Stalled-task recovery: retries for empty or cut-off replies and timeouts, model order from each model's track record, per-task progress
 - Bundle vote: 2–5 free models answer the same question and a vote weighted by measured skill picks the answer (a long answer is merged by the strongest model)
 - Token estimates learned from your own usage: the next request's share of your budget, from tokens you actually used, recorded on your device (can be switched off)
-- OpenAI-compatible server: put an OpenAI-compatible endpoint such as OpenRouter or NVIDIA in `.env` and use its models in bundles and teams
+- OpenAI-compatible server: put an OpenAI-compatible endpoint such as OpenRouter or NVIDIA in Settings and use its models in bundles and teams
+- API keys in Settings: encrypted with the OS keychain, never shown again, never sent to a model or written to a log
 - Provider-reported usage after each request
 - Conversations grouped into work items; archive, trash, restore; on-device saving (off by default)
 - macOS (signed and notarized) and Windows x64 installers; automatic updates
