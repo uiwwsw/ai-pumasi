@@ -20,6 +20,19 @@ contextBridge.exposeInMainWorld("auroraAI", {
     setEnabled: (enabled) => ipcRenderer.invoke("aurora:usage-set", enabled),
     clear: () => ipcRenderer.invoke("aurora:usage-clear"),
   },
+  // Pumasi: states and token counts only. Task and result text never comes to the window.
+  pumasi: {
+    state: () => ipcRenderer.invoke("aurora:pumasi-state"),
+    update: (patch) => ipcRenderer.invoke("aurora:pumasi-update", patch),
+    join: (invite) => ipcRenderer.invoke("aurora:pumasi-join", invite),
+    open: () => ipcRenderer.invoke("aurora:pumasi-open"),
+    help: (slotId) => ipcRenderer.invoke("aurora:pumasi-help", slotId),
+    onProgress: (fn) => {
+      const h = (_e, data) => fn(data);
+      ipcRenderer.on("aurora:pumasi-progress", h);
+      return () => ipcRenderer.removeListener("aurora:pumasi-progress", h);
+    },
+  },
   onTeamProgress: (fn) => {
     const h = (_e, data) => fn(data);
     ipcRenderer.on("aurora:team-progress", h);

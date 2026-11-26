@@ -26,6 +26,9 @@ export type RoutingSettings = {
   team: boolean;
   lead: string;
   worker: string;
+  /** Team mode hands its tasks to other people's apps first (Pumasi). */
+  pumasi: boolean;
+  pumasiCopies: number;
   /** Bundle vote: ask several free or light models at once and vote. Overrides team mode. */
   ensemble: boolean;
   ensembleModels: string[];
@@ -40,6 +43,8 @@ const teamDefaults = {
   ensemble: false,
   ensembleModels: [] as string[],
   team: false,
+  pumasi: false,
+  pumasiCopies: 2,
   lead: "claude-opus-5-5",
   worker: "gemini-flash-latest",
 };
@@ -71,6 +76,8 @@ export function readRouting(raw: string | null): RoutingSettings {
         ...teamDefaults,
         ...d,
         team: d.team === true,
+        pumasi: d.pumasi === true,
+        pumasiCopies: [1, 2, 3].includes(d.pumasiCopies) ? d.pumasiCopies : 2,
         lead: models.some((m) => m.id === d.lead) ? d.lead : teamDefaults.lead,
         worker: models.some((m) => m.id === d.worker)
           ? d.worker
@@ -139,6 +146,7 @@ export type AIRequest = {
   maxOutputTokens: number;
 };
 export type TeamProgress =
+  | { stage: "pumasi"; open: number; working: number; done: number; total: number }
   | {
       stage: "plan" | "work" | "review" | "merge" | "done";
       round?: number;
@@ -181,6 +189,8 @@ export type TeamProgress =
     };
 export type TeamResult = {
   text: string;
+  /** Tasks other people's apps answered. */
+  pumasiTasks?: number;
   goal: string;
   tasks: { id: string; title: string; failed: boolean; incomplete: boolean }[];
   rounds: number;
@@ -223,7 +233,42 @@ export type EnsembleResult = {
   warning: string;
   substitutions: { requested: string; servedBy: string | null }[];
 };
+/** Free hosts whose key a helper may lend to Pumasi. Paid keys are never lent. */
+export type PumasiHost = "nvidia" | "groq" | "openrouter" | "google";
+export const PUMASI_HOSTS: PumasiHost[] = ["nvidia", "openrouter", "groq", "google"];
+export type PumasiState = {
+  server: string;
+  joined: boolean;
+  donate: Partial<Record<PumasiHost, boolean>>;
+  dailyCap: number;
+  usedToday: number;
+  /** Which hosts have a saved key on this device. */
+  keys: Record<PumasiHost, boolean>;
+  /** Points from the relay, when it answered. */
+  me?: { credits: number; helped: number; used: number };
+  /** Why the relay could not be reached, if it could not. */
+  error?: string;
+};
+export type PumasiSlot = { slotId: string; size: number; postedAt: number };
+/** What a helper's window may know: states and token counts, never the task or the result. */
+export type PumasiProgress = {
+  slotId: string;
+  state: "claimed" | "working" | "done";
+  tokens?: number;
+};
 export interface AIBridge {
+  pumasi?: {
+    state(): Promise<PumasiState>;
+    update(patch: {
+      server?: string;
+      donate?: Partial<Record<PumasiHost, boolean>>;
+      dailyCap?: number;
+    }): Promise<PumasiState>;
+    join(invite: string): Promise<PumasiState>;
+    open(): Promise<PumasiSlot[]>;
+    help(slotId: string): Promise<{ tokens: number }>;
+    onProgress(fn: (e: PumasiProgress) => void): () => void;
+  };
   ensemble?(payload: {
     models: string[];
     text: string;
@@ -235,6 +280,8 @@ export interface AIBridge {
     text: string;
     context: AIRequest["context"];
     maxRounds?: number;
+    /** Send tasks to other people's apps first; each task goes to this many helpers. */
+    pumasi?: { copies: number };
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
   usage?: {

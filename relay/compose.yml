@@ -1,0 +1,24 @@
+# Pumasi relay on the Mac mini. Public address: https://pumasi.movvcorp.duckdns.org (shared Caddy).
+name: pumasi-relay
+services:
+  relay:
+    labels:
+      dev.workspace.autostart: "true"
+    build: .
+    container_name: pumasi-relay
+    restart: unless-stopped
+    env_file: .env
+    mem_limit: 128m
+    cpus: "0.5"
+    pids_limit: 64
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      - pumasi-data:/data
+    ports:
+      - "127.0.0.1:8420:8787"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+volumes:
+  pumasi-data:

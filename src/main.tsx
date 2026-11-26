@@ -20,6 +20,7 @@ import {
   Sparkles,
   Trash2,
   Undo2,
+  Users,
   X,
 } from "lucide-react";
 import {
@@ -57,6 +58,7 @@ import {
   ensembleMessage,
 } from "./ensemble";
 import { SecretSettings } from "./secrets";
+import { PumasiPanel } from "./pumasi";
 import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import {
   project,
@@ -295,7 +297,9 @@ function App() {
     media.addEventListener("change", collapse);
     return () => media.removeEventListener("change", collapse);
   }, []);
-  const [dialog, setDialog] = useState<"search" | "settings" | null>(null);
+  const [dialog, setDialog] = useState<
+    "search" | "settings" | "pumasi" | null
+  >(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"current" | "archived" | "trashed">(
     "current",
@@ -553,6 +557,12 @@ function App() {
           }));
           return;
         }
+        if (e.stage === "pumasi") {
+          setNotice(
+            t("팀 모드 · 품앗이 {done}/{total} 완료 · 돕는 중 {working} · 기다리는 자리 {open}", e),
+          );
+          return;
+        }
         setNotice(
           e.stage === "plan"
             ? t("팀 모드 · {lead}가 작업을 나누는 중", { lead: modelById(routing.lead).name })
@@ -582,10 +592,11 @@ function App() {
           worker: routing.worker,
           text: p.text,
           context: context(p.decision),
+          pumasi: routing.pumasi ? { copies: routing.pumasiCopies } : undefined,
         });
         completion = {
           text: t(
-            "{text}\n\n—\n팀 모드 · 총괄 {lead} 입력 {leadIn} / 출력 {leadOut} · 작업 {workers} 입력 {workerIn} / 출력 {workerOut} 토큰 · 작업 {taskCount}개 · {rounds}회차{approved}{failed}{incomplete}{warning}{substitutions}",
+            "{text}\n\n—\n팀 모드 · 총괄 {lead} 입력 {leadIn} / 출력 {leadOut} · 작업 {workers} 입력 {workerIn} / 출력 {workerOut} 토큰 · 작업 {taskCount}개 · {rounds}회차{pumasi}{approved}{failed}{incomplete}{warning}{substitutions}",
             {
               text: team.text,
               lead: modelById(team.lead).name,
@@ -598,6 +609,9 @@ function App() {
               workerOut: team.usage.worker.out,
               taskCount: team.tasks.length,
               rounds: team.rounds,
+              pumasi: team.pumasiTasks
+                ? t(" · 품앗이로 받은 작업 {count}개", { count: team.pumasiTasks })
+                : "",
               approved: team.approved ? t(" · 총괄 모델 승인") : "",
               failed: team.tasks.some((t) => t.failed)
                 ? t(" · 실패 작업 {count}개", {
@@ -848,6 +862,14 @@ function App() {
             <Search size={17} />
             <span>{t("대화 검색")}</span>
             <kbd>⌘ K</kbd>
+          </button>
+          <button
+            className="nav-item"
+            aria-label={t("품앗이")}
+            onClick={() => setDialog("pumasi")}
+          >
+            <Users size={17} />
+            <span>{t("품앗이")}</span>
           </button>
         </nav>
         <div className="section-label">
@@ -1250,7 +1272,9 @@ function App() {
                   ? t("실행 전에 확인해 주세요")
                   : dialog === "search"
                     ? t("대화 검색")
-                    : t("워크스페이스 설정")}
+                    : dialog === "pumasi"
+                      ? t("품앗이")
+                      : t("워크스페이스 설정")}
               </h2>
               <button
                 className="icon-button"
@@ -1490,6 +1514,8 @@ function App() {
                   </button>
                 </div>
               </>
+            ) : dialog === "pumasi" ? (
+              <PumasiPanel />
             ) : dialog === "search" ? (
               <>
                 <div className="search-input">
@@ -1656,6 +1682,46 @@ function App() {
                       ))}
                     </select>
                   </label>
+                  <label className="setting-row">
+                    <span>
+                      <strong>{t("품앗이에 맡기기")}</strong>
+                      <small>
+                        {t("팀 모드의 작업을 다른 사람의 앱이 그 사람의 키로 처리합니다. 5분 안에 아무도 돕지 않은 작업은 내 작업 모델이 합니다. 작업 글은 모르는 사람의 AI가 읽으니 개인 정보는 넣지 마세요.")}
+                      </small>
+                    </span>
+                    <input
+                      type="checkbox"
+                      aria-label={t("품앗이에 맡기기")}
+                      checked={routing.pumasi}
+                      disabled={!routing.team}
+                      onChange={(e) =>
+                        setRouting((r) => ({ ...r, pumasi: e.target.checked }))
+                      }
+                    />
+                  </label>
+                  {routing.team && routing.pumasi && (
+                    <label className="setting-row">
+                      <span>
+                        <strong>{t("작업당 돕는 사람")}</strong>
+                        <small>
+                          {t("2명 이상이면 두 결과를 비교해 더 나은 쪽을 씁니다. 엉터리 결과를 거르는 데 필요합니다.")}
+                        </small>
+                      </span>
+                      <select
+                        aria-label={t("작업당 돕는 사람")}
+                        value={routing.pumasiCopies}
+                        onChange={(e) =>
+                          setRouting((r) => ({ ...r, pumasiCopies: Number(e.target.value) }))
+                        }
+                      >
+                        {[1, 2, 3].map((n) => (
+                          <option key={n} value={n}>
+                            {t("{count}명", { count: n })}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                   <EnsembleSettings
                     routing={routing}
                     setRouting={setRouting}

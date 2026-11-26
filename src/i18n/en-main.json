@@ -246,7 +246,15 @@
   " · 일부 작업 출력 상한 도달": " · some tasks hit output cap",
   "\n주의: {warning}": "\nNote: {warning}",
   "\n주의: {requested} 대신 {servedBy}가 답했습니다.": "\nNote: {requested} answered by {servedBy} instead",
-  "{text}\n\n—\n팀 모드 · 총괄 {lead} 입력 {leadIn} / 출력 {leadOut} · 작업 {workers} 입력 {workerIn} / 출력 {workerOut} 토큰 · 작업 {taskCount}개 · {rounds}회차{approved}{failed}{incomplete}{warning}{substitutions}": "{text}\n\n—\nTeam mode · lead {lead} input {leadIn} / output {leadOut} · workers {workers} input {workerIn} / output {workerOut} tokens · {taskCount} tasks · {rounds} rounds{approved}{failed}{incomplete}{warning}{substitutions}",
   "{text}\n\n—\n{model} · 실제 입력 {input} / 출력 {output} 토큰{incomplete}": "{text}\n\n—\n{model} · actual input {input} / output {output} tokens{incomplete}",
-  "{preview}\n선택한 실행 모델: {model}": "{preview}\nSelected execution model: {model}"
+  "{preview}\n선택한 실행 모델: {model}": "{preview}\nSelected execution model: {model}",
+  "{text}\n\n—\n팀 모드 · 총괄 {lead} 입력 {leadIn} / 출력 {leadOut} · 작업 {workers} 입력 {workerIn} / 출력 {workerOut} 토큰 · 작업 {taskCount}개 · {rounds}회차{pumasi}{approved}{failed}{incomplete}{warning}{substitutions}": "{text}\n\n—\nTeam mode · lead {lead} input {leadIn} / output {leadOut} · workers {workers} input {workerIn} / output {workerOut} tokens · {taskCount} tasks · {rounds} rounds{pumasi}{approved}{failed}{incomplete}{warning}{substitutions}",
+  "품앗이": "Pumasi",
+  "팀 모드 · 품앗이 {done}/{total} 완료 · 돕는 중 {working} · 기다리는 자리 {open}": "Team mode · Pumasi {done}/{total} done · {working} helping · {open} waiting for a helper",
+  " · 품앗이로 받은 작업 {count}개": " · {count} tasks from Pumasi",
+  "품앗이에 맡기기": "Hand tasks to Pumasi",
+  "팀 모드의 작업을 다른 사람의 앱이 그 사람의 키로 처리합니다. 5분 안에 아무도 돕지 않은 작업은 내 작업 모델이 합니다. 작업 글은 모르는 사람의 AI가 읽으니 개인 정보는 넣지 마세요.": "Other people's apps do team-mode tasks with their own keys. A task nobody takes within 5 minutes goes to your worker model. A stranger's AI reads the task, so leave out personal information.",
+  "작업당 돕는 사람": "Helpers per task",
+  "2명 이상이면 두 결과를 비교해 더 나은 쪽을 씁니다. 엉터리 결과를 거르는 데 필요합니다.": "With two or more, the results are compared and the better one is used. This filters out bad results.",
+  "{count}명": "{count}"
 }

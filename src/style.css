@@ -1813,3 +1813,36 @@ html[data-theme="dark"] .composer {
 .ensemble-details li.is-stopped .ensemble-pick {
   color: var(--muted);
 }
+/* Pumasi dialog: same rows as the key settings, without the section rule on top. */
+.pumasi-panel {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.pumasi-panel .secret-head > span {
+  font-size: 12px;
+}
+.pumasi-panel .secret-head:has(> label) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pumasi-panel .secret-head > label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.pumasi-panel .secret-head > label strong {
+  display: inline;
+}
+.pumasi-panel .secret-head:has(> label) small {
+  margin-top: 0;
+}
+.pumasi-panel .secret-row:has(input[type="checkbox"]) {
+  padding: 10px 0;
+}
+.pumasi-panel .secret-actions button:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}

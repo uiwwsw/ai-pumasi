@@ -5,11 +5,13 @@ import ensemble from "./i18n/en-ensemble.json";
 import secrets from "./i18n/en-secrets.json";
 import domain from "./i18n/en-domain.json";
 import electron from "./i18n/en-electron.json";
+import pumasi from "./i18n/en-pumasi.json";
 
 export type Lang = "ko" | "en";
 export const LANG_KEY = "aurora.lang";
 const EN: Record<string, string> = {
   ...electron,
+  ...pumasi,
   ...domain,
   ...secrets,
   ...ensemble,
