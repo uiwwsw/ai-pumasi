@@ -237,7 +237,7 @@ function App() {
     window.auroraAI
       ?.status()
       .then(setProviderStatus)
-      .catch(() => setAIError("API 키 설정 상태를 확인하지 못했습니다."));
+      .catch(() => setAIError(t("API 키 설정 상태를 확인하지 못했습니다.")));
   useEffect(() => {
     void refreshStatus();
     void window.auroraAI?.setLang?.(getLang());
@@ -246,7 +246,7 @@ function App() {
     try {
       localStorage.setItem(ROUTING_KEY, JSON.stringify(routing));
     } catch {
-      setAIError("모델 설정을 저장하지 못했습니다.");
+      setAIError(t("모델 설정을 저장하지 못했습니다."));
     }
   }, [routing]);
   const [pending, setPending] = useState<Pending | null>(null);
@@ -455,11 +455,15 @@ function App() {
       })) as Analysis;
       setPending((p) => (p ? { ...p, analysis: result } : p));
       setNotice(
-        `내부 분석 · ${modelById(result.model).name} · 입력 ${result.inputTokens ?? "미확인"} / 출력 ${result.outputTokens ?? "미확인"} 토큰 사용`,
+        t("내부 분석 · {model} · 입력 {input} / 출력 {output} 토큰 사용", {
+          model: modelById(result.model).name,
+          input: result.inputTokens ?? t("미확인"),
+          output: result.outputTokens ?? t("미확인"),
+        }),
       );
     } catch (error) {
       setAIError(
-        error instanceof Error ? error.message : "내부 분석에 실패했습니다.",
+        error instanceof Error ? error.message : t("내부 분석에 실패했습니다."),
       );
     } finally {
       busyRef.current = false;
@@ -485,7 +489,7 @@ function App() {
       const picked = routing.ensembleModels.filter((id) =>
         modelReady(id, providerStatus),
       );
-      setNotice(`묶음 투표 · ${picked.length}개 모델에 동시에 묻는 중`);
+      setNotice(t("묶음 투표 · {count}개 모델에 동시에 묻는 중", { count: picked.length }));
       const off = window.auroraAI.onTeamProgress?.((e) => {
         if (e.stage === "worker")
           setWorkers((prev) => ({
@@ -499,8 +503,8 @@ function App() {
             },
           }));
         else if (e.stage === "merge" && e.model)
-          setNotice(`묶음 투표 · ${modelById(e.model).name}가 답을 합치는 중`);
-        else if (e.stage === "done") setNotice("묶음 투표 · 완료");
+          setNotice(t("묶음 투표 · {model}가 답을 합치는 중", { model: modelById(e.model).name }));
+        else if (e.stage === "done") setNotice(t("묶음 투표 · 완료"));
       });
       try {
         const r = await window.auroraAI.ensemble({
@@ -509,7 +513,7 @@ function App() {
           context: context(p.decision),
         });
         bundle = ensembleMessage(r);
-        setNotice("묶음 투표 · 완료");
+        setNotice(t("묶음 투표 · 완료"));
         completion = {
           text: bundle.text,
           model: r.writer,
@@ -521,7 +525,7 @@ function App() {
         setAIError(
           error instanceof Error
             ? error.message
-            : "묶음 투표 실행에 실패했습니다.",
+            : t("묶음 투표 실행에 실패했습니다."),
         );
         return;
       } finally {
@@ -551,14 +555,25 @@ function App() {
         }
         setNotice(
           e.stage === "plan"
-            ? `팀 모드 · ${modelById(routing.lead).name}가 작업을 나누는 중`
+            ? t("팀 모드 · {lead}가 작업을 나누는 중", { lead: modelById(routing.lead).name })
             : e.stage === "work"
-              ? `팀 모드 · ${e.round}회차 ${e.index}/${e.total} · ${modelById(routing.worker).name}: ${e.title}`
+              ? t("팀 모드 · {round}회차 {index}/{total} · {worker}: {title}", {
+                  round: e.round ?? 0,
+                  index: e.index ?? 0,
+                  total: e.total ?? 0,
+                  worker: modelById(routing.worker).name,
+                  title: e.title ?? "",
+                })
               : e.stage === "review"
-                ? `팀 모드 · ${modelById(routing.lead).name}가 ${e.round}회차 결과 검수 중`
+                ? t("팀 모드 · {lead}가 {round}회차 결과 검수 중", {
+                    lead: modelById(routing.lead).name,
+                    round: e.round ?? 0,
+                  })
                 : e.stage === "merge"
-                  ? `팀 모드 · ${modelById(routing.worker).name}가 결과를 합치는 중`
-                  : "팀 모드 · 완료",
+                  ? t("팀 모드 · {worker}가 결과를 합치는 중", {
+                      worker: modelById(routing.worker).name,
+                    })
+                  : t("팀 모드 · 완료"),
         );
       });
       try {
@@ -569,7 +584,38 @@ function App() {
           context: context(p.decision),
         });
         completion = {
-          text: `${team.text}\n\n—\n팀 모드 · 총괄 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 작업 ${team.workersUsed.map((id) => modelById(id).name).join(", ") || modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? " · 총괄 모델 승인" : ""}${team.tasks.some((t) => t.failed) ? ` · 실패 작업 ${team.tasks.filter((t) => t.failed).length}개` : ""}${team.tasks.some((t) => t.incomplete) ? " · 일부 작업 출력 상한 도달" : ""}${team.warning ? `\n주의: ${team.warning}` : ""}${[...new Set((team.substitutions ?? []).map((s) => `\n주의: ${modelById(s.requested).name} 대신 ${s.servedBy ?? "다른 모델"}가 답했습니다.`))].join("")}`,
+          text: t(
+            "{text}\n\n—\n팀 모드 · 총괄 {lead} 입력 {leadIn} / 출력 {leadOut} · 작업 {workers} 입력 {workerIn} / 출력 {workerOut} 토큰 · 작업 {taskCount}개 · {rounds}회차{approved}{failed}{incomplete}{warning}{substitutions}",
+            {
+              text: team.text,
+              lead: modelById(team.lead).name,
+              leadIn: team.usage.lead.in,
+              leadOut: team.usage.lead.out,
+              workers:
+                (team.workersUsed.map((id) => modelById(id).name).join(", ") ||
+                  modelById(team.worker).name) ?? "",
+              workerIn: team.usage.worker.in,
+              workerOut: team.usage.worker.out,
+              taskCount: team.tasks.length,
+              rounds: team.rounds,
+              approved: team.approved ? t(" · 총괄 모델 승인") : "",
+              failed: team.tasks.some((t) => t.failed)
+                ? t(" · 실패 작업 {count}개", {
+                    count: team.tasks.filter((t) => t.failed).length,
+                  })
+                : "",
+              incomplete: team.tasks.some((t) => t.incomplete)
+                ? t(" · 일부 작업 출력 상한 도달")
+                : "",
+              warning: team.warning ? t("\n주의: {warning}", { warning: team.warning }) : "",
+              substitutions: [...new Set((team.substitutions ?? []).map((s) =>
+                t("\n주의: {requested} 대신 {servedBy}가 답했습니다.", {
+                  requested: modelById(s.requested).name,
+                  servedBy: s.servedBy ?? t("다른 모델"),
+                })
+              ))].join(""),
+            },
+          ),
           model: team.lead,
           inputTokens: team.usage.lead.in + team.usage.worker.in,
           outputTokens: team.usage.lead.out + team.usage.worker.out,
@@ -579,7 +625,7 @@ function App() {
         setAIError(
           error instanceof Error
             ? error.message
-            : "팀 모드 실행에 실패했습니다.",
+            : t("팀 모드 실행에 실패했습니다."),
         );
         return;
       } finally {
@@ -590,7 +636,7 @@ function App() {
       }
     } else if (routing.live) {
       if (!window.auroraAI) {
-        setAIError("Electron 앱에서 실행해 주세요.");
+        setAIError(t("Electron 앱에서 실행해 주세요."));
         return;
       }
       busyRef.current = true;
@@ -606,7 +652,7 @@ function App() {
         });
       } catch (error) {
         setAIError(
-          error instanceof Error ? error.message : "API 실행에 실패했습니다.",
+          error instanceof Error ? error.message : t("API 실행에 실패했습니다."),
         );
         return;
       } finally {
@@ -624,8 +670,22 @@ function App() {
           team || bundle
             ? completion!.text
             : completion
-              ? `${completion.text}\n\n—\n${modelById(p.modelId).name} · 실제 입력 ${completion.inputTokens ?? "미확인"} / 출력 ${completion.outputTokens ?? "미확인"} 토큰${completion.incomplete ? " · 생성 상한 도달: 미완성일 수 있음" : ""}`
-              : `${makePreview(p.text, p.selected)}\n선택한 실행 모델: ${modelById(p.modelId).name}`,
+              ? t(
+                  "{text}\n\n—\n{model} · 실제 입력 {input} / 출력 {output} 토큰{incomplete}",
+                  {
+                    text: completion.text,
+                    model: modelById(p.modelId).name,
+                    input: completion.inputTokens ?? t("미확인"),
+                    output: completion.outputTokens ?? t("미확인"),
+                    incomplete: completion.incomplete
+                      ? t(" · 생성 상한 도달: 미완성일 수 있음")
+                      : "",
+                  },
+                )
+              : t("{preview}\n선택한 실행 모델: {model}", {
+                  preview: makePreview(p.text, p.selected),
+                  model: modelById(p.modelId).name,
+                }),
         live: !!completion,
         model: bundle?.model ?? p.modelId,
         ...(bundle ? { ensemble: bundle.ensemble } : {}),
@@ -691,8 +751,8 @@ function App() {
     if (p.proposal && p.decision !== "continue")
       setNotice(
         p.decision === "trashed"
-          ? "이전 작업을 휴지통으로 옮겼습니다. 복원할 수 있습니다."
-          : "이전 작업을 정리했습니다. 대화 흐름은 계속 이어집니다.",
+          ? t("이전 작업을 휴지통으로 옮겼습니다. 복원할 수 있습니다.")
+          : t("이전 작업을 정리했습니다. 대화 흐름은 계속 이어집니다."),
       );
     setFilter("current");
     setDraft("");
@@ -705,8 +765,8 @@ function App() {
     setFilter("current");
     setNotice(
       mode === "legacy"
-        ? "레거시 모드: 직접 세션을 관리합니다. 자동 정리는 꺼집니다."
-        : "자동 정리 모드: 하나의 대화 흐름을 이어갑니다.",
+        ? t("레거시 모드: 직접 세션을 관리합니다. 자동 정리는 꺼집니다.")
+        : t("자동 정리 모드: 하나의 대화 흐름을 이어갑니다."),
     );
   }
   function jump(id: string) {
@@ -726,7 +786,7 @@ function App() {
       ),
     }));
     setNotice(
-      "작업 묶음을 복원했습니다. 새 요청의 문맥에는 자동 포함하지 않습니다.",
+      t("작업 묶음을 복원했습니다. 새 요청의 문맥에는 자동 포함하지 않습니다."),
     );
   }
   const preview = draft.trim()
@@ -925,14 +985,14 @@ function App() {
               </p>
               <div className="prompt-grid">
                 {[
-                  ["글을 간결하게 요약해 줘", t("가볍게 정리하기"), t("요약 · 번역")],
+                  [t("글을 간결하게 요약해 줘"), t("가볍게 정리하기"), t("요약 · 번역")],
                   [
-                    "코드의 문제를 찾아 해결 방법을 제안해 줘",
+                    t("코드의 문제를 찾아 해결 방법을 제안해 줘"),
                     t("함께 문제 풀기"),
                     t("코드 · 분석"),
                   ],
                   [
-                    "동기화 아키텍처를 설계해 줘",
+                    t("동기화 아키텍처를 설계해 줘"),
                     t("깊이 생각하기"),
                     t("설계 · 추론"),
                   ],
@@ -978,7 +1038,7 @@ function App() {
                           b.status === "trashed") && (
                           <button onClick={() => restore(b.id)}>
                             <Undo2 size={13} />
-                            복원
+                            {t("복원")}
                           </button>
                         )}
                       </div>
@@ -1759,7 +1819,7 @@ function App() {
                           ?.setEnabled(e.target.checked)
                           .then(setHistory)
                           .catch(() =>
-                            setAIError("사용 기록 설정을 바꾸지 못했습니다."),
+                            setAIError(t("사용 기록 설정을 바꾸지 못했습니다.")),
                           )
                       }
                     />

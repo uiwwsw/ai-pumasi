@@ -55,3 +55,5 @@ export function modelName(name: string) {
     .replace("Ollama 로컬", "Ollama local")
     .replace("(무료)", "(free)");
 }
+
+if (typeof document !== "undefined") document.title = appName();
