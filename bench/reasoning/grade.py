@@ -17,7 +17,7 @@ qs = {q["no"]: q for q in json.load(open(f"{d}/questions.json", encoding="utf-8"
 
 
 def norm(s):
-    s = re.sub(r"[\s*`'\"]", "", str(s))
+    s = re.sub(r"[\s*`'\"<>]", "", str(s))
     s = re.sub(r",(?=\d{3}\b)", "", s)
     return re.sub(r"(명|시간|원)$", "", s)
 
@@ -41,10 +41,34 @@ def score(answers):
 
 
 free = json.load(open(f"{d}/free-answers.json", encoding="utf-8"))
-rows = [("오로라 무료 묶음(다수결)", {k: v["vote"] for k, v in free.items()})]
+rows = [("오로라(다수결)", {k: v["vote"] for k, v in free.items()})]
+
+# Add weighted vote if wvote exists
+has_wvote = any("wvote" in v for v in free.values())
+if has_wvote:
+    rows.append(("오로라(가중 투표)", {k: v.get("wvote", "") for k, v in free.items()}))
+
 models = list(next(iter(free.values()))["models"])
 for m in models:
     rows.append((m.split("/")[-1], {k: v["models"][m]["answer"] for k, v in free.items()}))
+
+# Oracle row: correct if any model got it right
+oracle_ans = {}
+for qid, entry in free.items():
+    qkind = None
+    for q in qs.values():
+        if q["id"] == qid:
+            qkind = q["kind"]
+            break
+    if qkind is None:
+        continue
+    correct = key.get(qid, "")
+    got_correct = False
+    for m, md in entry.get("models", {}).items():
+        if md.get("answer") and same(qkind, md.get("answer", ""), correct):
+            got_correct = True
+            break
+    oracle_ans[qid] = correct if got_correct else ""
 
 if len(sys.argv) > 2:
     text = open(sys.argv[2], encoding="utf-8").read()
@@ -56,8 +80,22 @@ if len(sys.argv) > 2:
             fable[qs[no]["id"]] = ans[-1].strip()
     rows.insert(0, ("Fable", fable))
 
-kinds = ["knights", "zebra", "path", "schedule", "grid", "bigmul"]
-print(f"{'':28}{'합계':>6}  " + "  ".join(f"{k:>8}" for k in kinds))
+rows.append(("오라클(한 모델이라도 정답)", oracle_ans))
+
+# Get all kinds from questions.json, in order
+all_kinds = []
+for q in qs.values():
+    k = q["kind"]
+    if k not in all_kinds:
+        all_kinds.append(k)
+
+# Calculate total and per-kind counts
+total_count = len(qs)
+per_kind_counts = {}
+for k in all_kinds:
+    per_kind_counts[k] = sum(1 for q in qs.values() if q["kind"] == k)
+
+print(f"{'':28}{'합계':>6}  " + "  ".join(f"{k:>8}" for k in all_kinds))
 for name, ans in rows:
     total, bk = score(ans)
-    print(f"{name:28}{total:>3}/42  " + "  ".join(f"{bk[k][0]:>6}/7" for k in kinds))
+    print(f"{name:28}{total:>3}/{total_count}  " + "  ".join(f"{bk[k][0]:>6}/{per_kind_counts[k]}" for k in all_kinds))
