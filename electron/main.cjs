@@ -15,6 +15,7 @@ const { pathToFileURL } = require("node:url");
 const fs = require("node:fs");
 const providers = require("./providers.cjs");
 const { createSecretStore, redact } = require("./secrets.cjs");
+const { tr } = require("./i18n.cjs");
 app.setName("AI Pumasi");
 app.setAppUserModelId("com.uiwwsw.aurora");
 // The app was called Aurora until 0.1.8. Keep using that folder so conversations, settings and
@@ -67,6 +68,8 @@ const ownsInstance = app.requestSingleInstanceLock();
 if (!ownsInstance) app.quit();
 else
   app.whenReady().then(() => {
+    // Dialogs before the window loads follow the system language; the window then sets its choice.
+    require("./i18n.cjs").setLang(/^ko\b/i.test(app.getLocale()) ? "ko" : "en");
     app.on("second-instance", () => {
       const current = BrowserWindow.getAllWindows()[0];
       if (current) {
@@ -78,6 +81,7 @@ else
     const authorized = (event) =>
       event.senderFrame?.url === "aurora://app/index.html" &&
       BrowserWindow.fromWebContents(event.sender);
+    const forbiddenError = () => new Error(tr("Forbidden"));
     const inFlight = new Set();
     // Keys saved in Settings, encrypted by the OS keychain. Decrypted here only, per call.
     const secrets = createSecretStore({
@@ -103,21 +107,23 @@ else
       }
     };
     ipcMain.handle("aurora:secrets-list", (event) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       return secrets.list();
     });
     ipcMain.handle("aurora:secrets-set", (event, name, value) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       try {
         return secrets.set(name, value);
       } catch (error) {
         throw new Error(
-          redact(error?.message ?? "저장하지 못했습니다.", { [name]: value }),
+          redact(error?.message ?? tr("저장하지 못했습니다."), {
+            [name]: value,
+          }),
         );
       }
     });
     ipcMain.handle("aurora:secrets-remove", (event, name) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       return secrets.remove(name);
     });
     // Where each provider hands out keys. The window names a provider; it never passes a URL.
@@ -130,13 +136,13 @@ else
       anthropic: "https://console.anthropic.com/settings/keys",
     };
     ipcMain.handle("aurora:open-signup", (event, host) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       if (!Object.hasOwn(SIGNUP, host))
-        throw new Error("알 수 없는 제공자입니다.");
+        throw new Error(tr("알 수 없는 제공자입니다."));
       return shell.openExternal(SIGNUP[host]);
     });
     ipcMain.handle("aurora:secrets-compat-url", (event, url) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       return secrets.setCompatUrl(url);
     });
     let workerStats;
@@ -152,31 +158,31 @@ else
         file: path.join(app.getPath("userData"), "usage-log.json"),
       }));
     ipcMain.handle("aurora:usage-get", (event) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       return usage().snapshot();
     });
     ipcMain.handle("aurora:usage-set", (event, enabled) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       usage().setEnabled(enabled === true);
       return usage().snapshot();
     });
     ipcMain.handle("aurora:usage-clear", (event) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       usage().clear();
       return usage().snapshot();
     });
     ipcMain.handle("aurora:set-lang", (event, lang) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       require("./i18n.cjs").setLang(lang);
     });
     ipcMain.handle("aurora:ai-status", (event) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       return providers.status(secrets.env());
     });
     ipcMain.handle("aurora:ai-request", async (event, payload) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       const id = event.sender.id;
-      if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
+      if (inFlight.has(id)) throw new Error(tr("이미 요청을 처리 중입니다."));
       inFlight.add(id);
       try {
         const env = secrets.env();
@@ -191,9 +197,9 @@ else
       }
     });
     ipcMain.handle("aurora:team-run", async (event, payload) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       const id = event.sender.id;
-      if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
+      if (inFlight.has(id)) throw new Error(tr("이미 요청을 처리 중입니다."));
       inFlight.add(id);
       try {
         // Count calls per stage so the next team estimate knows how many of each to expect.
@@ -222,9 +228,9 @@ else
       }
     });
     ipcMain.handle("aurora:ensemble-run", async (event, payload) => {
-      if (!authorized(event)) throw new Error("Forbidden");
+      if (!authorized(event)) throw forbiddenError();
       const id = event.sender.id;
-      if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
+      if (inFlight.has(id)) throw new Error(tr("이미 요청을 처리 중입니다."));
       inFlight.add(id);
       try {
         const env = secrets.env();

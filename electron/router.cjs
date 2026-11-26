@@ -3,6 +3,7 @@
 // tries them in order, and rests a host that hit its rate limit or failed so the next call goes
 // elsewhere first. Keys are read from the env passed in (main process only) and never returned.
 const catalog = require("../src/catalog.json");
+const { tr } = require("./i18n.cjs");
 
 const HOSTS = {
   nvidia: {

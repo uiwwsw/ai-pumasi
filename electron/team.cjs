@@ -3,6 +3,7 @@
 const providers = require("./providers.cjs");
 const catalog = require("../src/catalog.json");
 const { createStatsStore } = require("./worker-stats.cjs");
+const { tr } = require("./i18n.cjs");
 
 const REVIEW_BUDGET = 18000; // characters of worker output the lead sees per review
 const WORKER_RETRY_DELAY_MS = 4000;
@@ -89,7 +90,9 @@ function validPlan(plan) {
     new Set(plan.tasks.map((t) => t.id)).size !== plan.tasks.length
   )
     throw new Error(
-      "총괄 모델의 작업 분할 형식이 잘못되었습니다. 계획 토큰은 이미 청구됐을 수 있고, 작업은 시작하지 않았습니다.",
+      tr(
+        "총괄 모델의 작업 분할 형식이 잘못되었습니다. 계획 토큰은 이미 청구됐을 수 있고, 작업은 시작하지 않았습니다.",
+      ),
     );
   return plan;
 }
@@ -100,10 +103,12 @@ function reviewReport(tasks, results) {
   return tasks
     .map((t) => {
       const r = results.get(t.id);
-      let body = r?.error ? `[실패] ${r.error}` : (r?.text ?? "[결과 없음]");
+      let body = r?.error
+        ? tr("[실패] {error}", { error: r.error })
+        : (r?.text ?? tr("[결과 없음]"));
       if (body.length > per)
-        body = `${body.slice(0, per)}\n[…검수용으로 ${body.length - per}자 생략. 생략분은 최종 답에 그대로 포함됨]`;
-      return `## ${t.id} · ${t.title}${r?.incomplete ? " (출력 상한 도달)" : ""}\n${body}`;
+        body = `${body.slice(0, per)}\n${tr("[…검수용으로 {count}자 생략. 생략분은 최종 답에 그대로 포함됨]", { count: body.length - per })}`;
+      return `## ${t.id} · ${t.title}${r?.incomplete ? ` (${tr("출력 상한 도달")})` : ""}\n${body}`;
     })
     .join("\n\n");
 }
@@ -112,7 +117,7 @@ function concatResults(tasks, results) {
   return tasks
     .map((t) => {
       const r = results.get(t.id);
-      return `### ${t.title}\n${r?.error ? `(실패: ${r.error})` : (r?.text ?? "(결과 없음)")}`;
+      return `### ${t.title}\n${r?.error ? `(${tr("실패: {error}", { error: r.error })})` : (r?.text ?? `(${tr("결과 없음")})`)}`;
     })
     .join("\n\n");
 }
@@ -214,10 +219,10 @@ async function superviseModel(
     last = Object.assign(
       new Error(
         problem === "empty"
-          ? "작업 모델이 빈 답을 보냈습니다."
+          ? tr("작업 모델이 빈 답을 보냈습니다.")
           : problem === "truncated"
-            ? "작업 모델 답이 출력 상한에서 잘렸습니다."
-            : "작업 모델 답이 작업에 비해 너무 짧습니다.",
+            ? tr("작업 모델 답이 출력 상한에서 잘렸습니다.")
+            : tr("작업 모델 답이 작업에 비해 너무 짧습니다."),
       ),
       { reason: problem },
     );
@@ -314,7 +319,7 @@ async function orchestrate(p, opts = {}) {
     }
     report("failed", {
       reason: last?.reason ?? failureReason(last),
-      message: last instanceof Error ? last.message : "실행 실패",
+      message: last instanceof Error ? last.message : tr("실행 실패"),
     });
     throw last;
   }
@@ -346,7 +351,7 @@ async function orchestrate(p, opts = {}) {
       });
       const prev = results.get(t.id)?.text;
       const prompt = t.feedback
-        ? `${t.instructions}\n\n이전 결과:\n${prev ?? "(없음)"}\n\n검토 의견(이것만 고쳐서 전체 결과를 다시 작성):\n${t.feedback}`
+        ? `${t.instructions}\n\n${tr("이전 결과:")}\n${prev ?? `(${tr("없음")})`}\n\n${tr("검토 의견(이것만 고쳐서 전체 결과를 다시 작성):")}\n${t.feedback}`
         : t.instructions;
       // Workers get only their own task, never the whole conversation: that is the token saving.
       try {
@@ -360,7 +365,7 @@ async function orchestrate(p, opts = {}) {
         // Keep an earlier good result rather than replacing it with a failure.
         if (!prev)
           results.set(t.id, {
-            error: error instanceof Error ? error.message : "실행 실패",
+            error: error instanceof Error ? error.message : tr("실행 실패"),
           });
       }
     }
@@ -378,12 +383,18 @@ async function orchestrate(p, opts = {}) {
       add("lead", reviewed);
       verdict = extractJSON(reviewed.text);
     } catch (error) {
-      warning = `검수 단계 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}. 작업 결과를 검수 없이 보여 줍니다.`;
+      warning = tr(
+        "검수 단계 실패: {error}. 작업 결과를 검수 없이 보여 줍니다.",
+        {
+          error: error instanceof Error ? error.message : tr("알 수 없는 오류"),
+        },
+      );
       break;
     }
     if (!verdict || typeof verdict.approved !== "boolean") {
-      warning =
-        "총괄 모델 검수 결과를 읽지 못했습니다. 작업 결과를 검수 없이 보여 줍니다.";
+      warning = tr(
+        "총괄 모델 검수 결과를 읽지 못했습니다. 작업 결과를 검수 없이 보여 줍니다.",
+      );
       break;
     }
     if (verdict.approved) {
@@ -399,13 +410,16 @@ async function orchestrate(p, opts = {}) {
       .filter(Boolean);
     // No valid redo target: another review would only re-read the same results.
     if (!todo.length) {
-      warning =
-        "총괄 모델이 재작업 대상을 지정하지 못했습니다. 현재 결과로 마감합니다.";
+      warning = tr(
+        "총괄 모델이 재작업 대상을 지정하지 못했습니다. 현재 결과로 마감합니다.",
+      );
       break;
     }
   }
   if (!approved && !warning)
-    warning = `${maxRounds}회차 안에 최종 승인을 받지 못했습니다.`;
+    warning = tr("{maxRounds}회차 안에 최종 승인을 받지 못했습니다.", {
+      maxRounds,
+    });
 
   // Final answer: one task needs no merge; several are merged by a cheap worker, never the lead.
   let text;

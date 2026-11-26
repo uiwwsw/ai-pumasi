@@ -10,6 +10,7 @@ function setupUpdates({
   storeDistribution = process.windowsStore === true,
   setIntervalImpl = setInterval,
 }) {
+  const { tr } = require("./i18n.cjs");
   let checking = false;
   let manual = false;
   let downloaded = false;
@@ -22,7 +23,7 @@ function setupUpdates({
   const tell = (message, detail = "") =>
     dialog.showMessageBox({
       type: "info",
-      title: "AI품앗이 업데이트",
+      title: tr("AI품앗이 업데이트"),
       message,
       detail,
     });
@@ -30,19 +31,22 @@ function setupUpdates({
     checking = false;
     if (manual)
       void tell(
-        "업데이트를 확인하거나 다운로드하지 못했습니다.",
-        "인터넷 연결을 확인하고 나중에 다시 시도해 주세요. 현재 버전은 계속 사용할 수 있습니다.",
+        tr("업데이트를 확인하거나 다운로드하지 못했습니다."),
+        tr(
+          "인터넷 연결을 확인하고 나중에 다시 시도해 주세요. 현재 버전은 계속 사용할 수 있습니다.",
+        ),
       );
     manual = false;
   };
   const restart = async () => {
     const { response } = await dialog.showMessageBox({
       type: "info",
-      title: "AI품앗이 업데이트",
-      message: "새 버전이 준비되었습니다.",
-      detail:
+      title: tr("AI품앗이 업데이트"),
+      message: tr("새 버전이 준비되었습니다."),
+      detail: tr(
         "재시작하면 업데이트가 적용됩니다. 저장하지 않은 대화는 사라질 수 있습니다. 나중에를 선택하면 정상 종료 시 설치합니다.",
-      buttons: ["나중에", "지금 재시작"],
+      ),
+      buttons: [tr("나중에"), tr("지금 재시작")],
       defaultId: 0,
       cancelId: 0,
     });
@@ -53,13 +57,15 @@ function setupUpdates({
       if (requested)
         await tell(
           storeDistribution
-            ? "Microsoft Store에서 업데이트를 확인해 주세요."
-            : "이 빌드에서는 자동 업데이트를 사용할 수 없습니다.",
+            ? tr("Microsoft Store에서 업데이트를 확인해 주세요.")
+            : tr("이 빌드에서는 자동 업데이트를 사용할 수 없습니다."),
           storeDistribution
-            ? "Store 설치 앱의 업데이트는 Microsoft Store가 관리합니다."
+            ? tr("Store 설치 앱의 업데이트는 Microsoft Store가 관리합니다.")
             : platform === "darwin" && !macSigned
-              ? "Developer ID로 서명된 버전이 필요합니다. 기존 개발 프리뷰는 새 설치 파일로 교체해 주세요."
-              : "설치된 배포 앱에서 사용할 수 있습니다.",
+              ? tr(
+                  "Developer ID로 서명된 버전이 필요합니다. 기존 개발 프리뷰는 새 설치 파일로 교체해 주세요.",
+                )
+              : tr("설치된 배포 앱에서 사용할 수 있습니다."),
         );
       return;
     }
@@ -68,7 +74,8 @@ function setupUpdates({
       return;
     }
     if (checking) {
-      if (requested) await tell("업데이트를 확인하거나 다운로드하고 있습니다.");
+      if (requested)
+        await tell(tr("업데이트를 확인하거나 다운로드하고 있습니다."));
       return;
     }
     checking = true;
@@ -86,7 +93,7 @@ function setupUpdates({
     autoUpdater.allowDowngrade = false;
     autoUpdater.on("update-not-available", () => {
       checking = false;
-      if (manual) void tell("최신 버전을 사용하고 있습니다.");
+      if (manual) void tell(tr("최신 버전을 사용하고 있습니다."));
       manual = false;
     });
     autoUpdater.on("error", failed);
@@ -105,15 +112,18 @@ function setupUpdates({
     { role: "viewMenu" },
     { role: "windowMenu" },
     {
-      label: "도움말",
+      label: tr("도움말"),
       submenu: [
         {
-          label: "업데이트 확인…",
+          label: tr("업데이트 확인…"),
           click: () => {
             void check(true);
           },
         },
-        { label: `AI품앗이 ${app.getVersion()}`, enabled: false },
+        {
+          label: tr("AI품앗이 {version}", { version: app.getVersion() }),
+          enabled: false,
+        },
       ],
     },
   );
