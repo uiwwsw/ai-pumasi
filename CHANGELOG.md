@@ -1,5 +1,10 @@
 # Changelog
 
+## 다음 버전
+
+- 이름을 **품앗이 에이전트**(영문 Pumasi Agent)로 바꿨습니다. 저장소는 github.com/uiwwsw/pumasi-agent, 웹 데모는 pumasi-agent.vercel.app입니다. 예전 주소는 자동으로 넘어갑니다.
+- 0.1.9(AI품앗이)와 0.1.8 이전(Aurora)의 대화·설정·저장한 키를 그대로 이어서 씁니다.
+
 ## 0.1.9
 
 - 이름을 **AI품앗이**(영문 AI Pumasi)로 바꿨습니다. 무료 AI 여럿이 품앗이하듯 함께 풀고 투표로 답을 정한다는 뜻입니다. 아이콘도 새로 그렸습니다.

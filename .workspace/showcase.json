@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "id": "aurora",
-  "name": "AI품앗이",
-  "en": "AI Pumasi",
+  "name": "품앗이 에이전트",
+  "en": "Pumasi Agent",
   "category": "개발 도구",
   "symbol": "✦",
   "color": "#c0cfa5",
@@ -20,20 +20,20 @@
   "links": [
     {
       "platform": "source",
-      "url": "https://github.com/uiwwsw/ai-pumasi"
+      "url": "https://github.com/uiwwsw/pumasi-agent"
     },
     {
       "platform": "package",
-      "url": "https://github.com/uiwwsw/ai-pumasi/releases/tag/v0.1.9"
+      "url": "https://github.com/uiwwsw/pumasi-agent/releases/tag/v0.1.9"
     },
     {
       "platform": "web",
-      "url": "https://ai-pumasi.vercel.app"
+      "url": "https://pumasi-agent.vercel.app"
     }
   ],
   "evidence": {
     "verifiedAt": "2026-11-26",
-    "note": "측정 기록 bench/README.md: 공개 시험 AIME 2026 무료 묶음 28/30 대 ChatGPT 무료 24/30, LiveBench 논리 퍼즐 23.4 대 13.4(공식 채점), 자체 추론 시험 29 대 23. 묶음 투표·사용량 기반 토큰 추정은 v0.1.6부터, 암호화한 API 키 관리·무료 제공자 여러 곳 자동 전환·자동(무료) 모델은 v0.1.7부터, 답이 확정되면 바로 끝나는 묶음 투표는 v0.1.8부터, 새 이름 AI품앗이와 영어 화면은 v0.1.9 앱에 포함."
+    "note": "측정 기록 bench/README.md: 공개 시험 AIME 2026 무료 묶음 28/30 대 ChatGPT 무료 24/30, LiveBench 논리 퍼즐 23.4 대 13.4(공식 채점), 자체 추론 시험 29 대 23. 묶음 투표·사용량 기반 토큰 추정은 v0.1.6부터, 암호화한 API 키 관리·무료 제공자 여러 곳 자동 전환·자동(무료) 모델은 v0.1.7부터, 답이 확정되면 바로 끝나는 묶음 투표는 v0.1.8부터, 새 이름 품앗이 에이전트와 영어 화면은 v0.1.9 앱에 포함."
   },
   "visibility": "public"
 }

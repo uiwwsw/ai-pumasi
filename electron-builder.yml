@@ -1,5 +1,5 @@
 appId: com.uiwwsw.aurora
-productName: AI Pumasi
+productName: Pumasi Agent
 asar: true
 compression: normal
 directories:
@@ -20,9 +20,9 @@ mac:
   category: public.app-category.productivity
   icon: build/icon.png
   notarize: false
-  artifactName: AI-Pumasi-${version}-mac-${arch}.${ext}
+  artifactName: Pumasi-Agent-${version}-mac-${arch}.${ext}
 dmg:
-  title: AI Pumasi ${version}
+  title: Pumasi Agent ${version}
   contents:
     - x: 140
       y: 190
@@ -34,7 +34,7 @@ dmg:
 win:
   target: [nsis]
   icon: build/icon.png
-  artifactName: AI-Pumasi-${version}-windows-${arch}.${ext}
+  artifactName: Pumasi-Agent-${version}-windows-${arch}.${ext}
 nsis:
   oneClick: false
   perMachine: false
@@ -47,5 +47,5 @@ nsis:
 publish:
   provider: github
   owner: uiwwsw
-  repo: ai-pumasi
+  repo: pumasi-agent
   releaseType: prerelease

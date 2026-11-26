@@ -11,8 +11,8 @@
     "./dev vercel deploy --prod --yes"
   ],
   "healthchecks": [
-    "https://ai-pumasi.vercel.app/health.json",
-    "https://ai-pumasi.vercel.app/en/",
-    "https://ai-pumasi.vercel.app/sitemap.xml"
+    "https://pumasi-agent.vercel.app/health.json",
+    "https://pumasi-agent.vercel.app/en/",
+    "https://pumasi-agent.vercel.app/sitemap.xml"
   ]
 }

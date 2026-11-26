@@ -44,7 +44,7 @@ export function t(ko: string, vars?: Record<string, string | number>) {
     ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m))
     : s;
 }
-export const appName = () => (lang === "en" ? "AI Pumasi" : "AI품앗이");
+export const appName = () => (lang === "en" ? "Pumasi Agent" : "품앗이 에이전트");
 
 /** Model names from the catalog in the current language: "(무료)" -> "(free)" and so on. */
 export function modelName(name: string) {

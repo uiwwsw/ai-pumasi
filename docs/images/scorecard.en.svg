@@ -6,9 +6,9 @@
 <rect class="bg" width="820" height="432" rx="6"/>
 <text class="ink" x="28" y="44" font-size="20" font-weight="700">Same exams, side by side</text>
 <rect class="a" x="268" y="62" width="12" height="12" rx="2"/>
-<text class="ink" x="286" y="73" font-size="13">AI Pumasi free bundle</text>
-<rect class="b" x="436" y="62" width="12" height="12" rx="2"/>
-<text class="ink" x="454" y="73" font-size="13">ChatGPT free</text>
+<text class="ink" x="286" y="73" font-size="13">Pumasi Agent free bundle</text>
+<rect class="b" x="478" y="62" width="12" height="12" rx="2"/>
+<text class="ink" x="496" y="73" font-size="13">ChatGPT free</text>
 <line class="rule" x1="28" x2="792" y1="92" y2="92"/>
 <text class="ink" x="28" y="124" font-size="15" font-weight="600">Fresh reasoning exam</text>
 <text class="mute" x="28" y="144" font-size="12">30 questions, not on the web</text>
