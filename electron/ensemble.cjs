@@ -16,7 +16,9 @@ const KEPT_TEXT = 6000; // characters of each model's reply returned for the det
 
 /** Models the bundle may use: free ones and the light tier of each provider. */
 function bundleable(m) {
-  return !!m && (m.free === true || m.tier === "light");
+  return (
+    !!m && m.provider !== "auto" && (m.free === true || m.tier === "light")
+  );
 }
 
 /** Throws unless the list is 2-5 distinct bundleable models whose key or local server is there. */
@@ -34,9 +36,9 @@ function checkModels(ids, status) {
     const m = catalog.find((x) => x.id === id);
     if (!bundleable(m))
       throw new Error("묶음 투표에는 무료·경량 모델만 넣을 수 있습니다.");
-    if (!status[m.provider])
+    if (m.provider === "compat" ? !status.models?.[m.id] : !status[m.provider])
       throw new Error(
-        `${m.name}: ${m.provider === "ollama" ? "Ollama가 실행 중이 아닙니다." : m.provider === "compat" ? "OpenAI 호환 서버(AURORA_OPENAI_COMPAT_URL·KEY)가 설정되지 않았습니다." : "키가 설정되지 않았습니다."}`,
+        `${m.name}: ${m.provider === "ollama" ? "Ollama가 실행 중이 아닙니다." : m.provider === "compat" ? "이 모델을 주는 무료 제공자(NVIDIA·OpenRouter·Groq·Gemini 등) 키가 없습니다." : "키가 설정되지 않았습니다."}`,
       );
   }
 }

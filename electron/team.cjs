@@ -127,7 +127,9 @@ function workerChain(worker, env, ollamaUp, stats) {
       ? ollamaUp
       : m.provider === "gemini"
         ? !!env.GEMINI_API_KEY
-        : false;
+        : m.provider === "compat"
+          ? providers.router.available(m.id, env)
+          : false;
   const ids = [
     worker,
     ...catalog

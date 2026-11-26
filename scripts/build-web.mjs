@@ -3,7 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 export const origin = "https://aurora-two-virid.vercel.app";
-const release = "https://github.com/uiwwsw/aurora/releases/tag/v0.1.6";
+const release = "https://github.com/uiwwsw/aurora/releases/tag/v0.1.7";
 const repo = "https://github.com/uiwwsw/aurora";
 const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
@@ -45,7 +45,7 @@ const translations = {
       ],
       [
         "모델을 자동으로 바꿔 실행하나요?",
-        "아니요. 공개 0.1.6 프리뷰는 분석 버튼과 실행 모델 선택을 사용자가 직접 조작합니다. 추천과 실제 실행을 구분해 확인할 수 있습니다.",
+        "아니요. 공개 0.1.7 프리뷰는 분석 버튼과 실행 모델 선택을 사용자가 직접 조작합니다. 추천과 실제 실행을 구분해 확인할 수 있습니다.",
       ],
       [
         "예상 토큰은 정확한 비용인가요?",
@@ -57,7 +57,7 @@ const translations = {
       ],
       [
         "설치 앱 업데이트와 보안 경고는 어떻게 되나요?",
-        "0.1.2부터 Windows 업데이트를 지원하며 기존 0.1.1 이하 버전은 새 설치 파일로 교체해야 합니다. macOS 0.1.6은 Developer ID 서명과 Apple 공증을 적용했습니다. Windows 설치 파일은 개발자 인증서로 서명하지 않아 운영체제의 보안 확인이 나타날 수 있습니다.",
+        "0.1.2부터 Windows 업데이트를 지원하며 기존 0.1.1 이하 버전은 새 설치 파일로 교체해야 합니다. macOS 0.1.7은 Developer ID 서명과 Apple 공증을 적용했습니다. Windows 설치 파일은 개발자 인증서로 서명하지 않아 운영체제의 보안 확인이 나타날 수 있습니다.",
       ],
     ],
     featureTitle: "오로라에서 할 수 있는 일",
@@ -110,7 +110,7 @@ const translations = {
       ],
       [
         "Does Aurora automatically switch execution models?",
-        "No. The public 0.1.6 preview requires an explicit analysis action and manual execution-model selection. A recommendation is separate from an execution request.",
+        "No. The public 0.1.7 preview requires an explicit analysis action and manual execution-model selection. A recommendation is separate from an execution request.",
       ],
       [
         "Are token estimates exact costs?",
@@ -122,7 +122,7 @@ const translations = {
       ],
       [
         "How do updates and installation warnings work?",
-        "Windows updating is included from 0.1.2. Versions 0.1.1 and earlier need a manual replacement. macOS 0.1.6 is Developer ID signed and notarized by Apple. The Windows installer is not signed with a developer certificate, so operating-system security prompts may appear.",
+        "Windows updating is included from 0.1.2. Versions 0.1.1 and earlier need a manual replacement. macOS 0.1.7 is Developer ID signed and notarized by Apple. The Windows installer is not signed with a developer certificate, so operating-system security prompts may appear.",
       ],
     ],
     featureTitle: "What you can explore",

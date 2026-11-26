@@ -9,6 +9,7 @@ files:
   - dist/**/*
   - electron/**/*
   - src/catalog.json
+  - src/ensemble-weights.json
   - package.json
   - "!**/.env*"
   - "!**/artifacts/**"

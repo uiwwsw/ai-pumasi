@@ -1,13 +1,16 @@
 import catalog from "./catalog.json";
 import type { Tier } from "./domain";
 import type { UsageHistory } from "./usage";
-export type Provider = "openai" | "anthropic" | "gemini" | "ollama" | "compat";
+export type Provider =
+  "openai" | "anthropic" | "gemini" | "ollama" | "compat" | "auto";
 export type Model = {
   id: string;
   name: string;
   provider: Provider;
   tier: Tier;
   free?: boolean;
+  /** Free hosts that serve this model, and the model name each one uses. */
+  hosts?: Record<string, string>;
 };
 export const models = catalog as Model[];
 export const modelById = (id: string) => models.find((m) => m.id === id)!;
@@ -25,7 +28,7 @@ export type RoutingSettings = {
 };
 /** Models a bundle may hold: free ones and each provider's light tier. */
 export const bundleModels = models.filter(
-  (m) => m.free === true || m.tier === "light",
+  (m) => m.provider !== "auto" && (m.free === true || m.tier === "light"),
 );
 export const BUNDLE_MIN = 2;
 export const BUNDLE_MAX = 5;
@@ -82,11 +85,26 @@ export function readRouting(raw: string | null): RoutingSettings {
   } catch {}
   return { ...presets.openai };
 }
-export type ProviderStatus = Record<Provider, boolean>;
+export type FreeHost = "nvidia" | "groq" | "openrouter" | "google" | "custom";
+export type ProviderStatus = Record<Provider, boolean> & {
+  /** Per free model: whether any host with a key can serve it now. */
+  models?: Record<string, boolean>;
+  hosts?: Partial<Record<FreeHost, boolean>>;
+};
+/** Whether this model can be called with the keys present. */
+export function modelReady(id: string, status: ProviderStatus) {
+  const m = modelById(id);
+  if (!m) return false;
+  if (m.provider === "compat") return !!(status.models?.[id] ?? status.compat);
+  return !!status[m.provider];
+}
 export type SecretName =
   | "OPENAI_API_KEY"
   | "ANTHROPIC_API_KEY"
   | "GEMINI_API_KEY"
+  | "NVIDIA_API_KEY"
+  | "GROQ_API_KEY"
+  | "OPENROUTER_API_KEY"
   | "AURORA_OPENAI_COMPAT_KEY";
 /** What the window may know about saved keys: set or not, and when. Never the value. */
 export type SecretsState = {
@@ -219,6 +237,9 @@ export interface AIBridge {
     set(name: SecretName, value: string): Promise<SecretsState>;
     remove(name: SecretName): Promise<SecretsState>;
     setCompatUrl(url: string): Promise<SecretsState>;
+    openSignup(
+      host: FreeHost | "gemini" | "openai" | "anthropic",
+    ): Promise<void>;
   };
   request(payload: AIRequest): Promise<Completion | Analysis>;
 }

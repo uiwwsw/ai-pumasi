@@ -18,6 +18,10 @@ try {
       ANTHROPIC_API_KEY: "",
       AURORA_OPENAI_COMPAT_URL: "",
       AURORA_OPENAI_COMPAT_KEY: "",
+      GEMINI_API_KEY: "",
+      NVIDIA_API_KEY: "",
+      GROQ_API_KEY: "",
+      OPENROUTER_API_KEY: "",
     },
   });
   const page = await app.firstWindow();
@@ -149,13 +153,17 @@ try {
   await page.reload();
   await expect(page.locator(".bundle")).toHaveCount(0);
   // Defaults are separate from chat persistence; missing keys must block live calls.
-  expect(await page.evaluate(() => window.auroraAI.status())).toEqual({
+  const status = await page.evaluate(() => window.auroraAI.status());
+  expect(status).toMatchObject({
     openai: false,
     anthropic: false,
     gemini: false,
     ollama: false,
     compat: false,
+    auto: false,
   });
+  expect(Object.values(status.models).every((v) => v === false)).toBe(true);
+  expect(Object.values(status.hosts).every((v) => v === false)).toBe(true);
   await settings();
   await expect(page.getByLabel("내부 분석 모델", { exact: true })).toHaveValue(
     "gpt-6-luna",

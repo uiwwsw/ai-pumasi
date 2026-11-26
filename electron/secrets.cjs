@@ -10,6 +10,9 @@ const SECRET_NAMES = [
   "OPENAI_API_KEY",
   "ANTHROPIC_API_KEY",
   "GEMINI_API_KEY",
+  "NVIDIA_API_KEY",
+  "GROQ_API_KEY",
+  "OPENROUTER_API_KEY",
   "AURORA_OPENAI_COMPAT_KEY",
 ];
 // Not secret, but tied to the compat key: changing it removes the key so a hijacked window
@@ -17,7 +20,8 @@ const SECRET_NAMES = [
 const URL_NAME = "AURORA_OPENAI_COMPAT_URL";
 
 function checkValue(value) {
-  if (typeof value !== "string") throw new Error("키 형식이 올바르지 않습니다.");
+  if (typeof value !== "string")
+    throw new Error("키 형식이 올바르지 않습니다.");
   const v = value.trim();
   if (v.length < 8 || v.length > 512 || !/^[\x21-\x7e]+$/.test(v))
     throw new Error("키는 공백 없는 8~512자 영문·숫자·기호여야 합니다.");
@@ -35,11 +39,17 @@ function checkUrl(value) {
   } catch {
     throw new Error("주소 형식이 올바르지 않습니다.");
   }
-  const local = ["127.0.0.1", "localhost", "[::1]", "::1"].includes(url.hostname);
+  const local = ["127.0.0.1", "localhost", "[::1]", "::1"].includes(
+    url.hostname,
+  );
   if (!(url.protocol === "https:" || (url.protocol === "http:" && local)))
-    throw new Error("https 주소이거나 이 기기(127.0.0.1·localhost) 주소여야 합니다.");
+    throw new Error(
+      "https 주소이거나 이 기기(127.0.0.1·localhost) 주소여야 합니다.",
+    );
   if (url.username || url.password)
-    throw new Error("주소에 계정 정보를 넣지 마세요. 키는 키 칸에 따로 넣으세요.");
+    throw new Error(
+      "주소에 계정 정보를 넣지 마세요. 키는 키 칸에 따로 넣으세요.",
+    );
   return url.href;
 }
 
@@ -79,16 +89,21 @@ function createSecretStore({ file, safeStorage, now = Date.now }) {
       const keys = {};
       for (const name of SECRET_NAMES) {
         const entry = data.keys?.[name];
-        keys[name] = entry ? { set: true, savedAt: entry.savedAt ?? null } : { set: false };
+        keys[name] = entry
+          ? { set: true, savedAt: entry.savedAt ?? null }
+          : { set: false };
       }
       return { encryption: available(), keys, compatUrl: data.compatUrl ?? "" };
     },
     set(name, value) {
-      if (!SECRET_NAMES.includes(name)) throw new Error("저장할 수 없는 키 이름입니다.");
+      if (!SECRET_NAMES.includes(name))
+        throw new Error("저장할 수 없는 키 이름입니다.");
       const v = checkValue(value);
       // Never fall back to plain text. Without the OS keychain, saving is refused.
       if (!available())
-        throw new Error("이 기기에서 키를 암호화할 수 없어 저장하지 않았습니다.");
+        throw new Error(
+          "이 기기에서 키를 암호화할 수 없어 저장하지 않았습니다.",
+        );
       const data = read();
       data.keys = { ...(data.keys ?? {}) };
       data.keys[name] = {
@@ -99,7 +114,8 @@ function createSecretStore({ file, safeStorage, now = Date.now }) {
       return this.list();
     },
     remove(name) {
-      if (!SECRET_NAMES.includes(name)) throw new Error("지울 수 없는 키 이름입니다.");
+      if (!SECRET_NAMES.includes(name))
+        throw new Error("지울 수 없는 키 이름입니다.");
       const data = read();
       if (data.keys?.[name]) {
         data.keys = { ...data.keys };
@@ -134,7 +150,9 @@ function createSecretStore({ file, safeStorage, now = Date.now }) {
         const entry = data.keys?.[name];
         if (!entry?.enc) continue;
         try {
-          out[name] = safeStorage.decryptString(Buffer.from(entry.enc, "base64"));
+          out[name] = safeStorage.decryptString(
+            Buffer.from(entry.enc, "base64"),
+          );
         } catch {}
       }
       return out;
@@ -148,7 +166,8 @@ function redact(text, env, { patterns = true } = {}) {
   let s = String(text ?? "");
   for (const name of SECRET_NAMES) {
     const v = env?.[name];
-    if (typeof v === "string" && v.length >= 8) s = s.split(v).join("[키 숨김]");
+    if (typeof v === "string" && v.length >= 8)
+      s = s.split(v).join("[키 숨김]");
   }
   if (!patterns) return s;
   return s

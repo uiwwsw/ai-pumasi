@@ -124,3 +124,27 @@ test("missing platform metadata aborts release", () =>
     rmSync(path.join(root, "release-assets/mac-x64/latest-mac.yml"));
     assert.throws(() => verify(root), /Missing platform update feeds/);
   }));
+
+test("every file the main process requires from outside electron/ is packaged", async () => {
+  const fs = await import("node:fs");
+  const files: string[] = yaml.load(
+    fs.readFileSync("electron-builder.yml", "utf8"),
+  ).files;
+  const needed = new Set<string>();
+  for (const f of fs
+    .readdirSync("electron")
+    .filter((n: string) => n.endsWith(".cjs")))
+    for (const m of fs
+      .readFileSync(`electron/${f}`, "utf8")
+      .matchAll(/require\("\.\.\/([^"]+)"\)/g))
+      needed.add(m[1]);
+  assert.ok(needed.size > 0);
+  for (const path of needed)
+    assert.ok(
+      files.includes(path) ||
+        files.some(
+          (g) => g.endsWith("/**/*") && path.startsWith(g.slice(0, -4)),
+        ),
+      `${path} is required by the main process but missing from electron-builder.yml files`,
+    );
+});
