@@ -89,7 +89,7 @@ function validPlan(plan) {
     new Set(plan.tasks.map((t) => t.id)).size !== plan.tasks.length
   )
     throw new Error(
-      "선임 모델의 작업 분할 형식이 잘못되었습니다. 계획 토큰은 이미 청구됐을 수 있고, 주니어 작업은 시작하지 않았습니다.",
+      "총괄 모델의 작업 분할 형식이 잘못되었습니다. 계획 토큰은 이미 청구됐을 수 있고, 작업은 시작하지 않았습니다.",
     );
   return plan;
 }
@@ -246,10 +246,10 @@ async function orchestrate(p, opts = {}) {
         last = Object.assign(
           new Error(
             problem === "empty"
-              ? "주니어가 빈 답을 보냈습니다."
+              ? "작업 모델이 빈 답을 보냈습니다."
               : problem === "truncated"
-                ? "주니어 답이 출력 상한에서 잘렸습니다."
-                : "주니어 답이 작업에 비해 너무 짧습니다.",
+                ? "작업 모델 답이 출력 상한에서 잘렸습니다."
+                : "작업 모델 답이 작업에 비해 너무 짧습니다.",
           ),
           { reason: problem },
         );
@@ -298,7 +298,7 @@ async function orchestrate(p, opts = {}) {
       });
       const prev = results.get(t.id)?.text;
       const prompt = t.feedback
-        ? `${t.instructions}\n\n이전 결과:\n${prev ?? "(없음)"}\n\n선임 피드백(이것만 고쳐서 전체 결과를 다시 작성):\n${t.feedback}`
+        ? `${t.instructions}\n\n이전 결과:\n${prev ?? "(없음)"}\n\n검토 의견(이것만 고쳐서 전체 결과를 다시 작성):\n${t.feedback}`
         : t.instructions;
       // Workers get only their own task, never the whole conversation: that is the token saving.
       try {
@@ -323,19 +323,19 @@ async function orchestrate(p, opts = {}) {
       const reviewed = await call(
         "review",
         p.lead,
-        `목표: ${goal}\n원래 요청: ${p.text.slice(0, 1500)}\n\n주니어 결과:\n${reviewReport(plan.tasks, results)}`,
+        `목표: ${goal}\n원래 요청: ${p.text.slice(0, 1500)}\n\n작업 결과:\n${reviewReport(plan.tasks, results)}`,
         [],
         2048,
       );
       add("lead", reviewed);
       verdict = extractJSON(reviewed.text);
     } catch (error) {
-      warning = `검수 단계 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}. 주니어 결과를 검수 없이 보여 줍니다.`;
+      warning = `검수 단계 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}. 작업 결과를 검수 없이 보여 줍니다.`;
       break;
     }
     if (!verdict || typeof verdict.approved !== "boolean") {
       warning =
-        "선임 검수 결과를 읽지 못했습니다. 주니어 결과를 검수 없이 보여 줍니다.";
+        "총괄 모델 검수 결과를 읽지 못했습니다. 작업 결과를 검수 없이 보여 줍니다.";
       break;
     }
     if (verdict.approved) {
@@ -352,7 +352,7 @@ async function orchestrate(p, opts = {}) {
     // No valid redo target: another review would only re-read the same results.
     if (!todo.length) {
       warning =
-        "선임이 재작업 대상을 지정하지 못했습니다. 현재 결과로 마감합니다.";
+        "총괄 모델이 재작업 대상을 지정하지 못했습니다. 현재 결과로 마감합니다.";
       break;
     }
   }
