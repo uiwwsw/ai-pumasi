@@ -139,7 +139,7 @@ function workerChain(worker, env, ollamaUp, stats) {
 
 /**
  * @param {{lead:string, worker:string, text:string, context:any[], maxRounds?:number}} p
- * @param {{env?:object, fetchImpl?:Function, onProgress?:(e:object)=>void, sleep?:(ms:number)=>Promise<void>, now?:()=>number, stats?:object}} opts
+ * @param {{env?:object, fetchImpl?:Function, onProgress?:(e:object)=>void, sleep?:(ms:number)=>Promise<void>, now?:()=>number, stats?:object, onUsage?:(u:object)=>void}} opts
  */
 async function orchestrate(p, opts = {}) {
   const env = opts.env ?? process.env;
@@ -157,7 +157,7 @@ async function orchestrate(p, opts = {}) {
   const call = (action, model, text, context, maxOutputTokens, timeoutMs) =>
     providers.request(
       { action, model, text, context, maxOutputTokens },
-      { env, fetchImpl: opts.fetchImpl, timeoutMs },
+      { env, fetchImpl: opts.fetchImpl, timeoutMs, onUsage: opts.onUsage },
     );
 
   onProgress({ stage: "plan", model: p.lead });
