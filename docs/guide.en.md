@@ -25,7 +25,7 @@ Failed requests are not retried or sent to another model. Usage may already have
 
 It follows the orchestrator-workers pattern Anthropic describes in [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents). The code is one file, `electron/team.cjs`.
 
-1. **Plan:** the lead splits the request into 1–6 tasks a junior could finish alone and returns them as JSON.
+1. **Plan:** the lead splits the request into 1–6 tasks a worker model could finish alone and returns them as JSON.
 2. **Work:** a worker receives one task instruction, never the whole conversation. On a 429 or server error it retries once, then falls through to another free model that has a key (Gemini, or Ollama if running).
 3. **Review:** the lead approves or returns the tasks to fix with feedback. It does not rewrite the answer.
 4. **Redo:** only the flagged tasks run again, for at most two rounds.
