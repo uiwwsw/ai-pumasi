@@ -69,9 +69,9 @@ In measurements outside the app, a majority vote of free models scored 29 of 30 
 
 | Platform | Installer |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-windows-x64.exe) |
 
 The Windows installer is not signed with a developer certificate, so SmartScreen may warn. Keys, team mode, data handling and running from source are covered in the [guide](docs/guide.en.md).
 

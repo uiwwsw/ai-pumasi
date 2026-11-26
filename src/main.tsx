@@ -213,7 +213,7 @@ function App() {
   const [storageError, setStorageError] = useState(false);
   const [notice, setNotice] = useState("");
   const [workers, setWorkers] = useState<Record<string, WorkerRow>>({});
-  const [, setTick] = useState(0);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
     if (busy && Object.values(workers).some((w) => w.state === "running")) {
       const id = setTimeout(() => {
@@ -221,7 +221,30 @@ function App() {
       }, 1000);
       return () => clearTimeout(id);
     }
-  }, [busy, workers]);
+  }, [busy, workers, tick]);
+  const boardRef = useRef<HTMLOListElement>(null);
+  const workerCount = Object.keys(workers).length;
+  useEffect(() => {
+    // Bring the in-dialog board into view once when tasks appear, not on every tick.
+    if (busy && workerCount) boardRef.current?.scrollIntoView({ block: "nearest" });
+  }, [busy, workerCount]);
+  // Shown in the main view and, while a run is in progress, inside the confirm dialog that covers it.
+  const workerBoard = (extra = "") =>
+    Object.keys(workers).length > 0 && (
+      <ol
+        ref={extra ? boardRef : undefined}
+        className={`worker-board${extra}`}
+        aria-label="주니어 진행 상황"
+        aria-live="polite"
+      >
+        {Object.values(workers).map((w) => (
+          <li key={w.taskId} className={`worker-row is-${w.state}`}>
+            <span className="worker-title">{w.title ?? w.taskId}</span>
+            <span className="worker-state">{workerLabel(w)}</span>
+          </li>
+        ))}
+      </ol>
+    );
   const input = useRef<HTMLTextAreaElement>(null);
   const end = useRef<HTMLDivElement>(null);
   const auto = workspace.mode === "auto";
@@ -739,16 +762,7 @@ function App() {
             </button>
           </div>
         )}
-        {Object.keys(workers).length > 0 && (
-          <ol className="worker-board" aria-label="주니어 진행 상황">
-            {Object.values(workers).map((w) => (
-              <li key={w.taskId} className={`worker-row is-${w.state}`}>
-                <span className="worker-title">{w.title ?? w.taskId}</span>
-                <span className="worker-state">{workerLabel(w)}</span>
-              </li>
-            ))}
-          </ol>
-        )}
+        {workerBoard()}
         <div className="conversation">
           {!messages.length ? (
             <section className="welcome">
@@ -1220,6 +1234,7 @@ function App() {
                     {aiError}
                   </p>
                 )}
+                {busy && workerBoard(" in-dialog")}
                 <div className="review-actions">
                   <button disabled={busy} onClick={() => setPending(null)}>
                     다시 작성

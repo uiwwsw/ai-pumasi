@@ -69,9 +69,9 @@
 
 | 운영체제 | 설치 파일 |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.4/Aurora-0.1.4-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/aurora/releases/download/v0.1.5/Aurora-0.1.5-windows-x64.exe) |
 
 Windows 설치 파일은 개발자 인증서로 서명하지 않아 SmartScreen 경고가 나올 수 있습니다. 키 설정, 팀 모드 사용법, 데이터 처리, 소스에서 실행하는 방법은 [사용 안내](docs/guide.md)에 있습니다.
 
