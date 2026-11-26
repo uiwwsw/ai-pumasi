@@ -14,4 +14,13 @@ function tr(ko, vars) {
     ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m))
     : s;
 }
-module.exports = { tr, setLang, getLang: () => lang };
+/** Catalog model names in the window's language. */
+function modelName(name) {
+  if (lang !== "en") return name;
+  return String(name)
+    .replace("자동 (무료 모델 중 지금 되는 가장 강한 것)", "Auto (strongest free model available now)")
+    .replace("(무료 한도)", "(free tier)")
+    .replace("Ollama 로컬", "Ollama local")
+    .replace("(무료)", "(free)");
+}
+module.exports = { tr, setLang, getLang: () => lang, modelName };

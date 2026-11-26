@@ -1,4 +1,5 @@
 import catalog from "./catalog.json";
+import { modelName } from "./i18n";
 import type { Tier } from "./domain";
 import type { UsageHistory } from "./usage";
 export type Provider =
@@ -12,7 +13,10 @@ export type Model = {
   /** Free hosts that serve this model, and the model name each one uses. */
   hosts?: Record<string, string>;
 };
-export const models = catalog as Model[];
+export const models = (catalog as Model[]).map((m) => ({
+  ...m,
+  name: modelName(m.name),
+}));
 export const modelById = (id: string) => models.find((m) => m.id === id)!;
 export const ROUTING_KEY = "aurora.routing.v1";
 export type RoutingSettings = {

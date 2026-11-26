@@ -94,7 +94,8 @@ async function runEnsemble(p, opts = {}) {
   const stop = new AbortController();
   const finished = new Set();
   const cut = (model) => stop.signal.aborted && !finished.has(model);
-  const nameOf = (id) => catalog.find((m) => m.id === id)?.name ?? id;
+  const nameOf = (id) =>
+    require("./i18n.cjs").modelName(catalog.find((m) => m.id === id)?.name ?? id);
 
   checkModels(p?.models, await providers.status(env, fetchImpl));
   // Reject a malformed request once, instead of as one failure per model.

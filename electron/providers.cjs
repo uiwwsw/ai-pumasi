@@ -190,7 +190,7 @@ async function request(
       throw new Error(
         tr(
           "{name}을(를) 줄 수 있는 무료 제공자 키가 없습니다. 설정 → API 키에서 넣으세요.",
-          { name: model.name },
+          { name: require("./i18n.cjs").modelName(model.name) },
         ),
       );
     let last;

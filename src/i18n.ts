@@ -45,3 +45,13 @@ export function t(ko: string, vars?: Record<string, string | number>) {
     : s;
 }
 export const appName = () => (lang === "en" ? "AI Pumasi" : "AI품앗이");
+
+/** Model names from the catalog in the current language: "(무료)" -> "(free)" and so on. */
+export function modelName(name: string) {
+  if (lang !== "en") return name;
+  return name
+    .replace("자동 (무료 모델 중 지금 되는 가장 강한 것)", "Auto (strongest free model available now)")
+    .replace("(무료 한도)", "(free tier)")
+    .replace("Ollama 로컬", "Ollama local")
+    .replace("(무료)", "(free)");
+}
