@@ -7,14 +7,14 @@
   "symbol": "✦",
   "color": "#c0cfa5",
   "summary": "Free AI models, working as a team",
-  "description": "A macOS and Windows app that puts several free models on the same question and lets them vote. On the same exams it outscored ChatGPT's free tier. With Pumasi, other users can take a task off your hands with their own free keys, sealed so no one in between can read it.",
+  "description": "A macOS and Windows app where a lead model splits the job and free models do the work. With Pumasi, other users can take a task off your hands with their own free keys, sealed so no one in between can read it. A free model you can run here, Nemotron 3.5 Super, outscored ChatGPT's free tier on three program-graded exams.",
   "features": [
+    "Team mode: a lead splits work, free models do it",
     "Pumasi: others run your tasks on their free keys",
-    "Beat ChatGPT free on three program-graded exams",
-    "Skill-weighted vote that closes once it is decided",
+    "Free Nemotron Super beat ChatGPT free on 3 exams",
     "Switches free providers when one hits its limit",
-    "Premium lead model plans; free models do the work",
-    "Keys locked in the OS keychain, never shown again"
+    "Keys locked in the OS keychain, never shown again",
+    "English and Korean, macOS and Windows"
   ],
   "status": "development",
   "links": [
@@ -33,7 +33,7 @@
   ],
   "evidence": {
     "verifiedAt": "2026-11-26",
-    "note": "Measurements in bench/README.md: AIME 2026 free bundle 28/30 vs ChatGPT free 24/30; LiveBench logic 23.4 vs 13.4 (official grader); fresh reasoning exam 29 vs 23. Pumasi and the Pumasi Agent name ship in v0.1.10."
+    "note": "Measurements in bench/README.md: Nemotron 3.5 Super alone (free API) 30/30 on a fresh reasoning exam, 28/30 on AIME 2026, 23/25 on LiveBench logic; ChatGPT free 23, 24, 13.4. Asking several models the same question did not beat Super alone. Pumasi ships in v0.1.10."
   },
   "visibility": "public"
 }
