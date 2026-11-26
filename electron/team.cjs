@@ -2,9 +2,41 @@
 // The lead never re-types worker output: its output tokens are the most expensive ones.
 const providers = require("./providers.cjs");
 const catalog = require("../src/catalog.json");
+const { createStatsStore } = require("./worker-stats.cjs");
 
 const REVIEW_BUDGET = 18000; // characters of worker output the lead sees per review
 const WORKER_RETRY_DELAY_MS = 4000;
+const WORKER_MAX_OUTPUT = 4096;
+
+/** Time budget for one worker call: room to stream the allowed output plus reading the prompt. */
+function workerTimeout(promptChars, maxOutputTokens) {
+  return Math.min(
+    240000,
+    Math.max(45000, 20000 + maxOutputTokens * 25 + promptChars * 3),
+  );
+}
+
+/** Shortest acceptable reply: a long instruction answered with a word is a dropped task. */
+function minReplyChars(promptChars) {
+  return promptChars >= 400 ? 40 : promptChars >= 120 ? 12 : 1;
+}
+
+/** Why a worker reply cannot be accepted as done, or "" when it can. */
+function judgeReply(done, minChars) {
+  const text = String(done?.text ?? "").trim();
+  if (done?.empty || !text) return "empty";
+  if (done.incomplete) return "truncated";
+  if (text.length < minChars) return "short";
+  return "";
+}
+
+function failureReason(error) {
+  if (error?.timeout) return "timeout";
+  if (error?.status === 429) return "rate-limit";
+  if (error?.status >= 500) return "server";
+  if (error?.transient) return "network";
+  return "error";
+}
 
 /** Pull the first JSON object out of a reply that may carry prose or code fences around it. */
 function extractJSON(text) {
@@ -85,41 +117,47 @@ function concatResults(tasks, results) {
     .join("\n\n");
 }
 
-/** Free/cheap fallbacks after the chosen worker, only those whose key is present. */
-function workerChain(worker, env, ollamaUp) {
+/**
+ * The chosen worker plus free fallbacks whose key is present, ordered by local track record:
+ * models that often fail or answer slowly move back. Without a record the chosen worker leads.
+ */
+function workerChain(worker, env, ollamaUp, stats) {
   const ok = (m) =>
     m.provider === "ollama"
       ? ollamaUp
       : m.provider === "gemini"
         ? !!env.GEMINI_API_KEY
         : false;
-  return [
+  const ids = [
     worker,
     ...catalog
       .filter((m) => m.free && m.id !== worker && ok(m))
       .map((m) => m.id),
   ];
+  return stats ? stats.order(ids, worker) : ids;
 }
 
 /**
  * @param {{lead:string, worker:string, text:string, context:any[], maxRounds?:number}} p
- * @param {{env?:object, fetchImpl?:Function, onProgress?:(e:object)=>void, sleep?:(ms:number)=>Promise<void>}} opts
+ * @param {{env?:object, fetchImpl?:Function, onProgress?:(e:object)=>void, sleep?:(ms:number)=>Promise<void>, now?:()=>number, stats?:object}} opts
  */
 async function orchestrate(p, opts = {}) {
   const env = opts.env ?? process.env;
   const onProgress = opts.onProgress ?? (() => {});
   const sleep =
     opts.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+  const now = opts.now ?? (() => Date.now());
+  const stats = opts.stats ?? createStatsStore();
   const maxRounds = Math.min(Math.max(p.maxRounds ?? 2, 1), 3);
   const usage = { lead: { in: 0, out: 0 }, worker: { in: 0, out: 0 } };
   const add = (who, r) => {
     usage[who].in += r.inputTokens ?? 0;
     usage[who].out += r.outputTokens ?? 0;
   };
-  const call = (action, model, text, context, maxOutputTokens) =>
+  const call = (action, model, text, context, maxOutputTokens, timeoutMs) =>
     providers.request(
       { action, model, text, context, maxOutputTokens },
-      { env, fetchImpl: opts.fetchImpl },
+      { env, fetchImpl: opts.fetchImpl, timeoutMs },
     );
 
   onProgress({ stage: "plan", model: p.lead });
@@ -132,26 +170,104 @@ async function orchestrate(p, opts = {}) {
     p.worker,
     env,
     (await providers.status(env, opts.fetchImpl ?? fetch)).ollama,
+    stats,
   );
   const usedWorkers = new Set();
-  // Retry once on rate limit or server error, then fall through to the next free model.
-  async function runWorker(prompt, action = "work") {
+  const substitutions = [];
+  /**
+   * Supervise one worker job. Each model gets two tries: a transient failure (rate limit, server
+   * error, timeout, dropped connection) waits and retries, an empty, too short or cut-off reply is
+   * asked again (cut-off with more room). After that the next model in the chain takes over.
+   * If every model only produced a cut-off or short reply, the longest one is kept, marked incomplete.
+   */
+  async function runWorker(
+    prompt,
+    { action = "work", job, minChars = 1 } = {},
+  ) {
+    const report = (state, extra = {}) =>
+      onProgress({ stage: "worker", ...job, state, ...extra });
     let last;
-    for (const model of chain) {
-      for (let attempt = 0; attempt < 2; attempt++) {
+    let best = null;
+    for (const [m, model] of chain.entries()) {
+      if (m > 0) report("switch", { model, from: chain[m - 1] });
+      let maxOutputTokens = WORKER_MAX_OUTPUT;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        const timeoutMs = workerTimeout(prompt.length, maxOutputTokens);
+        const startedAt = now();
+        report("running", { model, attempt, startedAt, timeoutMs });
+        let done;
         try {
-          const done = await call(action, model, prompt, [], 4096);
-          add("worker", done);
-          usedWorkers.add(model);
-          return done;
+          done = await call(
+            action,
+            model,
+            prompt,
+            [],
+            maxOutputTokens,
+            timeoutMs,
+          );
         } catch (error) {
           last = error;
-          const transient = error?.status === 429 || error?.status >= 500;
-          if (!transient || attempt === 1) break;
+          const reason = failureReason(error);
+          const elapsedMs = now() - startedAt;
+          stats.record(model, {
+            ok: false,
+            ms: elapsedMs,
+            reason: reason === "timeout" ? "timeout" : "error",
+          });
+          const transient =
+            error?.transient || error?.status === 429 || error?.status >= 500;
+          if (!transient || attempt === 2) break;
+          report("retry", { model, attempt, reason, elapsedMs });
           await sleep(WORKER_RETRY_DELAY_MS);
+          continue;
         }
+        add("worker", done);
+        const elapsedMs = now() - startedAt;
+        if (done.substituted) {
+          substitutions.push({ requested: model, servedBy: done.servedBy });
+          report("substituted", { model, servedBy: done.servedBy });
+        }
+        const problem = judgeReply(done, minChars);
+        stats.record(model, {
+          ok: !problem,
+          ms: elapsedMs,
+          reason: problem || undefined,
+          substituted: !!done.substituted,
+          servedBy: done.servedBy ?? undefined,
+        });
+        if (!problem) {
+          usedWorkers.add(model);
+          report("done", { model, attempt, elapsedMs });
+          return done;
+        }
+        const text = String(done.text ?? "").trim();
+        if (text && (!best || text.length > best.text.trim().length))
+          best = { ...done, incomplete: true, model };
+        last = Object.assign(
+          new Error(
+            problem === "empty"
+              ? "주니어가 빈 답을 보냈습니다."
+              : problem === "truncated"
+                ? "주니어 답이 출력 상한에서 잘렸습니다."
+                : "주니어 답이 작업에 비해 너무 짧습니다.",
+          ),
+          { reason: problem },
+        );
+        if (attempt === 2) break;
+        if (problem === "truncated")
+          maxOutputTokens = Math.min(maxOutputTokens * 2, 16000);
+        report("retry", { model, attempt, reason: problem, elapsedMs });
       }
     }
+    if (best) {
+      usedWorkers.add(best.model);
+      report("done", { model: best.model, partial: true });
+      return best;
+    }
+    report("failed", {
+      reason: last?.reason ?? failureReason(last),
+      message: last instanceof Error ? last.message : "실행 실패",
+    });
     throw last;
   }
 
@@ -163,6 +279,14 @@ async function orchestrate(p, opts = {}) {
 
   for (let round = 1; round <= maxRounds && todo.length; round++) {
     rounds = round;
+    for (const t of todo)
+      onProgress({
+        stage: "worker",
+        taskId: t.id,
+        title: t.title,
+        round,
+        state: "waiting",
+      });
     for (const [i, t] of todo.entries()) {
       onProgress({
         stage: "work",
@@ -178,7 +302,11 @@ async function orchestrate(p, opts = {}) {
         : t.instructions;
       // Workers get only their own task, never the whole conversation: that is the token saving.
       try {
-        const done = await runWorker(prompt.slice(0, 20000));
+        const sent = prompt.slice(0, 20000);
+        const done = await runWorker(sent, {
+          job: { taskId: t.id, title: t.title, round },
+          minChars: minReplyChars(t.instructions.length),
+        });
         results.set(t.id, { text: done.text, incomplete: done.incomplete });
       } catch (error) {
         // Keep an earlier good result rather than replacing it with a failure.
@@ -243,7 +371,12 @@ async function orchestrate(p, opts = {}) {
     try {
       const merged = await runWorker(
         `원래 요청: ${p.text.slice(0, 1500)}\n\n아래 결과들을 하나의 최종 답으로 합치세요.\n\n${joined}`,
-        "merge",
+        {
+          action: "merge",
+          job: { taskId: "merge", title: "결과 합치기" },
+          // A merge far shorter than its inputs has dropped work.
+          minChars: Math.min(200, Math.floor(joined.length * 0.2)),
+        },
       );
       text = merged.incomplete ? joined : merged.text || joined;
     } catch {
@@ -270,7 +403,17 @@ async function orchestrate(p, opts = {}) {
     lead: p.lead,
     worker: p.worker,
     workersUsed: [...usedWorkers],
+    substitutions,
   };
 }
 
-module.exports = { orchestrate, validPlan, extractJSON, reviewReport };
+module.exports = {
+  orchestrate,
+  validPlan,
+  extractJSON,
+  reviewReport,
+  workerChain,
+  workerTimeout,
+  minReplyChars,
+  judgeReply,
+};

@@ -81,6 +81,76 @@ type Pending = {
   decision: "grouped" | "archived" | "trashed" | "continue" | null;
   result: Estimate;
 };
+type WorkerRow = {
+  taskId: string;
+  title?: string;
+  state:
+    | "waiting"
+    | "running"
+    | "retry"
+    | "switch"
+    | "substituted"
+    | "done"
+    | "failed";
+  model?: string;
+  startedAt?: number;
+  attempt?: number;
+  reason?: string;
+  servedBy?: string;
+  note?: string;
+  from?: string;
+  timeoutMs?: number;
+  partial?: boolean;
+};
+
+function workerLabel(w: WorkerRow): string {
+  const model = w.model ? modelById(w.model).name : w.taskId;
+  const getReason = () => {
+    switch (w.reason) {
+      case "timeout":
+        return "시간 초과";
+      case "rate-limit":
+        return "무료 한도";
+      case "server":
+        return "서버 오류";
+      case "network":
+        return "연결 실패";
+      case "error":
+        return "오류";
+      case "empty":
+        return "빈 답";
+      case "short":
+        return "너무 짧은 답";
+      case "truncated":
+        return "답이 잘림";
+      default:
+        return "";
+    }
+  };
+  if (w.state === "waiting") return "대기";
+  if (w.state === "running") {
+    const elapsed = Math.max(
+      0,
+      Math.floor((Date.now() - (w.startedAt ?? Date.now())) / 1000),
+    );
+    let txt = `${model} · ${elapsed}초째`;
+    if (w.attempt === 2) txt += " · 재시도";
+    if (w.timeoutMs && elapsed > w.timeoutMs / 2000) txt += " · 느림";
+    return txt;
+  }
+  if (w.state === "retry") return `${model} 다시 시키는 중 · ${getReason()}`;
+  if (w.state === "switch")
+    return `${w.from ? modelById(w.from).name : "모델"} → ${model}로 교체`;
+  if (w.state === "substituted")
+    return `${model} 요청, ${w.servedBy ?? "다른 모델"}가 답함`;
+  if (w.state === "done") {
+    const txt = w.partial ? `일부만 받음 · ${model}` : `완료 · ${model}`;
+    return w.servedBy ? `${txt} · ${w.servedBy}가 대신 답함` : txt;
+  }
+  if (w.state === "failed") return `실패 · ${getReason()}`;
+  return model;
+}
+
 function App() {
   const [workspace, setWorkspace] = useState(readSaved);
   const [legacyId, setLegacyId] = useState<string | null>(
@@ -142,6 +212,16 @@ function App() {
   const [theme, setTheme] = useState("light");
   const [storageError, setStorageError] = useState(false);
   const [notice, setNotice] = useState("");
+  const [workers, setWorkers] = useState<Record<string, WorkerRow>>({});
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (busy && Object.values(workers).some((w) => w.state === "running")) {
+      const id = setTimeout(() => {
+        setTick((t) => t + 1);
+      }, 1000);
+      return () => clearTimeout(id);
+    }
+  }, [busy, workers]);
   const input = useRef<HTMLTextAreaElement>(null);
   const end = useRef<HTMLDivElement>(null);
   const auto = workspace.mode === "auto";
@@ -291,7 +371,22 @@ function App() {
       busyRef.current = true;
       setBusy(true);
       setAIError("");
-      const off = window.auroraAI.onTeamProgress?.((e) =>
+      setWorkers({});
+      const off = window.auroraAI.onTeamProgress?.((e) => {
+        if (e.stage === "worker") {
+          setWorkers((prev) => ({
+            ...prev,
+            // A fresh attempt starts clean: no stale reason or substitute from the last one.
+            [e.taskId]: {
+              ...prev[e.taskId],
+              ...(e.state === "running"
+                ? { servedBy: undefined, reason: undefined, partial: undefined }
+                : {}),
+              ...e,
+            },
+          }));
+          return;
+        }
         setNotice(
           e.stage === "plan"
             ? `팀 모드 · ${modelById(routing.lead).name}가 작업을 나누는 중`
@@ -302,8 +397,8 @@ function App() {
                 : e.stage === "merge"
                   ? `팀 모드 · ${modelById(routing.worker).name}가 결과를 합치는 중`
                   : "팀 모드 · 완료",
-        ),
-      );
+        );
+      });
       try {
         team = await window.auroraAI.team({
           lead: routing.lead,
@@ -312,7 +407,7 @@ function App() {
           context: context(p.decision),
         });
         completion = {
-          text: `${team.text}\n\n—\n팀 모드 · 선임 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 주니어 ${team.workersUsed.map((id) => modelById(id).name).join(", ") || modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? " · 선임 승인" : ""}${team.tasks.some((t) => t.failed) ? ` · 실패 작업 ${team.tasks.filter((t) => t.failed).length}개` : ""}${team.tasks.some((t) => t.incomplete) ? " · 일부 작업 출력 상한 도달" : ""}${team.warning ? `\n주의: ${team.warning}` : ""}`,
+          text: `${team.text}\n\n—\n팀 모드 · 선임 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 주니어 ${team.workersUsed.map((id) => modelById(id).name).join(", ") || modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? " · 선임 승인" : ""}${team.tasks.some((t) => t.failed) ? ` · 실패 작업 ${team.tasks.filter((t) => t.failed).length}개` : ""}${team.tasks.some((t) => t.incomplete) ? " · 일부 작업 출력 상한 도달" : ""}${team.warning ? `\n주의: ${team.warning}` : ""}${[...new Set((team.substitutions ?? []).map((s) => `\n주의: ${modelById(s.requested).name} 대신 ${s.servedBy ?? "다른 모델"}가 답했습니다.`))].join("")}`,
           model: team.lead,
           inputTokens: team.usage.lead.in + team.usage.worker.in,
           outputTokens: team.usage.lead.out + team.usage.worker.out,
@@ -643,6 +738,16 @@ function App() {
               <X size={13} />
             </button>
           </div>
+        )}
+        {Object.keys(workers).length > 0 && (
+          <ol className="worker-board" aria-label="주니어 진행 상황">
+            {Object.values(workers).map((w) => (
+              <li key={w.taskId} className={`worker-row is-${w.state}`}>
+                <span className="worker-title">{w.title ?? w.taskId}</span>
+                <span className="worker-state">{workerLabel(w)}</span>
+              </li>
+            ))}
+          </ol>
         )}
         <div className="conversation">
           {!messages.length ? (
