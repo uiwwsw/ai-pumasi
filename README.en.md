@@ -27,6 +27,7 @@
 
 ## What it does
 
+- **Pumasi:** press Help and your app becomes one worker on someone else's team, doing one task with the free keys you chose to lend and passing back only the result. Turn on "Hand tasks to Pumasi" in team mode and other people's apps do your tasks. Tasks and results are encrypted and not visible on the server or on the helper's screen. For now, joining needs an invite code. [Design](docs/pumasi-network.md) (Korean)
 - **Bundle vote:** two to five free models answer the same question, and a vote weighted by each model's measured skill picks the answer. When the remaining models can no longer change the result, it settles right away.
 - **Team mode:** a lead model (for example Claude Opus) splits the work into one to six tasks and only approves. Free models do the tasks and the merge.
 - **Auto (free) model:** add free keys from NVIDIA, OpenRouter, Groq or Google and it uses the best-scoring free model available, skipping rate-limited providers.
@@ -39,17 +40,13 @@
 
 It does not edit files or run terminal commands; it answers text questions. Methods and raw data for the scorecard are in [Measurements](bench/README.md).
 
-## Next: Pumasi
-
-Press Help and your app becomes one worker on someone else's team. It handles one task with your own key and tokens and passes back only the result. The task and the result are encrypted and handled only by the AI inside the app; they are not shown on your screen or readable on the server. Helping earns points you spend when you post your own problem. [Design](docs/pumasi-network.md) (Korean)
-
 ## Install
 
 | Platform | Installer |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-windows-x64.exe) |
 
 The Windows installer is not signed with a developer certificate, so SmartScreen may warn. Keys, team mode, data handling and running from source are covered in the [guide](docs/guide.en.md).
 

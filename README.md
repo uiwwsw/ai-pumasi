@@ -27,6 +27,7 @@
 
 ## 하는 일
 
+- **품앗이:** 돕기를 누르면 내 앱이 다른 사람 팀의 작업 모델 한 명이 되어, 내가 빌려주기로 한 무료 키로 작업 하나를 처리하고 결과만 넘깁니다. 팀 모드에서 "품앗이에 맡기기"를 켜면 반대로 내 작업을 다른 사람들이 처리합니다. 작업 글과 결과는 암호화되어 서버와 돕는 사람의 화면에는 보이지 않습니다. 지금은 초대 코드를 받은 사람만 가입할 수 있습니다. [설계](docs/pumasi-network.md)
 - **묶음 투표:** 무료 모델 2~5개가 같은 질문을 풀고, 모델마다 측정한 실력만큼 무게를 준 투표로 답을 고릅니다. 남은 모델이 모두 반대해도 결과가 바뀌지 않으면 그 자리에서 확정합니다.
 - **팀 모드:** 총괄 모델(예: Claude Opus)이 일을 작업 1~6개로 나누고 승인만 합니다. 작업과 합치기는 무료 모델이 합니다.
 - **자동 (무료) 모델:** NVIDIA·OpenRouter·Groq·Google 무료 키를 넣으면, 쓸 수 있는 무료 모델 중 성적이 높은 것부터 씁니다. 한도에 걸린 곳은 건너뜁니다.
@@ -39,17 +40,13 @@
 
 파일 수정이나 터미널 실행은 하지 않습니다. 텍스트 질문과 답만 합니다. 성적표의 측정 방법과 원자료는 [측정 기록](bench/README.md)에 있습니다.
 
-## 다음 기능: 품앗이
-
-내가 돕기를 누르면 내 앱이 다른 사람 팀의 작업 모델 한 명이 됩니다. 작업 하나를 내 키와 토큰으로 처리하고 결과만 넘깁니다. 작업 글과 결과는 암호화되어 앱 안의 AI만 다루고, 화면과 서버에는 보이지 않습니다. 돕는 만큼 점수가 쌓이고, 내 문제를 올릴 때 씁니다. [설계](docs/pumasi-network.md)
-
 ## 설치
 
 | 운영체제 | 설치 파일 |
 | --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.9/AI-Pumasi-0.1.9-windows-x64.exe) |
+| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-arm64.dmg) |
+| macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-x64.dmg) |
+| Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-windows-x64.exe) |
 
 Windows 설치 파일은 개발자 인증서로 서명하지 않아 SmartScreen 경고가 나올 수 있습니다. 키 설정, 팀 모드 사용법, 데이터 처리, 소스에서 실행하는 방법은 [사용 안내](docs/guide.md)에 있습니다.
 

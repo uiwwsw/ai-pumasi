@@ -3,7 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 export const origin = "https://pumasi-agent.vercel.app";
-const release = "https://github.com/uiwwsw/pumasi-agent/releases/tag/v0.1.9";
+const release = "https://github.com/uiwwsw/pumasi-agent/releases/tag/v0.1.10";
 const repo = "https://github.com/uiwwsw/pumasi-agent";
 const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
@@ -61,7 +61,7 @@ const translations = {
     "featureTitle": "품앗이 에이전트에서 할 수 있는 일",
     "faq": "자주 묻는 질문",
     "limitations": "개발 프리뷰의 범위",
-    "limitation": "공개 0.1.9 프리뷰는 텍스트 답변만 지원하며 파일 수정·셸 실행은 하지 않습니다. 개인이 만드는 개발 프리뷰이며, 측정 결과는 공개한 시험에 대한 것입니다.",
+    "limitation": "공개 0.1.10 프리뷰는 텍스트 답변만 지원하며 파일 수정·셸 실행은 하지 않습니다. 개인이 만드는 개발 프리뷰이며, 측정 결과는 공개한 시험에 대한 것입니다.",
     "browser": "브라우저 데모 · 외부 AI 호출 없음",
     "open": "웹 데모 열기",
     "source": "소스와 문서",
@@ -122,7 +122,7 @@ const translations = {
     "featureTitle": "What Pumasi Agent does",
     "faq": "Frequently asked questions",
     "limitations": "Developer preview limitations",
-    "limitation": "The public 0.1.9 preview gives text answers only; it does not edit files or run shell commands. It is built by one person, and the measurements cover the published exams only.",
+    "limitation": "The public 0.1.10 preview gives text answers only; it does not edit files or run shell commands. It is built by one person, and the measurements cover the published exams only.",
     "browser": "Local browser demo · No external AI calls",
     "open": "Open demo",
     "source": "Source and documentation",

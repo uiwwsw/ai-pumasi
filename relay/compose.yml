@@ -1,4 +1,4 @@
-# Pumasi relay on the Mac mini. Public address: https://pumasi.movvcorp.duckdns.org (shared Caddy).
+# Pumasi relay on the Mac mini. Public address: https://pumasi-agent.duckdns.org (shared Caddy).
 name: pumasi-relay
 services:
   relay:
