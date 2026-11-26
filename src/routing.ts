@@ -1,5 +1,6 @@
 import catalog from "./catalog.json";
 import type { Tier } from "./domain";
+import type { UsageHistory } from "./usage";
 export type Provider = "openai" | "anthropic" | "gemini" | "ollama";
 export type Model = {
   id: string;
@@ -143,6 +144,11 @@ export interface AIBridge {
     maxRounds?: number;
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
+  usage?: {
+    get(): Promise<UsageHistory>;
+    setEnabled(enabled: boolean): Promise<UsageHistory>;
+    clear(): Promise<UsageHistory>;
+  };
   status(): Promise<ProviderStatus>;
   request(payload: AIRequest): Promise<Completion | Analysis>;
 }
