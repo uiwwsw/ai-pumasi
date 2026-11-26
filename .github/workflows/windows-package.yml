@@ -1,7 +1,6 @@
 name: Windows release packages
 on:
-  push:
-    branches: ["codex/aurora-signed-release-*"]
+  # By hand only; release branches no longer build on every push.
   workflow_dispatch:
     inputs:
       store_identity_name:
