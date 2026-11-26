@@ -1,3 +1,4 @@
+import type { EnsembleResult } from "./routing";
 export type Tier = "light" | "standard" | "advanced";
 export const tierNames: Record<Tier, string> = {
   light: "경량",
@@ -10,6 +11,8 @@ export type Message = {
   text: string;
   model?: string;
   live?: boolean;
+  /** Bundle vote details shown folded under the answer. */
+  ensemble?: Omit<EnsembleResult, "text">;
 };
 export type Chat = {
   id: string;

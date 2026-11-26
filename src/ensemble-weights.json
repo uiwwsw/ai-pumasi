@@ -1,0 +1,12 @@
+{
+  "source": "bench/reasoning/weights.json (b235d62): _all per model, log-odds of accuracy on the 30-question reasoning exam. Fixed in advance; the app never updates it.",
+  "default": 0.1,
+  "models": {
+    "nvidia/nvidia/nemotron-3-ultra-550b-a55b": 1.856,
+    "groq/openai/gpt-oss-120b": 0,
+    "gemini/gemini-3.1-flash-lite": 1.745,
+    "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b": 0.981,
+    "cfp/deepseek-ai/deepseek-v4-flash-0731": 0,
+    "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": 3.434
+  }
+}
