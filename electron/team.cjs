@@ -118,6 +118,14 @@ function reviewReport(tasks, results) {
     .join("\n\n");
 }
 
+/**
+ * Shortest acceptable merge. Merging removes repetition and headings, so it may be shorter than
+ * the parts, but not by half: a 449-character merge of six results had kept only one of them.
+ */
+function mergeFloor(joined) {
+  return Math.floor(joined.length * 0.5);
+}
+
 function concatResults(tasks, results) {
   return tasks
     .map((t) => {
@@ -514,11 +522,15 @@ async function orchestrate(p, opts = {}) {
         {
           action: "merge",
           job: { taskId: "merge", title: "결과 합치기" },
-          // A merge far shorter than its inputs has dropped work.
-          minChars: Math.min(200, Math.floor(joined.length * 0.2)),
+          // A merge much shorter than its inputs has dropped work: ask again, then another model.
+          minChars: mergeFloor(joined),
         },
       );
-      text = merged.incomplete ? joined : merged.text || joined;
+      // Still too short or cut off: show every result as is rather than lose a part.
+      text =
+        merged.incomplete || (merged.text ?? "").length < mergeFloor(joined)
+          ? joined
+          : merged.text;
     } catch {
       text = joined;
     }
