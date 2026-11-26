@@ -80,14 +80,47 @@ export type AIRequest = {
   context: { role: "user" | "assistant"; text: string }[];
   maxOutputTokens: number;
 };
-export type TeamProgress = {
-  stage: "plan" | "work" | "review" | "merge" | "done";
-  round?: number;
-  index?: number;
-  total?: number;
-  title?: string;
-  model?: string;
-};
+export type TeamProgress =
+  | {
+      stage: "plan" | "work" | "review" | "merge" | "done";
+      round?: number;
+      index?: number;
+      total?: number;
+      title?: string;
+      model?: string;
+    }
+  | {
+      stage: "worker";
+      taskId: string;
+      title?: string;
+      round?: number;
+      state:
+        | "waiting"
+        | "running"
+        | "retry"
+        | "switch"
+        | "substituted"
+        | "done"
+        | "failed";
+      model?: string;
+      from?: string;
+      attempt?: number;
+      startedAt?: number;
+      timeoutMs?: number;
+      elapsedMs?: number;
+      reason?:
+        | "timeout"
+        | "rate-limit"
+        | "server"
+        | "network"
+        | "error"
+        | "empty"
+        | "short"
+        | "truncated";
+      servedBy?: string;
+      partial?: boolean;
+      message?: string;
+    };
 export type TeamResult = {
   text: string;
   goal: string;
@@ -99,6 +132,7 @@ export type TeamResult = {
   usage: Record<"lead" | "worker", { in: number; out: number }>;
   lead: string;
   worker: string;
+  substitutions?: { requested: string; servedBy: string | null }[];
 };
 export interface AIBridge {
   team?(payload: {

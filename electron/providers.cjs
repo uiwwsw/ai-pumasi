@@ -67,7 +67,29 @@ function validate(p) {
       "전송할 문맥이 너무 큽니다. 이전 작업을 묶거나 보관한 뒤 다시 검토해 주세요.",
     );
 }
-async function request(p, { env = process.env, fetchImpl = fetch } = {}) {
+// Strip provider decorations so "models/x", "x:latest" and dated snapshots of x count as x.
+function wireName(name) {
+  return String(name ?? "")
+    .replace(/^models\//, "")
+    .replace(/:latest$/, "")
+    .toLowerCase();
+}
+/** True when the provider says a different model answered than the one requested. */
+function substituted(requested, servedBy) {
+  if (!servedBy || !requested) return false;
+  const want = wireName(requested);
+  const got = wireName(servedBy);
+  // "-latest" aliases resolve to a concrete model on the provider side; that is not a swap.
+  if (want.endsWith("-latest")) return false;
+  return (
+    got !== want && !got.startsWith(`${want}-`) && !got.startsWith(`${want}:`)
+  );
+}
+const DEFAULT_TIMEOUT_MS = 120000;
+async function request(
+  p,
+  { env = process.env, fetchImpl = fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {},
+) {
   validate(p);
   const model = catalog.find((m) => m.id === p.model);
   const keyName = keyNames[model.provider];
@@ -117,13 +139,21 @@ async function request(p, { env = process.env, fetchImpl = fetch } = {}) {
       method: "POST",
       headers,
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(120000),
+      signal: AbortSignal.timeout(timeoutMs),
       redirect: "error",
     });
-  } catch {
-    throw new Error(
-      "API 연결에 실패했거나 120초를 초과했습니다. 이미 처리된 요청에는 사용량이 발생했을 수 있습니다. 자동 재시도하지 않았습니다.",
+  } catch (cause) {
+    const timedOut =
+      cause?.name === "TimeoutError" || cause?.name === "AbortError";
+    const error = new Error(
+      timedOut
+        ? `API 응답이 ${Math.round(timeoutMs / 1000)}초 안에 오지 않았습니다. 이미 처리된 요청에는 사용량이 발생했을 수 있습니다.`
+        : "API 연결에 실패했습니다. 이미 처리된 요청에는 사용량이 발생했을 수 있습니다.",
     );
+    // Status-less failures are still worth one more try: callers decide whether to retry.
+    error.transient = true;
+    error.timeout = timedOut;
+    throw error;
   }
   // Never expose provider error bodies, authorization headers or key values to the renderer.
   if (!response.ok) {
@@ -154,6 +184,10 @@ async function request(p, { env = process.env, fetchImpl = fetch } = {}) {
           .filter((c) => c.type === "text")
           .map((c) => c.text)
           .join("\n");
+  const servedBy =
+    typeof data.model === "string" && data.model
+      ? data.model.slice(0, 120)
+      : null;
   const count = (n) => (Number.isFinite(n) && n >= 0 ? n : null);
   const result = {
     text,
@@ -166,6 +200,9 @@ async function request(p, { env = process.env, fetchImpl = fetch } = {}) {
       data.status === "incomplete" ||
       data.stop_reason === "max_tokens" ||
       data.choices?.[0]?.finish_reason === "length",
+    empty: !text.trim(),
+    servedBy,
+    substituted: substituted(body.model, servedBy),
   };
   if (p.action === "analyze") {
     if (result.incomplete)
@@ -206,4 +243,4 @@ async function request(p, { env = process.env, fetchImpl = fetch } = {}) {
       "보이는 답변이 생성되지 않았습니다. 추론에 토큰이 사용되었을 수 있습니다.",
   };
 }
-module.exports = { request, status, validate };
+module.exports = { request, status, validate, substituted };

@@ -186,7 +186,7 @@ const twoTasks = JSON.stringify({
 // leadFn(kind, body) answers the lead; workerFn(body) answers workers. Ollama is down unless stated.
 function team(
   leadFn: (kind: "plan" | "review", body: any) => any,
-  workerFn: (body: any) => any = () => chatReply("결과"),
+  workerFn: (body: any) => any = () => chatReply("결과 텍스트"),
   env: any = { ANTHROPIC_API_KEY: "t", GEMINI_API_KEY: "g" },
 ) {
   const calls: any[] = [];
