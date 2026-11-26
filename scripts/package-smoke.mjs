@@ -34,6 +34,7 @@ try {
     anthropic: false,
     gemini: false,
     ollama: false,
+    compat: false,
   });
   await page
     .getByRole("button", { name: "모드 및 예산 설정", exact: true })
