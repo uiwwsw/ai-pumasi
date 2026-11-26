@@ -9,10 +9,10 @@ const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
 const translations = {
   "ko": {
-    "title": "품앗이 에이전트 Pumasi Agent — 무료 AI 여럿이 함께 풀고 투표로 답을 정하는 데스크톱 앱",
-    "description": "품앗이 에이전트(Pumasi Agent)는 무료 AI 모델 여럿에게 같은 질문을 풀게 하고 투표로 답을 정하는 macOS·Windows 데스크톱 앱입니다. 유료 총괄 모델이 일을 나누는 팀 모드와 무료 제공자 자동 라우터도 있습니다.",
-    "heading": "무료 AI 여럿이 함께 풀고, 투표로 답을 정합니다.",
-    "intro": "품앗이 에이전트(Pumasi Agent)는 무료 AI 모델 여럿에게 같은 질문을 풀게 하고, 측정한 실력만큼 무게를 준 투표로 답을 고르는 데스크톱 앱입니다. 결과가 정해지면 남은 모델을 기다리지 않고 바로 확정합니다. NVIDIA·OpenRouter·Groq·Google 무료 키를 넣으면 한도에 걸린 곳을 건너뛰며 자동으로 이어 씁니다. 팀 모드에서는 유료 총괄 모델이 일을 나누고 판정만 하고, 작업은 무료 모델이 합니다. 이 페이지의 웹 데모는 외부 AI 호출 없이 로컬 미리보기로 동작합니다.",
+    "title": "품앗이 에이전트 Pumasi Agent — 무료 AI가 팀으로 일하는 데스크톱 앱",
+    "description": "품앗이 에이전트(Pumasi Agent)는 리더 모델이 일을 나누고 무료 모델이 처리하는 macOS·Windows 데스크톱 앱입니다. 손이 더 필요하면 다른 사용자가 자기 무료 키로 작업을 거들어 줍니다.",
+    "heading": "무료 AI가 팀으로 일합니다.",
+    "intro": "품앗이 에이전트(Pumasi Agent)는 요청을 작업 여러 개로 나눕니다. 리더 모델이 계획하고 승인하며 작업은 무료 모델이 합니다. 품앗이를 켜면 다른 사용자가 자기 무료 키로 작업 하나를 대신 처리해 주고, 작업 글과 결과는 암호화되어 서버도 돕는 사람도 읽을 수 없습니다. 무료 한도에 걸리면 다음 제공자로 넘어갑니다. 이 페이지의 웹 데모는 외부 AI 호출 없이 로컬 미리보기로 동작합니다.",
     "demo": "데모로 돌아가기",
     "overview": "제품 소개",
     "download": "데스크톱 다운로드",
@@ -20,20 +20,20 @@ const translations = {
     "other": "/",
     "features": [
       [
-        "묶음 투표",
-        "무료 모델 2~5개가 같은 질문을 풀고, 측정한 실력만큼 무게를 준 투표로 답을 고릅니다. 남은 모델이 모두 반대해도 결과가 바뀌지 않으면 그 자리에서 확정합니다. 유료 모델 없이 무료 모델 4개만으로 같은 시험에서 ChatGPT 무료보다 높은 점수를 받았고, 문항과 채점기는 저장소에 공개했습니다."
+        "일은 나누고, 돈은 아낍니다",
+        "팀 모드는 요청 하나를 작업 최대 6개로 나눕니다. 리더가 계획하고 승인하며 작업과 합치기는 무료 모델이 합니다. 리더도 무료로 둘 수 있고, 유료 리더는 계획과 승인에만 토큰을 씁니다."
       ],
       [
-        "무료 제공자 자동 라우터",
-        "같은 무료 모델을 여러 제공자가 주면 한도에 걸린 곳은 잠시 쉬게 하고 다른 곳으로 넘깁니다. 자동 (무료) 모델은 지금 쓸 수 있는 무료 모델 중 측정 성적이 높은 것부터 씁니다."
+        "키는 그대로, 손만 빌립니다",
+        "품앗이를 켜면 다른 사용자가 빌려주기로 한 무료 키로 내 작업 하나를 처리합니다. 작업과 답은 두 기기 사이에서만 풀리고, 서버는 암호문만 나르며 돕는 사람에게는 토큰 수만 보입니다."
       ],
       [
-        "비싼 모델에는 비싼 일만",
-        "팀 모드에서 고른 총괄 모델(유료·무료 모두 가능)이 일을 작업 1~6개로 나누고 승인 여부만 정합니다. 답을 쓰고 합치는 일은 무료 모델이 하므로 비싼 출력 토큰이 적게 나갑니다."
+        "무료 모델도 충분히 셉니다",
+        "여기서 쓸 수 있는 무료 모델 Nemotron 3.5 Super가 프로그램 채점 시험 세 개에서 30/30, 28/30, 23/25를 받았습니다. ChatGPT 무료는 23, 24, 13.4였습니다."
       ],
       [
-        "키는 기기 안에서 잠가 둡니다",
-        "API 키는 OS 키체인으로 암호화해 저장하고, 화면·모델·기록 어디에도 다시 나오지 않습니다. 실행 전에 예상 토큰과 예산 대비 비율을, 끝나면 실제 사용량을 보여 줍니다."
+        "키는 내 기기에만",
+        "API 키는 OS 키체인으로 암호화해 저장하고 다시 보여 주지 않으며, 모델 답과 오류 메시지에서도 가립니다. 유료 키는 빌려주지 않습니다."
       ]
     ],
     "questions": [
@@ -43,7 +43,7 @@ const translations = {
       ],
       [
         "정말 무료 모델로 충분한가요?",
-        "질문에 따라 다릅니다. 직접 만든 추론 시험과 AIME 2026에서 무료 묶음이 ChatGPT 무료보다 높았지만, 여러 모델을 묶어 가장 잘하는 단일 모델을 크게 넘어서는 것은 아직 실험 중입니다. 측정 방법과 원자료는 저장소의 측정 기록에 있습니다."
+        "질문에 따라 다릅니다. 직접 만든 추론 시험과 AIME 2026에서 Nemotron 3.5 Super 혼자서 ChatGPT 무료보다 높았습니다. 같은 질문을 여러 모델에 묻는 방식은 Super 혼자보다 점수가 높지 않고 토큰이 여러 배 들어 기본으로 꺼 두었습니다. 측정 방법과 원자료는 저장소의 측정 기록에 있습니다."
       ],
       [
         "키는 어디에 저장되나요?",
@@ -71,9 +71,9 @@ const translations = {
   },
   "en": {
     "title": "Pumasi Agent: free AI models, working as a team",
-    "description": "Pumasi Agent is a macOS and Windows app that puts several free AI models on the same question and lets them vote. On the same exams the free bundle outscored ChatGPT's free tier. With Pumasi, other users can lend their free keys to take a task off your hands.",
+    "description": "Pumasi Agent is a macOS and Windows app where a lead model splits the job and free models do the work. When you need more hands, other users can take a task with their own free keys. A free model you can run here outscored ChatGPT's free tier on three program-graded exams.",
     "heading": "Free AI models, working as a team.",
-    "intro": "Pumasi Agent gives the same question to several free models and lets them vote, weighted by how well each one has actually scored. The vote closes the moment the result can't change. When a free tier runs dry, the request moves to the next provider. And with Pumasi, other users can take a task from your team and run it on their own free keys, sealed so that neither the relay nor the helper can read it. The browser demo on this page runs locally and calls no AI.",
+    "intro": "Pumasi Agent splits a request into tasks. A lead model plans and signs off, free models do the work, and with Pumasi other users can take a task off your hands with their own free keys, sealed so that neither the relay nor the helper can read it. When a free tier runs dry, the request moves to the next provider. The browser demo on this page runs locally and calls no AI.",
     "demo": "Open demo",
     "overview": "Overview",
     "download": "Download desktop app",
@@ -81,16 +81,16 @@ const translations = {
     "other": "/ko/",
     "features": [
       [
-        "Outscores ChatGPT's free tier",
-        "Four free models on free APIs, no paid model anywhere. Same three exams, graded by a program: the free bundle scored 29/30, 28/30 and 23.4/25. ChatGPT free scored 23, 24 and 13.4. Questions and graders are public, so you can check."
+        "Split the work, not the bill",
+        "Team mode turns one request into up to six tasks. A lead plans and signs off, free models do the tasks and merge them. The lead can be free, or a paid model that spends tokens only on planning and approval."
       ],
       [
         "Borrow hands, not keys",
         "Pumasi lets other users run one of your tasks on a free key they chose to lend. The task and the answer are sealed between two devices. The relay moves ciphertext; the helper sees a token count."
       ],
       [
-        "Optional team mode with a lead you pick",
-        "Separate from the vote. In team mode a lead you pick, paid or free, splits the work and signs off; free models write and merge the answers, so a paid lead spends tokens only on judgment."
+        "Free models that hold their own",
+        "Nemotron 3.5 Super, a free model you can run here, scored 30/30, 28/30 and 23/25 on three program-graded exams. ChatGPT free scored 23, 24 and 13.4."
       ],
       [
         "Keys stay on your machine",
@@ -104,7 +104,7 @@ const translations = {
       ],
       [
         "Are free models really enough?",
-        "For a lot of questions, yes. On our reasoning exam and AIME 2026 the free bundle beat ChatGPT free. It matches the best single free model; beating that by a wide margin is still being tested. Methods and raw data are in the repository."
+        "For a lot of questions, yes. On our reasoning exam and AIME 2026, Nemotron 3.5 Super alone beat ChatGPT free. Asking several models the same question did not score higher than Super alone and costs several times the tokens, so it is off by default. Methods and raw data are in the repository."
       ],
       [
         "Who can read a task I hand to Pumasi?",
@@ -138,7 +138,7 @@ const escape = (s) =>
   s.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 function landingHero(lang) {
   const en = lang === "en";
-  return `<section class="landing-hero" aria-label="${en ? "Meet Pumasi Agent" : "품앗이 에이전트 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> PUMASI AGENT · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Free AI models,<br>working as a team." : "무료 AI 여럿이<br>함께 풉니다."}</p><p class="hero-description">${en ? "They vote on the answer.<br>Other users can lend a hand." : "같은 질문을 각자 풀고<br>투표로 답을 정합니다."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download Pumasi Agent" : "품앗이 에이전트 다운로드"}</a><a class="hero-secondary" href="${lang === MAIN ? "#root" : "/#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Ask a question" : "질문하면"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "Free models each answer" : "무료 모델들이 각자 풀고"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "The vote settles it" : "투표로 답을 정합니다"}</span></div><a class="hero-scroll" href="${lang === MAIN ? "#root" : "#overview"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
+  return `<section class="landing-hero" aria-label="${en ? "Meet Pumasi Agent" : "품앗이 에이전트 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> PUMASI AGENT · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Free AI models,<br>working as a team." : "무료 AI가<br>팀으로 일합니다."}</p><p class="hero-description">${en ? "A lead splits the job, free models do it.<br>Other users can lend a hand." : "리더가 일을 나누고 무료 모델이 처리합니다.<br>다른 사용자가 손을 보탤 수도 있습니다."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download Pumasi Agent" : "품앗이 에이전트 다운로드"}</a><a class="hero-secondary" href="${lang === MAIN ? "#root" : "/#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Ask once" : "한 번 요청하면"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "The lead splits it into tasks" : "리더가 작업을 나누고"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Free models, or other users, do them" : "무료 모델이나 다른 사용자가 처리합니다"}</span></div><a class="hero-scroll" href="${lang === MAIN ? "#root" : "#overview"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
 }
 const styles = `@font-face{font-family:SUITE;src:url('/fonts/SUITE-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}html{scroll-behavior:smooth}body{margin:0;color:#34342f;background:#faf9f6;font-family:SUITE,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}button,input,select,textarea{font:inherit}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,SUITE,monospace}.site-nav{height:52px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #e8e6df;background:#faf9f6}.site-nav nav{display:flex;gap:20px}.site-nav a,.site-content a,.site-footer a{color:#48684c;text-underline-offset:4px}.site-brand{font-weight:750;text-decoration:none}.site-content{max-width:1000px;margin:auto;padding:76px 28px;line-height:1.85}.site-content h1,.site-content h2{line-height:1.3;letter-spacing:-.035em}.site-content h1,.site-content>.site-hero h2{font-size:clamp(30px,4vw,48px);max-width:840px;margin:20px 0}.site-content h2{margin:54px 0 24px;font-size:28px}.site-content h3{font-size:20px;margin:0 0 12px}.site-lead{max-width:800px;color:#65665c;font-size:18px}.site-eyebrow{color:#607b64;font-size:13px;letter-spacing:.08em}.site-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.site-actions a{padding:10px 18px;border:1px solid #cdd7c7;border-radius:9px;text-decoration:none}.site-actions a:first-child{background:#607b64;color:#fff}.site-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.site-card,.site-limit{border:1px solid #e8e6df;border-radius:16px;padding:26px;background:#fffefa}.site-card p{margin:0;color:#65665c}.site-content details{border-bottom:1px solid #e8e6df;padding:18px 0}.site-content summary{cursor:pointer;font-weight:650}.site-content details p{color:#65665c}.site-footer{padding:24px 28px;border-top:1px solid #e8e6df;text-align:center;font-size:14px}.site-skip{position:absolute;left:20px;top:-100px;background:#fff;padding:12px;z-index:20}.site-skip:focus{top:5px}.site-notice{padding:16px 28px;color:#65665c}.site-web-demo .app{height:calc(100dvh - 52px)}.site-web-demo .site-content{border-top:1px solid #e8e6df}@media(max-width:680px){.site-nav{padding:0 16px;font-size:13px}.site-nav nav{gap:12px}.site-nav .site-source{display:none}.site-content{padding:48px 20px}.site-grid{grid-template-columns:1fr}.site-content h2{font-size:25px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}`;
 function body(lang) {

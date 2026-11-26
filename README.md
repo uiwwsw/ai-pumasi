@@ -4,7 +4,7 @@
 
 <h1>Pumasi Agent</h1>
 
-<p><b>Free AI models, working as a team.</b><br>Several free models take the same question and vote on the answer. When you need more hands, other users lend theirs.</p>
+<p><b>Free AI models, working as a team.</b><br>A lead model splits the job, free models do the work, and when you need more hands, other users lend theirs.</p>
 
 <p>
 <a href="https://github.com/uiwwsw/pumasi-agent/releases"><img alt="release" src="https://img.shields.io/github/v/release/uiwwsw/pumasi-agent?include_prereleases&style=flat-square&label=release"></a>
@@ -20,22 +20,20 @@
 
 </div>
 
-<img src="docs/images/scorecard.en.svg" alt="Same exams: Pumasi Agent free bundle 29/30, 28/30, 23.4/25 vs ChatGPT free 23/30, 24/30, 13.4/25">
+<img src="docs/images/scorecard.en.svg" alt="Same exams: Nemotron 3.5 Super (free) 30/30, 28/30, 23/25 vs ChatGPT free 23/30, 24/30, 13.4/25">
 
 <img src="https://raw.githubusercontent.com/uiwwsw/pumasi-agent/main/docs/images/workspace.en.png" alt="Pumasi Agent workspace">
 
 
 ## Why it's different
 
-**Free models that outscore ChatGPT's free tier. No paid model involved.** The bundle on the scorecard is four free models (Nemotron 3.5 Super, Nemotron 3 Ultra, Nemotron 3.5 Lightning and Gemini 3.1 Flash-Lite) called through free APIs. They answer on their own and vote; there is no paid leader or judge. We gave that bundle and ChatGPT free the same three exams, all graded by a program. The bundle scored 29/30, 28/30 and 23.4/25. ChatGPT free scored 23, 24 and 13.4. The questions, answers and graders are in [bench/](bench/README.md), so you can rerun them.
+**Split the work, not the bill.** Team mode turns one request into up to six tasks. A lead model plans them and signs off; free models do the tasks and merge the result. The lead can be free too, or a paid model such as Claude Opus, in which case it spends its expensive tokens on planning and approval only.
 
-**Borrow hands, not keys.** With Pumasi, your team mode can hand tasks to other users. Their app takes one task, runs it on a free key they chose to lend, and sends back the result. The task and the result are sealed between the two devices: the relay only moves ciphertext, and the helper's screen shows a token count and nothing else. No one's key ever leaves their machine. Helping earns points; posting spends them.
+**Borrow hands, not keys.** With Pumasi, your team can hand tasks to other users. Their app takes one task, runs it on a free key they chose to lend, and sends back the result. The task and the result are sealed between the two devices: the relay only moves ciphertext, and the helper's screen shows a token count and nothing else. No one's key ever leaves their machine. Helping earns points; posting spends them.
 
-**Optional team mode, if you have a paid key.** This is a separate mode, not how the scorecard was made. A lead model you pick (Claude Opus, GPT, or a free model) splits the work into up to six tasks and signs off, while free models write and merge the answers. A paid lead spends its expensive output tokens on planning and approval only.
+**Free models that hold their own.** Nemotron 3.5 Super, a free model you can run here, took three program-graded exams and scored 30/30, 28/30 and 23/25. ChatGPT's free tier scored 23, 24 and 13.4. Questions, answers and graders are in [bench/](bench/README.md).
 
-**Done as soon as the vote is decided.** If the models still running can no longer change the outcome, the vote closes and the stragglers are cancelled.
-
-**Free tiers run out. The app keeps going.** Add free keys from NVIDIA, OpenRouter, Groq or Google. When one provider hits its rate limit, the request moves to the next, and the Auto (free) model always starts with the best-scoring model you can reach.
+**Free tiers run out. The app keeps going.** Add free keys from NVIDIA, OpenRouter, Groq or Google. The Auto (free) model starts with the best-scoring model you can reach and moves to the next only when one hits its limit or stalls.
 
 **Your keys stay yours.** API keys are encrypted with the OS keychain, never shown again, and masked out of model answers and error messages.
 
@@ -51,7 +49,17 @@
 
 - Text in, text out. It does not edit files or run commands.
 - Pumasi is invite-only while in preview.
-- The bundle matches the best single free model; beating it by a wide margin is not proven yet. The measurement notes say exactly where it wins and where it doesn't.
+- Bundle vote (asking several models the same question) is experimental. It spends several times the tokens and has not scored higher than Nemotron Super alone, so it is off by default and not what the scorecard shows.
+
+## Roadmap
+
+Built and shipped one at a time, in this order.
+
+1. **A team that runs itself.** Each free model drafts a plan, they vote on the plans without seeing who wrote them, and the winner leads: it splits the work, the others do it, and they vote on whether the result is done. No human-picked lead, no paid model needed. The goal is smarter and leaner: it ships only if it beats Nemotron Super alone and today's team mode on large, multi-part tasks while using the same or fewer tokens.
+2. **Pumasi, next steps.** Help automatically while the app is idle, report and block bad results, then open sign-up.
+3. **Rethink bundle vote.** Keep it only if the self-running team needs it; otherwise remove it.
+4. **Streaming answers.**
+5. **File attachments.**
 
 ## Install
 
