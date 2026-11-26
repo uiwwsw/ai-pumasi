@@ -4,6 +4,14 @@ contextBridge.exposeInMainWorld("auroraAI", {
   request: (payload) => ipcRenderer.invoke("aurora:ai-request", payload),
   team: (payload) => ipcRenderer.invoke("aurora:team-run", payload),
   ensemble: (payload) => ipcRenderer.invoke("aurora:ensemble-run", payload),
+  // Write-only: the window can save, replace or remove a key and see whether one is set.
+  // There is deliberately no way to read a saved key back.
+  secrets: {
+    list: () => ipcRenderer.invoke("aurora:secrets-list"),
+    set: (name, value) => ipcRenderer.invoke("aurora:secrets-set", name, value),
+    remove: (name) => ipcRenderer.invoke("aurora:secrets-remove", name),
+    setCompatUrl: (url) => ipcRenderer.invoke("aurora:secrets-compat-url", url),
+  },
   usage: {
     get: () => ipcRenderer.invoke("aurora:usage-get"),
     setEnabled: (enabled) => ipcRenderer.invoke("aurora:usage-set", enabled),

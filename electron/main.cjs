@@ -7,11 +7,13 @@ const {
   ipcMain,
   dialog,
   Menu,
+  safeStorage,
 } = require("electron");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const fs = require("node:fs");
 const providers = require("./providers.cjs");
+const { createSecretStore, redact } = require("./secrets.cjs");
 app.setName("Aurora");
 app.setAppUserModelId("com.uiwwsw.aurora");
 const envFile = app.isPackaged
@@ -69,6 +71,48 @@ else
       event.senderFrame?.url === "aurora://app/index.html" &&
       BrowserWindow.fromWebContents(event.sender);
     const inFlight = new Set();
+    // Keys saved in Settings, encrypted by the OS keychain. Decrypted here only, per call.
+    const secrets = createSecretStore({
+      file: path.join(app.getPath("userData"), "secrets.json"),
+      safeStorage,
+    });
+    // Exact saved values never leave the main process, even inside an error or a model result.
+    const scrub = (value, env) => {
+      if (typeof value === "string") return redact(value, env, { patterns: false });
+      if (Array.isArray(value)) return value.map((v) => scrub(v, env));
+      if (value && typeof value === "object")
+        return Object.fromEntries(
+          Object.entries(value).map(([k, v]) => [k, scrub(v, env)]),
+        );
+      return value;
+    };
+    const guarded = async (env, fn) => {
+      try {
+        return scrub(await fn(), env);
+      } catch (error) {
+        throw new Error(redact(error?.message ?? String(error), env));
+      }
+    };
+    ipcMain.handle("aurora:secrets-list", (event) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      return secrets.list();
+    });
+    ipcMain.handle("aurora:secrets-set", (event, name, value) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      try {
+        return secrets.set(name, value);
+      } catch (error) {
+        throw new Error(redact(error?.message ?? "저장하지 못했습니다.", { [name]: value }));
+      }
+    });
+    ipcMain.handle("aurora:secrets-remove", (event, name) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      return secrets.remove(name);
+    });
+    ipcMain.handle("aurora:secrets-compat-url", (event, url) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      return secrets.setCompatUrl(url);
+    });
     let workerStats;
     // Per-model success and latency only: model ids and numbers, never keys or prompts.
     const stats = () =>
@@ -97,7 +141,7 @@ else
     });
     ipcMain.handle("aurora:ai-status", (event) => {
       if (!authorized(event)) throw new Error("Forbidden");
-      return providers.status();
+      return providers.status(secrets.env());
     });
     ipcMain.handle("aurora:ai-request", async (event, payload) => {
       if (!authorized(event)) throw new Error("Forbidden");
@@ -105,9 +149,13 @@ else
       if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
       inFlight.add(id);
       try {
-        return await providers.request(payload, {
-          onUsage: (u) => usage().record(u),
-        });
+        const env = secrets.env();
+        return await guarded(env, () =>
+          providers.request(payload, {
+            env,
+            onUsage: (u) => usage().record(u),
+          }),
+        );
       } finally {
         inFlight.delete(id);
       }
@@ -120,14 +168,17 @@ else
       try {
         // Count calls per stage so the next team estimate knows how many of each to expect.
         const calls = { plan: 0, work: 0, review: 0, merge: 0 };
-        const result = await require("./team.cjs").orchestrate(payload, {
-          onProgress: (e) => event.sender.send("aurora:team-progress", e),
+        const env = secrets.env();
+        const result = await guarded(env, () => require("./team.cjs").orchestrate(payload, {
+          env,
+          onProgress: (e) =>
+            event.sender.send("aurora:team-progress", scrub(e, env)),
           stats: stats(),
           onUsage: (u) => {
             if (u.kind in calls) calls[u.kind] += 1;
             usage().record(u);
           },
-        });
+        }));
         usage().recordRun({
           lead: payload.lead,
           worker: payload.worker,
@@ -144,11 +195,16 @@ else
       if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
       inFlight.add(id);
       try {
-        return await require("./ensemble.cjs").runEnsemble(payload, {
-          onProgress: (e) => event.sender.send("aurora:team-progress", e),
-          stats: stats(),
-          onUsage: (u) => usage().record(u),
-        });
+        const env = secrets.env();
+        return await guarded(env, () =>
+          require("./ensemble.cjs").runEnsemble(payload, {
+            env,
+            onProgress: (e) =>
+              event.sender.send("aurora:team-progress", scrub(e, env)),
+            stats: stats(),
+            onUsage: (u) => usage().record(u),
+          }),
+        );
       } finally {
         inFlight.delete(id);
       }

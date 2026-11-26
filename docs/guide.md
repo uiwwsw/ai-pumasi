@@ -4,7 +4,7 @@
 
 ## 빠른 시작
 
-1. 쓸 제공자의 키를 `.env` 파일에 넣습니다. 설치 앱은 macOS `~/Library/Application Support/Aurora/.env`, Windows `%APPDATA%/Aurora/.env`를 읽고, 환경 변수도 받습니다.
+1. 쓸 제공자의 키를 설정 → API 키에서 넣습니다. 키는 OS 키체인으로 암호화해 저장하고 화면에 다시 보여 주지 않습니다. `.env` 파일도 계속 읽습니다(설정에 저장한 키가 우선). 설치 앱은 macOS `~/Library/Application Support/Aurora/.env`, Windows `%APPDATA%/Aurora/.env`를 읽고, 환경 변수도 받습니다.
 
    ```bash
    OPENAI_API_KEY=...        # OpenAI 모델

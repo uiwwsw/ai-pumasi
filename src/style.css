@@ -1702,3 +1702,101 @@ html[data-theme="dark"] .composer {
   background: none;
   text-decoration-thickness: 2px;
 }
+
+/* API keys (Settings) */
+.secret-settings {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.secret-settings h3 {
+  font-size: 13px;
+  font-weight: 500;
+}
+.secret-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.secret-head strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+}
+.secret-head small {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.secret-head small.on {
+  color: var(--accent);
+}
+.secret-actions,
+.secret-form {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.secret-form input {
+  width: 220px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--card);
+  color: var(--text);
+  padding: 6px 9px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.secret-actions button,
+.secret-form button {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-size: 10px;
+  background: var(--card);
+  color: var(--text);
+}
+.secret-form button[type="submit"]:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.secret-actions button.quiet,
+.secret-form button.quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+.secret-settings button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.secret-url {
+  align-items: flex-start;
+}
+.secret-url .secret-head small {
+  line-height: 1.6;
+  max-width: 260px;
+}
+.secret-warning {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  font-size: 10px;
+  color: var(--text);
+}
+@media (max-width: 720px) {
+  .secret-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .secret-form input {
+    width: auto;
+    flex: 1;
+  }
+}

@@ -55,6 +55,7 @@ import {
   bundleReady,
   ensembleMessage,
 } from "./ensemble";
+import { SecretSettings } from "./secrets";
 import {
   project,
   projectTeam,
@@ -208,11 +209,13 @@ function App() {
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [aiError, setAIError] = useState("");
-  useEffect(() => {
+  const refreshStatus = () =>
     window.auroraAI
       ?.status()
       .then(setProviderStatus)
       .catch(() => setAIError("API 키 설정 상태를 확인하지 못했습니다."));
+  useEffect(() => {
+    void refreshStatus();
   }, []);
   useEffect(() => {
     try {
@@ -1604,13 +1607,15 @@ function App() {
                     {providerStatus.gemini ? "감지됨 (미검증)" : "없음"} ·
                     OpenAI 호환 서버{" "}
                     {providerStatus.compat ? "설정됨 (미검증)" : "없음"}. 키는
-                    .env 또는 환경변수로 설정하고 앱을 재시작하세요. OpenAI 호환
-                    서버(예: OpenRouter, NVIDIA)는
-                    AURORA_OPENAI_COMPAT_URL·AURORA_OPENAI_COMPAT_KEY로
-                    연결합니다. 모델 접근 권한은 실제 호출 시 확인됩니다. 모델
-                    설정은 대화 저장과 별도로 이 기기에 유지됩니다.
+                    아래 API 키에서 넣거나 환경 변수로 줄 수 있습니다. 모델 접근
+                    권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과 별도로
+                    이 기기에 유지됩니다.
                   </p>
                 </section>
+                <SecretSettings
+                  status={providerStatus}
+                  onChanged={() => void refreshStatus()}
+                />
                 <label className="setting-row">
                   <span>
                     <strong>대화 관리 모드</strong>
