@@ -78,7 +78,7 @@ function verify(cwd: string) {
     env: {
       ...process.env,
       GITHUB_REF: "refs/tags/v0.1.2",
-      GITHUB_REPOSITORY: "uiwwsw/aurora",
+      GITHUB_REPOSITORY: "uiwwsw/ai-pumasi",
     },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],

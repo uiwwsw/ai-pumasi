@@ -12,8 +12,8 @@ if (
 )
   throw new Error("Release tag must match package.json version.");
 const repo = process.env.GITHUB_REPOSITORY;
-if (repo !== "uiwwsw/aurora")
-  throw new Error("Publishing is configured for uiwwsw/aurora only.");
+if (repo !== "uiwwsw/ai-pumasi")
+  throw new Error("Publishing is configured for uiwwsw/ai-pumasi only.");
 const directory = "release-assets";
 const expected = [
   `AI-Pumasi-${pkg.version}-mac-arm64.dmg`,
