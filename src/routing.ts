@@ -189,6 +189,8 @@ export type EnsembleModelResult = {
   model: string;
   weight: number;
   ok: boolean;
+  /** Not waited for: the vote was already settled. */
+  stopped?: boolean;
   answer: string;
   agreed: boolean;
   reason?: string;
@@ -203,6 +205,8 @@ export type EnsembleResult = {
   agree: number;
   voters: number;
   asked: number;
+  /** The vote was settled before every model answered; the rest were not waited for. */
+  stoppedEarly?: boolean;
   score: number;
   models: EnsembleModelResult[];
   usage: {

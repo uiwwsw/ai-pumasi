@@ -1809,3 +1809,7 @@ html[data-theme="dark"] .composer {
     flex: 1;
   }
 }
+.worker-row.is-stopped .worker-state,
+.ensemble-details li.is-stopped .ensemble-pick {
+  color: var(--muted);
+}

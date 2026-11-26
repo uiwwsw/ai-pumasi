@@ -103,8 +103,9 @@ test("every model is asked at the same time, not one after another", async () =>
   const out = await result;
   assert.equal(peak, 3);
   assert.equal(out.kind, "vote");
-  assert.equal(out.agree, 3);
-  assert.equal(out.voters, 3);
+  // Two equal votes cannot be outvoted by the third, so the vote is settled without it.
+  assert.equal(out.agree, 2);
+  assert.equal(out.stoppedEarly, true);
 });
 
 test("the weighted vote follows the stronger model over a weak majority", async () => {
@@ -140,8 +141,8 @@ test("equal weights fall back to the plain majority, answers normalized", async 
     }),
   );
   const out = await result;
-  assert.equal(out.agree, 3);
-  assert.equal(out.writer, "claude-haiku-5-5");
+  assert.equal(out.agree, 2, "1,000원 and **1000** count as the same answer");
+  assert.equal(out.answer.replace(/\D/g, ""), "1000");
 });
 
 test("a failed model drops out of the vote and is recorded", async () => {
@@ -182,8 +183,9 @@ test("a rate-limited model is retried once, then left out", async () => {
     (model) =>
       model === "gemini-flash-latest"
         ? { text: "", status: 429 }
-        : { text: "정답: 12" },
+        : { text: model === "ollama-local" ? "정답: 13" : "정답: 12" },
   );
+  // A split vote is not settled, so the rate-limited model is waited for and retried.
   const out = await result;
   assert.equal(
     calls.filter((c) => c.model === "gemini-flash-latest").length,
@@ -336,4 +338,91 @@ test("measured free models on an OpenAI-compatible server vote with their measur
   );
   assert.equal(out.answer, "13");
   assert.deepEqual(out.substitutions, []);
+});
+
+test("a settled vote stops waiting: the slow model is cut off and not blamed", async () => {
+  const stats = createStatsStore();
+  const events: any[] = [];
+  let aborted = false;
+  const fetchImpl = async (url: string, init: any) => {
+    if (url.endsWith("/api/tags")) return { ok: true };
+    const model = modelOf(url, JSON.parse(init.body));
+    if (model === "ollama-local")
+      return new Promise((_resolve, reject) =>
+        init.signal.addEventListener("abort", () => {
+          aborted = true;
+          reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+        }),
+      );
+    return reply(model, "풀이\n정답: 12");
+  };
+  const out = await runEnsemble(
+    {
+      models: ["claude-haiku-5-5", "gemini-flash-latest", "ollama-local"],
+      text: "3 곱하기 4는?",
+      context: [],
+    },
+    {
+      env,
+      fetchImpl,
+      stats,
+      sleep: async () => {},
+      onProgress: (e: any) => events.push(e),
+      weight: (id: string) =>
+        ({
+          "claude-haiku-5-5": 2,
+          "gemini-flash-latest": 1,
+          "ollama-local": 2,
+        })[id] ?? 0.1,
+    },
+  );
+  await new Promise((r) => setTimeout(r, 10));
+  assert.equal(aborted, true, "the pending request is cancelled");
+  assert.equal(out.stoppedEarly, true);
+  assert.equal(out.answer, "12");
+  assert.equal(out.agree, 2);
+  const slow = out.models.find((m: any) => m.model === "ollama-local");
+  assert.equal(slow.stopped, true);
+  assert.equal(
+    stats.snapshot()["ollama-local"],
+    undefined,
+    "a cut-off model is not recorded as failing",
+  );
+  const late = events.slice(events.findIndex((e) => e.state === "stopped") + 1);
+  assert.ok(
+    !late.some((e) => e.taskId === "ollama-local"),
+    "no progress after it was stopped",
+  );
+});
+
+test("the vote keeps waiting while a pending model could still change the winner", async () => {
+  // Weak models agree first, but the strong one could outvote them: wait for it.
+  const { result } = run(
+    ["gemini-flash-latest", "ollama-local", "claude-haiku-5-5"],
+    async (model) => {
+      if (model === "claude-haiku-5-5")
+        await new Promise((r) => setTimeout(r, 20));
+      return { text: model === "claude-haiku-5-5" ? "정답: 13" : "정답: 12" };
+    },
+    { "claude-haiku-5-5": 3, "gemini-flash-latest": 0.5, "ollama-local": 0.5 },
+  );
+  const out = await result;
+  assert.equal(out.stoppedEarly, false);
+  assert.equal(out.answer, "13");
+});
+
+test("open-ended replies never stop early", async () => {
+  const long = (who: string) => `${who}의 설명입니다. `.repeat(20);
+  const { result } = run(
+    ["gemini-flash-latest", "claude-haiku-5-5", "ollama-local"],
+    (model, body) =>
+      /Several models/.test(systemOf(body))
+        ? { text: "합친 답. ".repeat(40) }
+        : { text: long(model) },
+    { "claude-haiku-5-5": 5 },
+  );
+  const out = await result;
+  assert.equal(out.kind, "merge");
+  assert.equal(out.stoppedEarly, false);
+  assert.ok(out.models.every((m: any) => m.ok));
 });

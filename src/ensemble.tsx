@@ -23,6 +23,7 @@ const reasonNames: Record<string, string> = {
   empty: "빈 답",
   short: "너무 짧은 답",
   truncated: "답이 잘림",
+  stopped: "답이 이미 정해져 기다리지 않음",
 };
 const nameOf = (id: string) => modelById(id)?.name ?? id;
 
@@ -137,8 +138,9 @@ export function ensembleMessage(
   r: EnsembleResult,
 ): Pick<Message, "text" | "model" | "ensemble"> {
   const { text, ...rest } = r;
-  const failed = r.models.filter((m) => !m.ok).length;
-  const footer = `묶음 투표 · ${r.asked}개 모델${failed ? ` (${failed}개 실패)` : ""} · 합계 입력 ${r.usage.total.in} / 출력 ${r.usage.total.out} 토큰`;
+  const failed = r.models.filter((m) => !m.ok && !m.stopped).length;
+  const skipped = r.models.filter((m) => m.stopped).length;
+  const footer = `묶음 투표 · ${r.asked}개 모델${failed ? ` (${failed}개 실패)` : ""}${skipped ? ` · 답이 정해져 ${skipped}개는 기다리지 않음` : ""} · 합계 입력 ${r.usage.total.in} / 출력 ${r.usage.total.out} 토큰`;
   const swaps = [
     ...new Set(
       (r.substitutions ?? []).map(
@@ -161,6 +163,8 @@ export function ensembleMessage(
 }
 
 function headline(e: NonNullable<Message["ensemble"]>) {
+  if (e.kind === "vote" && e.stoppedEarly)
+    return `${e.agree}개 모델이 같은 답 · 남은 모델이 모두 반대해도 뒤집히지 않아 바로 확정`;
   if (e.kind === "vote")
     return e.agree === e.voters
       ? `${e.voters}개 모델이 모두 같은 답`
@@ -176,7 +180,7 @@ export function EnsembleDetails({
   ensemble: Message["ensemble"];
 }) {
   if (!e || !Array.isArray(e.models)) return null;
-  const failed = e.models.filter((m) => !m.ok).length;
+  const failed = e.models.filter((m) => !m.ok && !m.stopped).length;
   return (
     <details className="ensemble-details">
       <summary>
@@ -193,18 +197,28 @@ export function EnsembleDetails({
         {e.models.map((m) => (
           <li
             key={m.model}
-            className={m.ok ? (m.agreed ? "is-agreed" : "") : "is-failed"}
+            className={
+              m.ok
+                ? m.agreed
+                  ? "is-agreed"
+                  : ""
+                : m.stopped
+                  ? "is-stopped"
+                  : "is-failed"
+            }
           >
             <div className="ensemble-row">
               <strong>{nameOf(m.model)}</strong>
               <span className="ensemble-pick">
-                {!m.ok
-                  ? `제외 · ${reasonNames[m.reason ?? ""] ?? "실패"}`
-                  : e.kind === "merge"
-                    ? m.model === e.writer
-                      ? "합친 모델"
-                      : "참고 답"
-                    : m.answer || "정답 줄 없음"}
+                {m.stopped
+                  ? reasonNames.stopped
+                  : !m.ok
+                    ? `제외 · ${reasonNames[m.reason ?? ""] ?? "실패"}`
+                    : e.kind === "merge"
+                      ? m.model === e.writer
+                        ? "합친 모델"
+                        : "참고 답"
+                      : m.answer || "정답 줄 없음"}
               </span>
               <span className="ensemble-meta">
                 무게 {m.weight.toFixed(2)} · 입력 {m.usage.in} / 출력{" "}
