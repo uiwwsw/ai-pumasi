@@ -50,6 +50,12 @@ import {
   type Completion,
 } from "./routing";
 import {
+  EnsembleDetails,
+  EnsembleSettings,
+  bundleReady,
+  ensembleMessage,
+} from "./ensemble";
+import {
   project,
   projectTeam,
   type Projection,
@@ -437,7 +443,64 @@ function App() {
     const p = pending;
     let completion: Completion | null = null;
     let team: TeamResult | null = null;
-    if (routing.live && routing.team && window.auroraAI?.team) {
+    let bundle: ReturnType<typeof ensembleMessage> | null = null;
+    if (
+      routing.live &&
+      bundleReady(routing, providerStatus) &&
+      window.auroraAI?.ensemble
+    ) {
+      busyRef.current = true;
+      setBusy(true);
+      setAIError("");
+      setWorkers({});
+      const picked = routing.ensembleModels.filter(
+        (id) => providerStatus[modelById(id).provider],
+      );
+      setNotice(`묶음 투표 · ${picked.length}개 모델에 동시에 묻는 중`);
+      const off = window.auroraAI.onTeamProgress?.((e) => {
+        if (e.stage === "worker")
+          setWorkers((prev) => ({
+            ...prev,
+            [e.taskId]: {
+              ...prev[e.taskId],
+              ...(e.state === "running"
+                ? { servedBy: undefined, reason: undefined, partial: undefined }
+                : {}),
+              ...e,
+            },
+          }));
+        else if (e.stage === "merge" && e.model)
+          setNotice(`묶음 투표 · ${modelById(e.model).name}가 답을 합치는 중`);
+        else if (e.stage === "done") setNotice("묶음 투표 · 완료");
+      });
+      try {
+        const r = await window.auroraAI.ensemble({
+          models: picked,
+          text: p.text,
+          context: context(p.decision),
+        });
+        bundle = ensembleMessage(r);
+        setNotice("묶음 투표 · 완료");
+        completion = {
+          text: bundle.text,
+          model: r.writer,
+          inputTokens: r.usage.total.in,
+          outputTokens: r.usage.total.out,
+          incomplete: false,
+        };
+      } catch (error) {
+        setAIError(
+          error instanceof Error
+            ? error.message
+            : "묶음 투표 실행에 실패했습니다.",
+        );
+        return;
+      } finally {
+        off?.();
+        busyRef.current = false;
+        setBusy(false);
+      }
+    } else if (routing.live && routing.team && window.auroraAI?.team) {
       busyRef.current = true;
       setBusy(true);
       setAIError("");
@@ -528,13 +591,15 @@ function App() {
       {
         id: crypto.randomUUID(),
         role: "assistant" as const,
-        text: team
-          ? completion!.text
-          : completion
-            ? `${completion.text}\n\n—\n${modelById(p.modelId).name} · 실제 입력 ${completion.inputTokens ?? "미확인"} / 출력 ${completion.outputTokens ?? "미확인"} 토큰${completion.incomplete ? " · 생성 상한 도달: 미완성일 수 있음" : ""}`
-            : `${makePreview(p.text, p.selected)}\n선택한 실행 모델: ${modelById(p.modelId).name}`,
+        text:
+          team || bundle
+            ? completion!.text
+            : completion
+              ? `${completion.text}\n\n—\n${modelById(p.modelId).name} · 실제 입력 ${completion.inputTokens ?? "미확인"} / 출력 ${completion.outputTokens ?? "미확인"} 토큰${completion.incomplete ? " · 생성 상한 도달: 미완성일 수 있음" : ""}`
+              : `${makePreview(p.text, p.selected)}\n선택한 실행 모델: ${modelById(p.modelId).name}`,
         live: !!completion,
-        model: p.modelId,
+        model: bundle?.model ?? p.modelId,
+        ...(bundle ? { ensemble: bundle.ensemble } : {}),
       },
     ];
     const newId = crypto.randomUUID();
@@ -1325,15 +1390,18 @@ function App() {
                       busy ||
                       !pending.decision ||
                       (routing.live &&
+                        !bundleReady(routing, providerStatus) &&
                         !providerStatus[modelById(pending.modelId).provider])
                     }
                     onClick={proceed}
                   >
                     {busy
                       ? "요청 처리 중…"
-                      : routing.live
-                        ? "선택한 모델로 API 실행"
-                        : "이 모델로 미리보기"}
+                      : routing.live && bundleReady(routing, providerStatus)
+                        ? "묶은 모델로 API 실행"
+                        : routing.live
+                          ? "선택한 모델로 API 실행"
+                          : "이 모델로 미리보기"}
                   </button>
                 </div>
               </>
@@ -1456,7 +1524,11 @@ function App() {
                       aria-label="팀 모드"
                       checked={routing.team}
                       onChange={(e) =>
-                        setRouting((r) => ({ ...r, team: e.target.checked }))
+                        setRouting((r) => ({
+                          ...r,
+                          team: e.target.checked,
+                          ensemble: e.target.checked ? false : r.ensemble,
+                        }))
                       }
                     />
                   </label>
@@ -1501,6 +1573,11 @@ function App() {
                       ))}
                     </select>
                   </label>
+                  <EnsembleSettings
+                    routing={routing}
+                    setRouting={setRouting}
+                    status={providerStatus}
+                  />
                   <label className="setting-row">
                     <span>
                       <strong>실제 API 사용</strong>
@@ -1713,6 +1790,7 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
         )}
       </div>
       <div className="message-text">{message.text}</div>
+      {message.ensemble && <EnsembleDetails ensemble={message.ensemble} />}
     </article>
   );
 }

@@ -138,6 +138,21 @@ else
         inFlight.delete(id);
       }
     });
+    ipcMain.handle("aurora:ensemble-run", async (event, payload) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      const id = event.sender.id;
+      if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
+      inFlight.add(id);
+      try {
+        return await require("./ensemble.cjs").runEnsemble(payload, {
+          onProgress: (e) => event.sender.send("aurora:team-progress", e),
+          stats: stats(),
+          onUsage: (u) => usage().record(u),
+        });
+      } finally {
+        inFlight.delete(id);
+      }
+    });
     const root = path.resolve(__dirname, "../dist");
     protocol.handle("aurora", (request) => {
       const url = new URL(request.url);
