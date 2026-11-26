@@ -21,7 +21,7 @@ const translations = {
     "features": [
       [
         "묶음 투표",
-        "무료 모델 2~5개가 같은 질문을 풀고, 측정한 실력만큼 무게를 준 투표로 답을 고릅니다. 남은 모델이 모두 반대해도 결과가 바뀌지 않으면 그 자리에서 확정합니다. 같은 시험에서 무료 묶음이 ChatGPT 무료보다 높은 점수를 받았고, 문항과 채점기는 저장소에 공개했습니다."
+        "무료 모델 2~5개가 같은 질문을 풀고, 측정한 실력만큼 무게를 준 투표로 답을 고릅니다. 남은 모델이 모두 반대해도 결과가 바뀌지 않으면 그 자리에서 확정합니다. 유료 모델 없이 무료 모델 4개만으로 같은 시험에서 ChatGPT 무료보다 높은 점수를 받았고, 문항과 채점기는 저장소에 공개했습니다."
       ],
       [
         "무료 제공자 자동 라우터",
@@ -29,7 +29,7 @@ const translations = {
       ],
       [
         "비싼 모델에는 비싼 일만",
-        "팀 모드에서 유료 총괄 모델은 일을 작업 1~6개로 나누고 승인 여부만 정합니다. 답을 쓰고 합치는 일은 무료 모델이 하므로 비싼 출력 토큰이 적게 나갑니다."
+        "팀 모드에서 고른 총괄 모델(유료·무료 모두 가능)이 일을 작업 1~6개로 나누고 승인 여부만 정합니다. 답을 쓰고 합치는 일은 무료 모델이 하므로 비싼 출력 토큰이 적게 나갑니다."
       ],
       [
         "키는 기기 안에서 잠가 둡니다",
@@ -82,15 +82,15 @@ const translations = {
     "features": [
       [
         "Outscores ChatGPT's free tier",
-        "Same three exams, graded by a program: the free bundle scored 29/30, 28/30 and 23.4/25. ChatGPT free scored 23, 24 and 13.4. Questions and graders are public, so you can check."
+        "Four free models on free APIs, no paid model anywhere. Same three exams, graded by a program: the free bundle scored 29/30, 28/30 and 23.4/25. ChatGPT free scored 23, 24 and 13.4. Questions and graders are public, so you can check."
       ],
       [
         "Borrow hands, not keys",
         "Pumasi lets other users run one of your tasks on a free key they chose to lend. The task and the answer are sealed between two devices. The relay moves ciphertext; the helper sees a token count."
       ],
       [
-        "Premium models only where judgment matters",
-        "In team mode Claude Opus or another lead model splits the work and signs off. Free models write and merge the answers, so expensive output tokens stay few."
+        "Optional team mode with a lead you pick",
+        "Separate from the vote. In team mode a lead you pick, paid or free, splits the work and signs off; free models write and merge the answers, so a paid lead spends tokens only on judgment."
       ],
       [
         "Keys stay on your machine",

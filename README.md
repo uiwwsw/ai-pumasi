@@ -27,11 +27,11 @@
 
 ## Why it's different
 
-**Free models that outscore ChatGPT's free tier.** We gave the free bundle and ChatGPT free the same three exams, all graded by a program. The bundle scored 29/30, 28/30 and 23.4/25. ChatGPT free scored 23, 24 and 13.4. The questions, answers and graders are in [bench/](bench/README.md), so you can rerun them.
+**Free models that outscore ChatGPT's free tier. No paid model involved.** The bundle on the scorecard is four free models (Nemotron 3.5 Super, Nemotron 3 Ultra, Nemotron 3.5 Lightning and Gemini 3.1 Flash-Lite) called through free APIs. They answer on their own and vote; there is no paid leader or judge. We gave that bundle and ChatGPT free the same three exams, all graded by a program. The bundle scored 29/30, 28/30 and 23.4/25. ChatGPT free scored 23, 24 and 13.4. The questions, answers and graders are in [bench/](bench/README.md), so you can rerun them.
 
 **Borrow hands, not keys.** With Pumasi, your team mode can hand tasks to other users. Their app takes one task, runs it on a free key they chose to lend, and sends back the result. The task and the result are sealed between the two devices: the relay only moves ciphertext, and the helper's screen shows a token count and nothing else. No one's key ever leaves their machine. Helping earns points; posting spends them.
 
-**Premium models only where judgment matters.** In team mode a lead model such as Claude Opus splits the work into up to six tasks and signs off. Free models write the answers and merge them, so the expensive output tokens stay few.
+**Optional team mode, if you have a paid key.** This is a separate mode, not how the scorecard was made. A lead model you pick (Claude Opus, GPT, or a free model) splits the work into up to six tasks and signs off, while free models write and merge the answers. A paid lead spends its expensive output tokens on planning and approval only.
 
 **Done as soon as the vote is decided.** If the models still running can no longer change the outcome, the vote closes and the stragglers are cancelled.
 
