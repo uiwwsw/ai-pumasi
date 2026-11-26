@@ -11,7 +11,7 @@ AI Pumasi 저장소에 들어 있는 파일, 의존하는 라이브러리와 외
 ## 파일 구조
 
 ```
-aurora/
+ai-pumasi/
 ├── electron/                  # 데스크톱 앱의 메인 프로세스 (Node.js 쪽)
 │   ├── main.cjs               # 창 생성, aurora:// 프로토콜, IPC 처리, 메뉴
 │   ├── preload.cjs            # 화면(renderer)에 window.auroraAI만 노출하는 다리

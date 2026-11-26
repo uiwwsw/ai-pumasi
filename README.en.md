@@ -18,13 +18,13 @@
 <a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/uiwwsw/ai-pumasi?style=flat-square"></a>
 </p>
 
-<p><a href="https://aurora-two-virid.vercel.app/">Web demo</a> · <a href="#install">Download</a> · <a href="docs/guide.en.md">Guide</a> · <a href="docs/components.md">Components</a> · <a href="bench/README.md">Measurements</a> · <a href="CHANGELOG.md">Changelog</a> · <a href="README.md">한국어</a></p>
+<p><a href="https://ai-pumasi.vercel.app/">Web demo</a> · <a href="#install">Download</a> · <a href="docs/guide.en.md">Guide</a> · <a href="docs/components.md">Components</a> · <a href="bench/README.md">Measurements</a> · <a href="CHANGELOG.md">Changelog</a> · <a href="README.md">한국어</a></p>
 
 </div>
 
 <img src="docs/images/scorecard.en.svg" alt="Same exams: AI Pumasi free bundle 29/30, 28/30, 23.4/25 vs ChatGPT free 23/30, 24/30, 13.4/25">
 
-<img src="https://raw.githubusercontent.com/uiwwsw/ai-pumasi/main/docs/images/aurora-v0.1.png" alt="AI Pumasi workspace">
+<img src="https://raw.githubusercontent.com/uiwwsw/ai-pumasi/main/docs/images/workspace.en.png" alt="AI Pumasi workspace">
 
 
 ## What AI Pumasi does well

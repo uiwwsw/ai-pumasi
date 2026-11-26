@@ -1,6 +1,6 @@
 # AI Pumasi documentation · 문서
 
-[한국어 README](../README.md) · [English README](../README.en.md) · [Demo](https://aurora-two-virid.vercel.app/) · [English overview](https://aurora-two-virid.vercel.app/en/)
+[한국어 README](../README.md) · [English README](../README.en.md) · [Demo](https://ai-pumasi.vercel.app/) · [English overview](https://ai-pumasi.vercel.app/en/)
 
 | Guide | Content |
 | --- | --- |

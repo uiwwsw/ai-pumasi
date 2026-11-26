@@ -81,7 +81,7 @@ Node.js 24 이상이 필요합니다.
 
 ```bash
 git clone https://github.com/uiwwsw/ai-pumasi.git
-cd aurora
+cd ai-pumasi
 npm ci
 cp .env.example .env   # 키 입력 (선택)
 npm start

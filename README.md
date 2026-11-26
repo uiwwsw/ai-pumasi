@@ -18,13 +18,13 @@
 <a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/uiwwsw/ai-pumasi?style=flat-square"></a>
 </p>
 
-<p><a href="https://aurora-two-virid.vercel.app/">웹 데모</a> · <a href="#설치">다운로드</a> · <a href="docs/guide.md">사용 안내</a> · <a href="docs/components.md">구성 요소</a> · <a href="bench/README.md">측정 기록</a> · <a href="CHANGELOG.md">변경 기록</a> · <a href="README.en.md">English</a></p>
+<p><a href="https://ai-pumasi.vercel.app/">웹 데모</a> · <a href="#설치">다운로드</a> · <a href="docs/guide.md">사용 안내</a> · <a href="docs/components.md">구성 요소</a> · <a href="bench/README.md">측정 기록</a> · <a href="CHANGELOG.md">변경 기록</a> · <a href="README.en.md">English</a></p>
 
 </div>
 
 <img src="docs/images/scorecard.svg" alt="같은 시험 성적: AI품앗이 무료 묶음 29/30, 28/30, 23.4/25 대 ChatGPT 무료 23/30, 24/30, 13.4/25">
 
-<img src="https://raw.githubusercontent.com/uiwwsw/ai-pumasi/main/docs/images/aurora-v0.1.png" alt="AI Pumasi 작업 공간">
+<img src="https://raw.githubusercontent.com/uiwwsw/ai-pumasi/main/docs/images/workspace.png" alt="AI Pumasi 작업 공간">
 
 
 ## AI품앗이가 잘하는 것

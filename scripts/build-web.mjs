@@ -2,7 +2,7 @@ import { cp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
-export const origin = "https://aurora-two-virid.vercel.app";
+export const origin = "https://ai-pumasi.vercel.app";
 const release = "https://github.com/uiwwsw/ai-pumasi/releases/tag/v0.1.9";
 const repo = "https://github.com/uiwwsw/ai-pumasi";
 const verification =
