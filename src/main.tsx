@@ -203,6 +203,7 @@ function App() {
     anthropic: false,
     gemini: false,
     ollama: false,
+    compat: false,
   });
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
@@ -1600,10 +1601,14 @@ function App() {
                     Claude 키{" "}
                     {providerStatus.anthropic ? "감지됨 (미검증)" : "없음"} ·
                     Gemini 키{" "}
-                    {providerStatus.gemini ? "감지됨 (미검증)" : "없음"}. 키는
-                    .env 또는 환경변수로 설정하고 앱을 재시작하세요. 모델 접근
-                    권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과
-                    별도로 이 기기에 유지됩니다.
+                    {providerStatus.gemini ? "감지됨 (미검증)" : "없음"} ·
+                    OpenAI 호환 서버{" "}
+                    {providerStatus.compat ? "설정됨 (미검증)" : "없음"}. 키는
+                    .env 또는 환경변수로 설정하고 앱을 재시작하세요. OpenAI 호환
+                    서버(예: a local gateway)는
+                    AURORA_OPENAI_COMPAT_URL·AURORA_OPENAI_COMPAT_KEY로
+                    연결합니다. 모델 접근 권한은 실제 호출 시 확인됩니다. 모델
+                    설정은 대화 저장과 별도로 이 기기에 유지됩니다.
                   </p>
                 </section>
                 <label className="setting-row">

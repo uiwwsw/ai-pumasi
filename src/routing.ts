@@ -1,7 +1,7 @@
 import catalog from "./catalog.json";
 import type { Tier } from "./domain";
 import type { UsageHistory } from "./usage";
-export type Provider = "openai" | "anthropic" | "gemini" | "ollama";
+export type Provider = "openai" | "anthropic" | "gemini" | "ollama" | "compat";
 export type Model = {
   id: string;
   name: string;

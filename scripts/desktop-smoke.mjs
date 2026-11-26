@@ -16,6 +16,8 @@ try {
       AURORA_OLLAMA: "0",
       OPENAI_API_KEY: "",
       ANTHROPIC_API_KEY: "",
+      AURORA_OPENAI_COMPAT_URL: "",
+      AURORA_OPENAI_COMPAT_KEY: "",
     },
   });
   const page = await app.firstWindow();
@@ -152,6 +154,7 @@ try {
     anthropic: false,
     gemini: false,
     ollama: false,
+    compat: false,
   });
   await settings();
   await expect(page.getByLabel("내부 분석 모델", { exact: true })).toHaveValue(

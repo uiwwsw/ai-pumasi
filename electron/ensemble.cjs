@@ -36,7 +36,7 @@ function checkModels(ids, status) {
       throw new Error("묶음 투표에는 무료·경량 모델만 넣을 수 있습니다.");
     if (!status[m.provider])
       throw new Error(
-        `${m.name}: ${m.provider === "ollama" ? "Ollama가 실행 중이 아닙니다." : "키가 설정되지 않았습니다."}`,
+        `${m.name}: ${m.provider === "ollama" ? "Ollama가 실행 중이 아닙니다." : m.provider === "compat" ? "OpenAI 호환 서버(AURORA_OPENAI_COMPAT_URL·KEY)가 설정되지 않았습니다." : "키가 설정되지 않았습니다."}`,
       );
   }
 }
