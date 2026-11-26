@@ -27,11 +27,11 @@ async function fixture(
 test("web pages expose localized content, self canonicals, reciprocal alternates and visible schema", async () =>
   fixture(async (_, inputDir, outputDir) => {
     await buildWeb({ inputDir, outputDir, production: true });
-    const ko = await readFile(path.join(outputDir, "index.html"), "utf8");
-    const en = await readFile(path.join(outputDir, "en/index.html"), "utf8");
+    const en = await readFile(path.join(outputDir, "index.html"), "utf8");
+    const ko = await readFile(path.join(outputDir, "ko/index.html"), "utf8");
     for (const [lang, html, url] of [
-      ["ko", ko, origin + "/"],
-      ["en", en, origin + "/en/"],
+      ["en", en, origin + "/"],
+      ["ko", ko, origin + "/ko/"],
     ]) {
       assert.ok(html.includes(`<html lang="${lang}">`));
       assert.ok(html.includes(`<link rel="canonical" href="${url}">`));
@@ -56,13 +56,13 @@ test("web pages expose localized content, self canonicals, reciprocal alternates
         ),
       );
     }
-    assert.ok(ko.includes('src="/assets/app.js"'));
-    assert.ok(ko.includes('href="/assets/app.css"'));
+    assert.ok(en.includes('src="/assets/app.js"'));
+    assert.ok(en.includes('href="/assets/app.css"'));
     const { version } = JSON.parse(
       await readFile(new URL("../package.json", import.meta.url), "utf8"),
     );
     assert.ok(en.includes(`The public ${version} preview`));
-    assert.ok(!en.includes('src="/assets/app.js"'));
+    assert.ok(!ko.includes('src="/assets/app.js"'));
     assert.ok(
       (await readFile(path.join(inputDir, "index.html"), "utf8")).includes(
         'src="./assets/app.js"',
@@ -84,7 +84,7 @@ test("web pages expose localized content, self canonicals, reciprocal alternates
 test("preview deployments do not invite search indexing", async () =>
   fixture(async (_, inputDir, outputDir) => {
     await buildWeb({ inputDir, outputDir, production: false });
-    for (const file of ["index.html", "en/index.html"]) {
+    for (const file of ["index.html", "ko/index.html"]) {
       assert.ok(
         (await readFile(path.join(outputDir, file), "utf8")).includes(
           'content="noindex,nofollow"',

@@ -1,7 +1,7 @@
 # Pumasi Agent 데스크톱 초기 방향
 
 2026-10-19 기준 macOS·Windows 데스크톱 앱의 초기 설계입니다.
-현재 기능과 설치 방법은 [README](../README.md)를 참고하세요.
+현재 기능과 설치 방법은 [README](../README.ko.md)를 참고하세요.
 원본 `readme`는 Chrome 확장 프로그램 기획으로 보존한다. 이 문서는 데스크톱 방향의 초기 제안이다. 이후 Electron 기반 로컬 UI 프로토타입을 구현했다.
 
 ## 기술 제안

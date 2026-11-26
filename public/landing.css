@@ -1,6 +1,6 @@
-/* Aurora's public product surface. The desktop application keeps its own theme. */
+/* Public product pages. The desktop application keeps its own theme. */
 .site-web-demo,
-.site-english {
+.site-korean {
   background: #fff;
   color: #232321;
   --bg: #fff;

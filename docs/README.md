@@ -1,6 +1,6 @@
 # Pumasi Agent documentation · 문서
 
-[한국어 README](../README.md) · [English README](../README.en.md) · [Demo](https://pumasi-agent.vercel.app/) · [English overview](https://pumasi-agent.vercel.app/en/)
+[한국어 README](../README.ko.md) · [English README](../README.md) · [Demo](https://pumasi-agent.vercel.app/) · [Korean overview](https://pumasi-agent.vercel.app/ko/)
 
 | Guide | Content |
 | --- | --- |
