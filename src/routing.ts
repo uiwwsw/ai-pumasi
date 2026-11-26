@@ -1,4 +1,5 @@
 import catalog from "./catalog.json";
+import { modelName } from "./i18n";
 import type { Tier } from "./domain";
 import type { UsageHistory } from "./usage";
 export type Provider =
@@ -12,7 +13,10 @@ export type Model = {
   /** Free hosts that serve this model, and the model name each one uses. */
   hosts?: Record<string, string>;
 };
-export const models = catalog as Model[];
+export const models = (catalog as Model[]).map((m) => ({
+  ...m,
+  name: modelName(m.name),
+}));
 export const modelById = (id: string) => models.find((m) => m.id === id)!;
 export const ROUTING_KEY = "aurora.routing.v1";
 export type RoutingSettings = {
@@ -109,7 +113,10 @@ export type SecretName =
 /** What the window may know about saved keys: set or not, and when. Never the value. */
 export type SecretsState = {
   encryption: boolean;
-  keys: Record<SecretName, { set: boolean; savedAt?: string | null }>;
+  keys: Record<
+    SecretName,
+    { set: boolean; savedAt?: string | null; stale?: boolean }
+  >;
   compatUrl: string;
 };
 export type Completion = {
@@ -236,6 +243,7 @@ export interface AIBridge {
     clear(): Promise<UsageHistory>;
   };
   status(): Promise<ProviderStatus>;
+  setLang?(lang: "ko" | "en"): Promise<void>;
   secrets?: {
     list(): Promise<SecretsState>;
     set(name: SecretName, value: string): Promise<SecretsState>;

@@ -1,0 +1,16 @@
+{
+  "경량": "Light",
+  "표준": "Standard",
+  "고성능": "Advanced",
+  "초기화 시각 확인 안 됨": "Reset time unknown",
+  "초기화 확인 필요": "Check the reset",
+  "{d}일 {h}시간 후 초기화": "Resets in {d}d {h}h",
+  "{h}시간 {m}분 후 초기화": "Resets in {h}h {m}m",
+  "{m}분 후 초기화": "Resets in {m}m",
+  "짧은 변환·정리 작업이므로 경량 모델부터 권장합니다.": "A short rewrite or cleanup, so a light model is a good start.",
+  "일반적인 작성·문제 해결에 적합한 표준 모델을 권장합니다.": "A standard model suits general writing and problem solving.",
+  "복잡한 조건과 검토가 필요해 고성능 모델을 권장합니다.": "Complex conditions and review call for an advanced model.",
+  "이전 작업과 다른 주제로 보여요.": "This looks like a different topic from the previous task.",
+  "지금 작업이 마무리된 것 같아요.": "It looks like the current task is wrapping up.",
+  "선택한 모델 등급 · {tier}\n\n요청을 로컬 작업 흐름에 기록했습니다. 현재는 규칙 기반 추천과 정리 제안을 확인하는 미리보기입니다.\nAI 모델이 질문을 수행한 결과가 아니며, 실제 토큰이나 계정 한도는 차감되지 않습니다.": "Selected model tier · {tier}\n\nThe request was recorded in your local workflow. This preview only shows rule-based recommendations and cleanup suggestions.\nNo AI model answered it, and no tokens or account limits were used."
+}

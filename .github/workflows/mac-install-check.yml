@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION=$(node -p 'require("./package.json").version')
-          FILE="Aurora-$VERSION-mac-$ARCH.dmg"
+          FILE="AI-Pumasi-$VERSION-mac-$ARCH.dmg"
           READY=false
           for ATTEMPT in $(seq 1 60); do
             if gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern "$FILE" --dir "$RUNNER_TEMP/installer" --clobber; then
@@ -50,15 +50,15 @@ jobs:
           mkdir -p "$MOUNT"
           hdiutil attach "$RUNNER_TEMP/installer/$FILE" -readonly -nobrowse -mountpoint "$MOUNT"
           trap 'hdiutil detach "$MOUNT"' EXIT
-          APP="$RUNNER_TEMP/installed/Aurora.app"
-          ditto "$MOUNT/Aurora.app" "$APP"
+          APP="$RUNNER_TEMP/installed/AI Pumasi.app"
+          ditto "$MOUNT/AI Pumasi.app" "$APP"
           codesign --verify --deep --strict "$APP"
           # Ticket validation is completed before uploading the signed draft.
           # Native runners assess Gatekeeper and launch the installed binary;
           # do not duplicate CloudKit lookups on hosts with broken connectivity.
           spctl --assess --type execute "$APP"
           node scripts/check-packaged-notice.mjs "$APP/Contents/Resources/app.asar"
-          node scripts/package-smoke.mjs "$APP/Contents/MacOS/Aurora"
+          node scripts/package-smoke.mjs "$APP/Contents/MacOS/AI Pumasi"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

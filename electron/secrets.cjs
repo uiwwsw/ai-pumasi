@@ -4,6 +4,7 @@
 // not to a log. Callers can learn whether a key is set and when it was saved, nothing more.
 const fs = require("node:fs");
 const path = require("node:path");
+const { tr } = require("./i18n.cjs");
 
 // The only names the window may write. Anything else is rejected.
 const SECRET_NAMES = [
@@ -21,7 +22,7 @@ const URL_NAME = "AURORA_OPENAI_COMPAT_URL";
 
 function checkValue(value) {
   if (typeof value !== "string")
-    throw new Error("키 형식이 올바르지 않습니다.");
+    throw new Error(tr("키 형식이 올바르지 않습니다."));
   const v = value.trim();
   if (v.length < 8 || v.length > 512 || !/^[\x21-\x7e]+$/.test(v))
     throw new Error("키는 공백 없는 8~512자 영문·숫자·기호여야 합니다.");
@@ -30,25 +31,25 @@ function checkValue(value) {
 
 function checkUrl(value) {
   if (typeof value !== "string" || value.length > 512)
-    throw new Error("주소 형식이 올바르지 않습니다.");
+    throw new Error(tr("주소 형식이 올바르지 않습니다."));
   const v = value.trim();
   if (!v) return "";
   let url;
   try {
     url = new URL(v);
   } catch {
-    throw new Error("주소 형식이 올바르지 않습니다.");
+    throw new Error(tr("주소 형식이 올바르지 않습니다."));
   }
   const local = ["127.0.0.1", "localhost", "[::1]", "::1"].includes(
     url.hostname,
   );
   if (!(url.protocol === "https:" || (url.protocol === "http:" && local)))
     throw new Error(
-      "https 주소이거나 이 기기(127.0.0.1·localhost) 주소여야 합니다.",
+      tr("https 주소이거나 이 기기(127.0.0.1·localhost) 주소여야 합니다."),
     );
   if (url.username || url.password)
     throw new Error(
-      "주소에 계정 정보를 넣지 마세요. 키는 키 칸에 따로 넣으세요.",
+      tr("주소에 계정 정보를 넣지 마세요. 키는 키 칸에 따로 넣으세요."),
     );
   return url.href;
 }
@@ -89,9 +90,20 @@ function createSecretStore({ file, safeStorage, now = Date.now }) {
       const keys = {};
       for (const name of SECRET_NAMES) {
         const entry = data.keys?.[name];
-        keys[name] = entry
-          ? { set: true, savedAt: entry.savedAt ?? null }
-          : { set: false };
+        // A key this app can no longer open (OS keychain reset, or the app renamed) must be
+        // entered again; checked here so the window never shows it as working.
+        let readable = !!entry;
+        if (entry && available())
+          try {
+            safeStorage.decryptString(Buffer.from(entry.enc, "base64"));
+          } catch {
+            readable = false;
+          }
+        keys[name] = !entry
+          ? { set: false }
+          : readable
+            ? { set: true, savedAt: entry.savedAt ?? null }
+            : { set: false, stale: true };
       }
       return { encryption: available(), keys, compatUrl: data.compatUrl ?? "" };
     },
@@ -102,7 +114,7 @@ function createSecretStore({ file, safeStorage, now = Date.now }) {
       // Never fall back to plain text. Without the OS keychain, saving is refused.
       if (!available())
         throw new Error(
-          "이 기기에서 키를 암호화할 수 없어 저장하지 않았습니다.",
+          tr("이 기기에서 키를 암호화할 수 없어 저장하지 않았습니다."),
         );
       const data = read();
       data.keys = { ...(data.keys ?? {}) };

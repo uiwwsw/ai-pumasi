@@ -1,10 +1,10 @@
-# Aurora 사용 안내
+# AI Pumasi 사용 안내
 
 [README로 돌아가기](../README.md)
 
 ## 빠른 시작
 
-1. 쓸 제공자의 키를 설정 → API 키에서 넣습니다. 키는 OS 키체인으로 암호화해 저장하고 화면에 다시 보여 주지 않습니다. `.env` 파일도 계속 읽습니다(설정에 저장한 키가 우선). 설치 앱은 macOS `~/Library/Application Support/Aurora/.env`, Windows `%APPDATA%/Aurora/.env`를 읽고, 환경 변수도 받습니다.
+1. 쓸 제공자의 키를 설정 → API 키에서 넣습니다. 키는 OS 키체인으로 암호화해 저장하고 화면에 다시 보여 주지 않습니다. `.env` 파일도 계속 읽습니다(설정에 저장한 키가 우선). 설치 앱은 macOS `~/Library/Application Support/AI Pumasi/.env`, Windows `%APPDATA%/AI Pumasi/.env`를 읽고, 환경 변수도 받습니다.
 
    ```bash
    OPENAI_API_KEY=...        # OpenAI 모델
@@ -80,8 +80,8 @@ Windows는 시작할 때와 6시간마다 새 버전을 확인하고 백그라�
 Node.js 24 이상이 필요합니다.
 
 ```bash
-git clone https://github.com/uiwwsw/aurora.git
-cd aurora
+git clone https://github.com/uiwwsw/ai-pumasi.git
+cd ai-pumasi
 npm ci
 cp .env.example .env   # 키 입력 (선택)
 npm start

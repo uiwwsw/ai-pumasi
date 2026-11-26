@@ -6,6 +6,7 @@ const catalog = require("../src/catalog.json");
 const { createStatsStore } = require("./worker-stats.cjs");
 const { superviseModel, failureReason } = require("./team.cjs");
 const { extractAnswer, weightOf, tally } = require("./ensemble-vote.cjs");
+const { tr } = require("./i18n.cjs");
 
 const MIN_MODELS = 2;
 const MAX_MODELS = 5;
@@ -30,15 +31,28 @@ function checkModels(ids, status) {
     new Set(ids).size !== ids.length
   )
     throw new Error(
-      `묶음 투표에는 서로 다른 모델 ${MIN_MODELS}~${MAX_MODELS}개가 필요합니다.`,
+      tr("묶음 투표에는 서로 다른 모델 {min}~{max}개가 필요합니다.", {
+        min: MIN_MODELS,
+        max: MAX_MODELS,
+      }),
     );
   for (const id of ids) {
     const m = catalog.find((x) => x.id === id);
     if (!bundleable(m))
-      throw new Error("묶음 투표에는 무료·경량 모델만 넣을 수 있습니다.");
+      throw new Error(tr("묶음 투표에는 무료·경량 모델만 넣을 수 있습니다."));
     if (m.provider === "compat" ? !status.models?.[m.id] : !status[m.provider])
       throw new Error(
-        `${m.name}: ${m.provider === "ollama" ? "Ollama가 실행 중이 아닙니다." : m.provider === "compat" ? "이 모델을 주는 무료 제공자(NVIDIA·OpenRouter·Groq·Gemini 등) 키가 없습니다." : "키가 설정되지 않았습니다."}`,
+        tr("{name}: {detail}", {
+          name: m.name,
+          detail:
+            m.provider === "ollama"
+              ? tr("Ollama가 실행 중이 아닙니다.")
+              : m.provider === "compat"
+                ? tr(
+                    "이 모델을 주는 무료 제공자(NVIDIA·OpenRouter·Groq·Gemini 등) 키가 없습니다.",
+                  )
+                : tr("키가 설정되지 않았습니다."),
+        }),
       );
   }
 }
@@ -55,11 +69,12 @@ function synthesisPrompt(text, runs, nameOf) {
   const body = runs
     .map((r, i) => {
       let t = r.text.trim();
-      if (t.length > per) t = `${t.slice(0, per)}\n[…${t.length - per}자 생략]`;
-      return `## 답 ${i + 1} · ${nameOf(r.model)}\n${t}`;
+      if (t.length > per)
+        t = `${t.slice(0, per)}\n${tr("[…{count}자 생략]", { count: t.length - per })}`;
+      return `## ${tr("답 {num} · {model}", { num: i + 1, model: nameOf(r.model) })}\n${t}`;
     })
     .join("\n\n");
-  return `요청:\n${text.slice(0, 3000)}\n\n같은 요청에 대한 여러 모델의 답:\n\n${body}`;
+  return `${tr("요청:")}\n${text.slice(0, 3000)}\n\n${tr("같은 요청에 대한 여러 모델의 답:")}\n\n${body}`;
 }
 
 /**
@@ -79,7 +94,8 @@ async function runEnsemble(p, opts = {}) {
   const stop = new AbortController();
   const finished = new Set();
   const cut = (model) => stop.signal.aborted && !finished.has(model);
-  const nameOf = (id) => catalog.find((m) => m.id === id)?.name ?? id;
+  const nameOf = (id) =>
+    require("./i18n.cjs").modelName(catalog.find((m) => m.id === id)?.name ?? id);
 
   checkModels(p?.models, await providers.status(env, fetchImpl));
   // Reject a malformed request once, instead of as one failure per model.
@@ -183,7 +199,7 @@ async function runEnsemble(p, opts = {}) {
       state: "failed",
       model,
       reason,
-      message: r.error instanceof Error ? r.error.message : "실행 실패",
+      message: r.error instanceof Error ? r.error.message : tr("실행 실패"),
     });
     return { model, ok: false, reason, text: r.partial?.text ?? "" };
   };
@@ -217,7 +233,7 @@ async function runEnsemble(p, opts = {}) {
   const ok = settled.filter((r) => r.ok);
   if (!ok.length)
     throw new Error(
-      "묶은 모델이 모두 답하지 못했습니다. 사용량이 발생했을 수 있습니다.",
+      tr("묶은 모델이 모두 답하지 못했습니다. 사용량이 발생했을 수 있습니다."),
     );
   for (const r of ok) {
     const a = extractAnswer(r.text);
@@ -242,7 +258,10 @@ async function runEnsemble(p, opts = {}) {
     result = withAnswer.length
       ? tally(withAnswer, { weight })
       : { ...result, voters: 1, agree: 1 };
-    warning = `${settled.length}개 중 ${nameOf(writer)}만 답해 투표하지 못했습니다.`;
+    warning = tr("{count}개 중 {writer}만 답해 투표하지 못했습니다.", {
+      count: settled.length,
+      writer: nameOf(writer),
+    });
   } else if (withAnswer.length * 2 >= ok.length) {
     // Most replies end in a short "정답:" line: a question with one right answer. Vote.
     kind = "vote";
@@ -283,7 +302,9 @@ async function runEnsemble(p, opts = {}) {
     if (r.done) text = r.done.text;
     else {
       text = ok.find((x) => x.model === writer).text;
-      warning = `답을 합치지 못해 ${nameOf(writer)}의 답을 그대로 보여 줍니다.`;
+      warning = tr("답을 합치지 못해 {writer}의 답을 그대로 보여 줍니다.", {
+        writer: nameOf(writer),
+      });
     }
   }
 

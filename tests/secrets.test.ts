@@ -199,3 +199,23 @@ test("the window bridge can write keys but has no way to read one back", () => {
     );
   }
 });
+
+test("a saved key the OS keychain can no longer open is shown as needing re-entry", () => {
+  const file = tmpFile();
+  createSecretStore({ file, safeStorage: fakeSafe() }).set(
+    "NVIDIA_API_KEY",
+    KEY,
+  );
+  const broken = {
+    ...fakeSafe(),
+    decryptString: () => {
+      throw new Error("keychain item missing");
+    },
+  };
+  const store = createSecretStore({ file, safeStorage: broken });
+  assert.deepEqual(store.list().keys.NVIDIA_API_KEY, {
+    set: false,
+    stale: true,
+  });
+  assert.equal(store.env({}).NVIDIA_API_KEY, undefined);
+});

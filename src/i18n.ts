@@ -1,0 +1,59 @@
+// UI language. Korean source strings are the keys; English comes from src/i18n/en-*.json.
+// Placeholders look like {name} and are filled from the second argument.
+import main from "./i18n/en-main.json";
+import ensemble from "./i18n/en-ensemble.json";
+import secrets from "./i18n/en-secrets.json";
+import domain from "./i18n/en-domain.json";
+import electron from "./i18n/en-electron.json";
+
+export type Lang = "ko" | "en";
+export const LANG_KEY = "aurora.lang";
+const EN: Record<string, string> = {
+  ...electron,
+  ...domain,
+  ...secrets,
+  ...ensemble,
+  ...main,
+};
+
+function detect(): Lang {
+  // Outside a window (tests, build scripts) the Korean source text is used.
+  if (typeof window === "undefined") return "ko";
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved === "ko" || saved === "en") return saved;
+  } catch {}
+  const nav = typeof navigator === "undefined" ? "ko" : navigator.language;
+  return /^ko\b/i.test(nav ?? "") ? "ko" : "en";
+}
+let lang: Lang = detect();
+if (typeof document !== "undefined") document.documentElement.lang = lang;
+
+export const getLang = () => lang;
+/** Save the choice and reload so every screen is drawn in the new language. */
+export function setLang(next: Lang) {
+  try {
+    localStorage.setItem(LANG_KEY, next);
+  } catch {}
+  lang = next;
+  if (typeof location !== "undefined") location.reload();
+}
+export function t(ko: string, vars?: Record<string, string | number>) {
+  const s = lang === "en" ? (EN[ko] ?? ko) : ko;
+  return vars
+    ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m))
+    : s;
+}
+export const appName = () => (lang === "en" ? "AI Pumasi" : "AI품앗이");
+
+/** Model names from the catalog in the current language: "(무료)" -> "(free)" and so on. */
+export function modelName(name: string) {
+  if (lang !== "en") return name;
+  return name
+    .replace("자동 (무료 모델 중 지금 되는 가장 강한 것)", "Auto (strongest free model available now)")
+    .replace("(무료 한도)", "(free tier)")
+    .replace("Ollama 로컬", "Ollama local")
+    .replace("(무료)", "(free)");
+}
+
+if (typeof document !== "undefined") document.title = appName();

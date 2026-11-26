@@ -27,8 +27,8 @@ const config = {
   },
   appx: {
     ...fields,
-    applicationId: "Aurora",
-    artifactName: "Aurora-${version}-store-${arch}.appx",
+    applicationId: "AIPumasi",
+    artifactName: "AI-Pumasi-${version}-store-${arch}.appx",
   },
   extraMetadata: { auroraDistribution: "store" },
 };

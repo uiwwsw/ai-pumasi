@@ -14,6 +14,8 @@ let app;
 try {
   app = await electron.launch({
     executablePath: path.resolve(executablePath),
+    // The checks below look for Korean labels; pin the UI language.
+    args: ["--lang=ko"],
     env: {
       ...process.env,
       AURORA_QA_DATA: profile,
