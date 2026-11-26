@@ -48,5 +48,47 @@
     "provider": "ollama",
     "tier": "light",
     "free": true
+  },
+  {
+    "id": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "name": "Nemotron 3.5 Super VL 120B (무료)",
+    "provider": "compat",
+    "tier": "light",
+    "free": true
+  },
+  {
+    "id": "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+    "name": "Nemotron 3 Ultra 550B (무료)",
+    "provider": "compat",
+    "tier": "light",
+    "free": true
+  },
+  {
+    "id": "gemini/gemini-3.1-flash-lite",
+    "name": "Gemini 3.1 Flash Lite (무료)",
+    "provider": "compat",
+    "tier": "light",
+    "free": true
+  },
+  {
+    "id": "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b",
+    "name": "Nemotron 3.5 Lightning 30B (무료)",
+    "provider": "compat",
+    "tier": "light",
+    "free": true
+  },
+  {
+    "id": "groq/openai/gpt-oss-120b",
+    "name": "GPT-OSS 120B (무료)",
+    "provider": "compat",
+    "tier": "light",
+    "free": true
+  },
+  {
+    "id": "cfp/deepseek-ai/deepseek-v4-flash-0731",
+    "name": "DeepSeek V4 Flash (무료)",
+    "provider": "compat",
+    "tier": "light",
+    "free": true
   }
 ]

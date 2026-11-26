@@ -3,7 +3,12 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { readRouting, presets, models } from "../src/routing.ts";
 const require = createRequire(import.meta.url);
-const { request, status, validate } = require("../electron/providers.cjs");
+const {
+  request,
+  status,
+  validate,
+  substituted,
+} = require("../electron/providers.cjs");
 const payload = {
   action: "execute",
   model: "gpt-6.1-sol",
@@ -22,7 +27,7 @@ test("role defaults are independent, validated, and provider-specific", () => {
     ).live,
     false,
   );
-  assert.equal(models.length, 8);
+  assert.equal(models.length, 14);
 });
 test("missing key blocks a call before any network traffic", async () => {
   let calls = 0;
@@ -45,6 +50,7 @@ test("missing key blocks a call before any network traffic", async () => {
       anthropic: true,
       gemini: false,
       ollama: false,
+      compat: false,
     },
   );
 });
@@ -344,4 +350,157 @@ test("lead and worker JSON modes are requested only where supported", async () =
   );
   await run;
   assert.equal(workers(calls)[0].body.response_format, undefined);
+});
+
+// Compat provider tests
+const compatPayload = {
+  action: "execute",
+  model: "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+  text: "테스트 질문",
+  context: [],
+  maxOutputTokens: 4096,
+};
+
+test("compat status: various env configurations", async () => {
+  // with key only -> true
+  assert.equal((await status({ AURORA_OPENAI_COMPAT_KEY: "k" })).compat, true);
+  // empty env -> false
+  assert.equal((await status({})).compat, false);
+  // evil URL -> false
+  assert.equal(
+    (
+      await status({
+        AURORA_OPENAI_COMPAT_URL: "http://evil.example/v1/chat/completions",
+      })
+    ).compat,
+    false,
+  );
+  // https URL -> true
+  assert.equal(
+    (
+      await status({
+        AURORA_OPENAI_COMPAT_URL: "https://gw.example/v1/chat/completions",
+      })
+    ).compat,
+    true,
+  );
+});
+
+test("compat request with key", async () => {
+  let seen: any;
+  const result = await request(compatPayload, {
+    env: { AURORA_OPENAI_COMPAT_KEY: "unit-test-key" },
+    fetchImpl: async (url: string, opts: any) => {
+      seen = { url, opts, body: JSON.parse(opts.body) };
+      return json({
+        model: "nvidia/nemotron-3.5-super-vl-120b-a12b",
+        choices: [{ message: { content: "정답: 3" } }],
+        usage: { prompt_tokens: 5, completion_tokens: 7 },
+      });
+    },
+  });
+  assert.equal(seen.url, "http://127.0.0.1:20128/v1/chat/completions");
+  assert.equal(seen.opts.headers.Authorization, "Bearer unit-test-key");
+  assert.equal(seen.body.model, compatPayload.model);
+  assert.equal(seen.body.messages[0].role, "system");
+  assert.equal(seen.body.messages[0].content.includes("assistant"), true);
+  assert.equal(seen.body.max_tokens, 4096);
+  assert.equal(result.text, "정답: 3");
+  assert.equal(result.inputTokens, 5);
+  assert.equal(result.outputTokens, 7);
+  assert.equal(result.substituted, false);
+});
+
+test("compat request without key uses custom URL", async () => {
+  const fetchUrl = "http://127.0.0.1:9999/v1/chat/completions";
+  const result = await request(
+    {
+      ...compatPayload,
+      model: "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+    },
+    {
+      env: { AURORA_OPENAI_COMPAT_URL: fetchUrl },
+      fetchImpl: async (url: string, opts: any) => {
+        assert.equal(url, fetchUrl);
+        assert.equal(opts.headers.Authorization, undefined);
+        return json({
+          model: "nvidia/nemotron-3.5-super-vl-120b-a12b",
+          choices: [{ message: { content: "ok" } }],
+          usage: { prompt_tokens: 1, completion_tokens: 1 },
+        });
+      },
+    },
+  );
+  assert.equal(result.text, "ok");
+});
+
+test("compat request rejects when neither KEY nor URL is set", async () => {
+  let calls = 0;
+  await assert.rejects(
+    request(compatPayload, {
+      env: {},
+      fetchImpl: () => calls++,
+    }),
+    /AURORA_OPENAI_COMPAT/,
+  );
+  assert.equal(calls, 0);
+});
+
+test("compat request rejects when URL is invalid (not localhost/https)", async () => {
+  let calls = 0;
+  await assert.rejects(
+    request(compatPayload, {
+      env: { AURORA_OPENAI_COMPAT_URL: "http://evil.example/x" },
+      fetchImpl: () => calls++,
+    }),
+    /AURORA_OPENAI_COMPAT_URL/,
+  );
+  assert.equal(calls, 0);
+});
+
+test("compat substituted: served model matches request without routing prefix", async () => {
+  const result = await request(compatPayload, {
+    env: { AURORA_OPENAI_COMPAT_KEY: "k" },
+    fetchImpl: async () => {
+      return json({
+        model: "nvidia/nemotron-3.5-super-vl-120b-a12b",
+        choices: [{ message: { content: "ok" } }],
+        usage: { prompt_tokens: 1, completion_tokens: 1 },
+      });
+    },
+  });
+  assert.equal(result.substituted, false);
+});
+
+test("compat substituted: served model is different (other/model-x)", async () => {
+  const result = await request(compatPayload, {
+    env: { AURORA_OPENAI_COMPAT_KEY: "k" },
+    fetchImpl: async () => {
+      return json({
+        model: "other/model-x",
+        choices: [{ message: { content: "ok" } }],
+        usage: { prompt_tokens: 1, completion_tokens: 1 },
+      });
+    },
+  });
+  assert.equal(result.substituted, true);
+});
+
+test("substituted helper: various routed model scenarios", () => {
+  // When got = last segment of want, should NOT be substituted
+  assert.equal(
+    substituted(
+      "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "nemotron-3.5-super-vl-120b-a12b",
+    ),
+    false,
+  );
+  // When got starts with lastSegment + "-"
+  assert.equal(substituted("nvidia/nvidia/model", "model-v2"), false);
+  // When want.endsWith("/" + got)
+  assert.equal(substituted("nvidia/nvidia/model", "model"), false);
+  // When completely different
+  assert.equal(substituted("nvidia/nvidia/model-x", "other/model-y"), true);
+  // When no routing prefix (no "/" in want)
+  assert.equal(substituted("model-x", "model-y"), true);
 });

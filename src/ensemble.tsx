@@ -111,7 +111,9 @@ export function EnsembleSettings({
                       : "경량"
                     : m.provider === "ollama"
                       ? "실행 안 됨"
-                      : "키 없음"}
+                      : m.provider === "compat"
+                        ? "서버 설정 없음"
+                        : "키 없음"}
                 </small>
               </label>
             );
