@@ -1,4 +1,5 @@
 import catalog from "./catalog.json";
+import weights from "./ensemble-weights.json";
 import { modelName } from "./i18n";
 import type { Tier } from "./domain";
 import type { UsageHistory } from "./usage";
@@ -25,6 +26,8 @@ export type RoutingSettings = {
   live: boolean;
   team: boolean;
   lead: string;
+  /** With the automatic lead: the user's own lead ranking. Empty = measured order. */
+  leadOrder: string[];
   worker: string;
   /** Team mode hands its tasks to other people's apps first (Pumasi). */
   pumasi: boolean;
@@ -37,6 +40,19 @@ export type RoutingSettings = {
 export const bundleModels = models.filter(
   (m) => m.provider !== "auto" && (m.free === true || m.tier === "light"),
 );
+const weightOf = (id: string) =>
+  (weights.models as Record<string, number>)[id] ?? weights.default ?? 0;
+/** Free models that can lead with the automatic lead, in measured order (strongest first). */
+export const leadCandidates = models
+  .filter((m) => m.free === true && m.provider !== "auto" && m.provider !== "ollama")
+  .sort((a, b) => weightOf(b.id) - weightOf(a.id));
+/** The lead ranking to show: the user's order first, then the rest in measured order. */
+export function leadRanking(order: string[]) {
+  const ids = [...order, ...leadCandidates.map((m) => m.id)];
+  return [...new Set(ids)]
+    .map((id) => leadCandidates.find((m) => m.id === id))
+    .filter((m): m is (typeof models)[number] => !!m);
+}
 export const BUNDLE_MIN = 2;
 export const BUNDLE_MAX = 5;
 const teamDefaults = {
@@ -45,7 +61,9 @@ const teamDefaults = {
   team: false,
   pumasi: false,
   pumasiCopies: 2,
-  lead: "claude-opus-5-5",
+  // The free model ranked first leads; no paid model is needed.
+  lead: "auto-free",
+  leadOrder: [] as string[],
   worker: "gemini-flash-latest",
 };
 export const presets: Record<"openai" | "anthropic", RoutingSettings> = {
@@ -79,6 +97,12 @@ export function readRouting(raw: string | null): RoutingSettings {
         pumasi: d.pumasi === true,
         pumasiCopies: [1, 2, 3].includes(d.pumasiCopies) ? d.pumasiCopies : 2,
         lead: models.some((m) => m.id === d.lead) ? d.lead : teamDefaults.lead,
+        leadOrder: Array.isArray(d.leadOrder)
+          ? [...new Set(d.leadOrder as unknown[])].filter(
+              (id): id is string =>
+                typeof id === "string" && leadCandidates.some((m) => m.id === id),
+            )
+          : [],
         worker: models.some((m) => m.id === d.worker)
           ? d.worker
           : teamDefaults.worker,
@@ -199,6 +223,10 @@ export type TeamResult = {
   workersUsed: string[];
   usage: Record<"lead" | "worker", { in: number; out: number }>;
   lead: string;
+  /** The model that actually led (with the automatic lead). */
+  leadModel?: string;
+  /** The runner-up's check, asked only when the lead was not sure. */
+  secondOpinion?: { model: string; approved: boolean } | null;
   worker: string;
   substitutions?: { requested: string; servedBy: string | null }[];
 };
@@ -249,6 +277,21 @@ export type PumasiState = {
   /** Why the relay could not be reached, if it could not. */
   error?: string;
 };
+export type CodeFolder = { root: string; name: string };
+/** What the code agent did, step by step. File text and command output come from the user's folder. */
+export type AgentEvent =
+  | { type: "thinking"; step: number }
+  | { type: "say"; text: string; model?: string }
+  | { type: "tool"; id: number; kind: "list" | "read" | "search"; path?: string; query?: string; count?: number; lines?: number }
+  | { type: "tool-error"; id: number; kind: string; arg: string; error: string }
+  | { type: "edit"; id: number; path: string; before: string; after: string }
+  | { type: "edit-done"; id: number; saved: boolean }
+  | { type: "run"; id: number; command: string }
+  | { type: "run-done"; id: number; code?: number | null; output?: string; declined?: boolean }
+  | { type: "stopped" }
+  | { type: "limit"; steps: number }
+  | { type: "done"; usage: { in: number; out: number }; steps: number };
+export type CodeEntry = { path: string; name: string; dir: boolean };
 export type PumasiSlot = { slotId: string; size: number; postedAt: number };
 /** What a helper's window may know: states and token counts, never the task or the result. */
 export type PumasiProgress = {
@@ -257,6 +300,22 @@ export type PumasiProgress = {
   tokens?: number;
 };
 export interface AIBridge {
+  /** Code mode: files inside the one folder the user picked. */
+  code?: {
+    open(): Promise<CodeFolder | null>;
+    current(): Promise<CodeFolder | null>;
+    list(rel: string): Promise<CodeEntry[]>;
+    read(rel: string): Promise<{ path: string; text: string; size: number }>;
+    run(payload: {
+      text: string;
+      history: { role: "user" | "assistant"; text: string }[];
+      model?: string;
+      autoOrder?: string[];
+    }): Promise<{ usage: { in: number; out: number }; steps: number }>;
+    answer(id: number, allow: boolean): Promise<void>;
+    stop(): Promise<void>;
+    onEvent(fn: (e: AgentEvent) => void): () => void;
+  };
   pumasi?: {
     state(): Promise<PumasiState>;
     update(patch: {
@@ -282,6 +341,8 @@ export interface AIBridge {
     maxRounds?: number;
     /** Send tasks to other people's apps first; each task goes to this many helpers. */
     pumasi?: { copies: number };
+    /** With lead "auto-free": the user's lead ranking. */
+    leadOrder?: string[];
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
   usage?: {

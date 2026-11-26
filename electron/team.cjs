@@ -8,6 +8,11 @@ const { tr } = require("./i18n.cjs");
 const REVIEW_BUDGET = 18000; // characters of worker output the lead sees per review
 const WORKER_RETRY_DELAY_MS = 4000;
 const WORKER_MAX_OUTPUT = 4096;
+// Reasoning models (Nemotron Super) think before the JSON; a small cap left plans empty.
+// Only the tokens actually produced are billed, so a high cap costs nothing extra.
+const LEAD_MAX_OUTPUT = 16000;
+const REVIEW_MAX_OUTPUT = 12000;
+const LEAD_TIMEOUT_MS = 300000;
 
 /** Time budget for one worker call: room to stream the allowed output plus reading the prompt. */
 function workerTimeout(promptChars, maxOutputTokens) {
@@ -251,15 +256,26 @@ async function orchestrate(p, opts = {}) {
     usage[who].in += r.inputTokens ?? 0;
     usage[who].out += r.outputTokens ?? 0;
   };
-  const call = (action, model, text, context, maxOutputTokens, timeoutMs) =>
+  const call = (action, model, text, context, maxOutputTokens, timeoutMs, autoOrder) =>
     providers.request(
       { action, model, text, context, maxOutputTokens },
-      { env, fetchImpl: opts.fetchImpl, timeoutMs, onUsage: opts.onUsage },
+      { env, fetchImpl: opts.fetchImpl, timeoutMs, onUsage: opts.onUsage, autoOrder },
     );
+  // Automatic lead: the free model ranked first leads; if it is rate-limited or answers empty,
+  // the next in the ranking takes over. The user can reorder the ranking in settings.
+  const ranked = p.lead === "auto-free";
+  let leadOrder = ranked && Array.isArray(p.leadOrder) ? p.leadOrder : null;
+  let leadModel = p.lead;
 
   onProgress({ stage: "plan", model: p.lead });
-  const planned = await call("plan", p.lead, p.text, p.context, 4096);
+  const planned = await call("plan", p.lead, p.text, p.context, LEAD_MAX_OUTPUT, LEAD_TIMEOUT_MS, leadOrder);
   add("lead", planned);
+  if (ranked && planned.modelId) {
+    // The model that planned also reviews, so one lead sees the whole job.
+    leadModel = planned.modelId;
+    leadOrder = [leadModel, ...(leadOrder ?? []).filter((id) => id !== leadModel)];
+  }
+  let secondOpinion = null;
   const plan = validPlan(extractJSON(planned.text));
   const goal = typeof plan.goal === "string" ? plan.goal : "";
 
@@ -411,10 +427,39 @@ async function orchestrate(p, opts = {}) {
         p.lead,
         `목표: ${goal}\n원래 요청: ${p.text.slice(0, 1500)}\n\n작업 결과:\n${reviewReport(plan.tasks, results)}`,
         [],
-        2048,
+        REVIEW_MAX_OUTPUT,
+        LEAD_TIMEOUT_MS,
+        leadOrder,
       );
       add("lead", reviewed);
       verdict = extractJSON(reviewed.text);
+      // The lead approved but was not sure: the runner-up in the ranking checks once.
+      // This is the only extra call, and only when the lead asks for it.
+      const reviewer = reviewed.modelId ?? leadModel;
+      const second = ranked
+        ? providers.autoCandidates(env, leadOrder).find((id) => id !== reviewer)
+        : null;
+      if (verdict?.approved === true && verdict.sure === false && second) {
+        onProgress({ stage: "review", round, model: second, second: true });
+        try {
+          const checked = await call(
+            "review",
+            second,
+            `목표: ${goal}\n원래 요청: ${p.text.slice(0, 1500)}\n\n작업 결과:\n${reviewReport(plan.tasks, results)}`,
+            [],
+            REVIEW_MAX_OUTPUT,
+            LEAD_TIMEOUT_MS,
+          );
+          add("lead", checked);
+          const v = extractJSON(checked.text);
+          if (v && typeof v.approved === "boolean") {
+            secondOpinion = { model: second, approved: v.approved };
+            verdict = v;
+          }
+        } catch {
+          // The runner-up could not answer: keep the lead's approval.
+        }
+      }
     } catch (error) {
       warning = tr(
         "검수 단계 실패: {error}. 작업 결과를 검수 없이 보여 줍니다.",
@@ -496,6 +541,8 @@ async function orchestrate(p, opts = {}) {
     warning,
     usage,
     lead: p.lead,
+    leadModel,
+    secondOpinion,
     worker: p.worker,
     workersUsed: [...usedWorkers],
     substitutions,

@@ -168,9 +168,11 @@ if (!existing)
     repo,
     "--verify-tag",
     "--draft",
-    "--prerelease",
+    // Alpha and beta builds are prereleases; only stable builds become the latest release,
+    // which is all the stable update channel reads.
+    ...(/-(alpha|beta)\./.test(tag) ? ["--prerelease"] : ["--latest"]),
     "--title",
-    `Pumasi Agent ${tag} — Desktop preview`,
+    `Pumasi Agent ${tag}${/-alpha\./.test(tag) ? " — Alpha" : /-beta\./.test(tag) ? " — Beta" : ""}`,
     "--notes-file",
     path.join(directory, "release-notes.md"),
   ]);

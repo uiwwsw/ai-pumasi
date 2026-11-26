@@ -6,12 +6,14 @@ import secrets from "./i18n/en-secrets.json";
 import domain from "./i18n/en-domain.json";
 import electron from "./i18n/en-electron.json";
 import pumasi from "./i18n/en-pumasi.json";
+import code from "./i18n/en-code.json";
 
 export type Lang = "ko" | "en";
 export const LANG_KEY = "aurora.lang";
 const EN: Record<string, string> = {
   ...electron,
   ...pumasi,
+  ...code,
   ...domain,
   ...secrets,
   ...ensemble,

@@ -118,3 +118,20 @@ test("development, QA, and unsigned macOS builds never contact update server", a
     1,
   );
 });
+function appAt(version: string) {
+  return Object.assign(new EventEmitter(), { isPackaged: true, getVersion: () => version });
+}
+test("update channel follows the installed version unless the user picked one", () => {
+  const stable = fixture();
+  assert.equal(stable.controller.channel(), "stable");
+  assert.equal((stable.updater as any).allowPrerelease, false);
+  const beta = fixture({ app: appAt("0.2.0-beta.1") });
+  assert.equal(beta.controller.channel(), "beta");
+  assert.equal((beta.updater as any).allowPrerelease, true);
+  assert.equal((beta.updater as any).channel, "beta");
+  assert.equal((beta.updater as any).allowDowngrade, false);
+  const picked = fixture({ app: appAt("0.2.0-beta.1"), channelStore: { read: () => "alpha", write() {} } });
+  assert.equal(picked.controller.channel(), "alpha");
+  const junk = fixture({ channelStore: { read: () => "nightly", write() {} } });
+  assert.equal(junk.controller.channel(), "stable");
+});

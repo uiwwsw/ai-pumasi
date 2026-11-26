@@ -6,7 +6,9 @@ import {
   ArrowUp,
   ArrowUpRight,
   Check,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   CircleHelp,
   Folder,
   Layers,
@@ -41,6 +43,7 @@ import {
 import {
   models,
   modelById,
+  leadRanking,
   presets,
   readRouting,
   ROUTING_KEY,
@@ -59,6 +62,7 @@ import {
 } from "./ensemble";
 import { SecretSettings } from "./secrets";
 import { PumasiPanel } from "./pumasi";
+import { CodeWorkspace } from "./code-view";
 import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import {
   project,
@@ -283,9 +287,7 @@ function App() {
   const [sidebar, setSidebar] = useState(
     () => !window.matchMedia("(max-width: 680px)").matches,
   );
-  const [usageOpen, setUsageOpen] = useState(
-    () => !window.matchMedia("(max-width: 680px)").matches,
-  );
+  const [usageOpen, setUsageOpen] = useState(false);
   useEffect(() => {
     const media = window.matchMedia("(max-width: 680px)");
     const collapse = () => {
@@ -300,6 +302,20 @@ function App() {
   const [dialog, setDialog] = useState<
     "search" | "settings" | "pumasi" | null
   >(null);
+  // Chat: questions and answers. Code: work on files in one folder (beta).
+  const [appMode, setAppMode] = useState<"chat" | "code">(() => {
+    try {
+      return localStorage.getItem("aurora.mode") === "code" ? "code" : "chat";
+    } catch {
+      return "chat";
+    }
+  });
+  const switchAppMode = (m: "chat" | "code") => {
+    setAppMode(m);
+    try {
+      localStorage.setItem("aurora.mode", m);
+    } catch {}
+  };
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"current" | "archived" | "trashed">(
     "current",
@@ -593,13 +609,16 @@ function App() {
           text: p.text,
           context: context(p.decision),
           pumasi: routing.pumasi ? { copies: routing.pumasiCopies } : undefined,
+          leadOrder: routing.lead === "auto-free" ? routing.leadOrder : undefined,
         });
         completion = {
           text: t(
             "{text}\n\n—\n팀 모드 · 총괄 {lead} 입력 {leadIn} / 출력 {leadOut} · 작업 {workers} 입력 {workerIn} / 출력 {workerOut} 토큰 · 작업 {taskCount}개 · {rounds}회차{pumasi}{approved}{failed}{incomplete}{warning}{substitutions}",
             {
               text: team.text,
-              lead: modelById(team.lead).name,
+              lead: team.leadModel
+                ? (models.find((m) => m.id === team!.leadModel)?.name ?? team.leadModel)
+                : modelById(team.lead).name,
               leadIn: team.usage.lead.in,
               leadOut: team.usage.lead.out,
               workers:
@@ -612,7 +631,15 @@ function App() {
               pumasi: team.pumasiTasks
                 ? t(" · 품앗이로 받은 작업 {count}개", { count: team.pumasiTasks })
                 : "",
-              approved: team.approved ? t(" · 총괄 모델 승인") : "",
+              approved:
+                (team.approved ? t(" · 총괄 모델 승인") : "") +
+                (team.secondOpinion
+                  ? t(" · 확신이 없어 {name}이(가) 한 번 더 확인", {
+                      name:
+                        models.find((m) => m.id === team!.secondOpinion!.model)?.name ??
+                        team.secondOpinion.model,
+                    })
+                  : ""),
               failed: team.tasks.some((t) => t.failed)
                 ? t(" · 실패 작업 {count}개", {
                     count: team.tasks.filter((t) => t.failed).length,
@@ -865,13 +892,15 @@ function App() {
           </button>
           <button
             className="nav-item"
-            aria-label={t("품앗이")}
+            aria-label={t("함께하기")}
             onClick={() => setDialog("pumasi")}
           >
             <Users size={17} />
-            <span>{t("품앗이")}</span>
+            <span>{t("함께하기")}</span>
           </button>
         </nav>
+        {appMode === "chat" && (
+          <>
         <div className="section-label">
           <span>{auto ? t("정리된 작업") : t("직접 관리하는 세션")}</span>
           <span>{sideItems.length}</span>
@@ -915,26 +944,13 @@ function App() {
             ))
           ) : (
             <div className="empty-history">
-              {auto ? t("대화는 하나로 이어집니다.") : t("아직 세션이 없습니다.")}
-              <br />
-              <span>
-                {auto
-                  ? t("정리가 필요할 때 제안할게요.")
-                  : t("새 세션에서 시작하세요.")}
-              </span>
+              {auto ? t("아직 대화가 없습니다.") : t("아직 세션이 없습니다.")}
             </div>
           )}
         </div>
+          </>
+        )}
         <div className="sidebar-bottom">
-          <div className="mode-note">
-            <Sparkles size={14} />
-            <span>
-              {auto ? t("정리 제안 켜짐") : t("자동 정리 꺼짐")}
-              <small>
-                {auto ? t("현재 로컬 규칙 기반") : t("세션을 직접 관리합니다")}
-              </small>
-            </span>
-          </div>
           <button className="account" onClick={() => setDialog("settings")}>
             <span className="avatar">A</span>
             <span>
@@ -960,21 +976,42 @@ function App() {
             <span>{appName()}</span>
             <ChevronRight size={13} />
             <strong>
-              {auto ? t("하나의 대화") : (legacyChat?.title ?? t("새 세션"))}
+              {appMode === "code"
+                ? t("코드")
+                : auto
+                  ? t("하나의 대화")
+                  : (legacyChat?.title ?? t("새 세션"))}
             </strong>
+          </div>
+          <div className="mode-switch" role="tablist" aria-label={t("모드")}>
+            {(["chat", "code"] as const).map((m) => (
+              <button
+                key={m}
+                role="tab"
+                aria-selected={appMode === m}
+                className={appMode === m ? "active" : ""}
+                onClick={() => switchAppMode(m)}
+              >
+                {m === "chat" ? t("채팅") : t("코드")}
+                {m === "code" && <span className="beta-tag">Beta</span>}
+              </button>
+            ))}
           </div>
           <div className="top-actions">
             <span className="preview-badge">
               <span />
               {routing.live ? t("API 모드") : t("로컬 미리보기")}
             </span>
-            <button
-              className="icon-button"
-              aria-label={t("사용량 패널 전환")}
-              onClick={() => setUsageOpen((v) => !v)}
-            >
-              <PanelRight size={17} />
-            </button>
+            {appMode === "chat" && (
+              <button
+                className="icon-button"
+                aria-label={t("사용량 패널 전환")}
+                aria-pressed={usageOpen}
+                onClick={() => setUsageOpen((v) => !v)}
+              >
+                <PanelRight size={17} />
+              </button>
+            )}
           </div>
         </header>
         {notice && (
@@ -985,61 +1022,21 @@ function App() {
             </button>
           </div>
         )}
+        {appMode === "code" ? (
+          <CodeWorkspace />
+        ) : (
+          <>
         {workerBoard()}
         <div className="conversation">
           {!messages.length ? (
             <section className="welcome">
-              <div className="welcome-symbol">
-                <Sparkles size={27} strokeWidth={1.25} />
-              </div>
-              <div className="eyebrow">ONE FLOW. LESS FRICTION.</div>
               <h1>
                 {auto && filter === "current"
-                  ? t("대화는 하나로, 생각은 자유롭게.")
+                  ? t("무엇을 도와드릴까요?")
                   : auto
                     ? `${t(filter === "archived" ? "보관한" : "휴지통의")} ${t("작업이 없습니다.")}`
-                    : t("무엇부터 시작할까요?")}
+                    : t("무엇을 도와드릴까요?")}
               </h1>
-              <p>
-                {auto
-                  ? t("세션을 나누지 않아도 괜찮아요. 정리가 필요할 때 제안할게요.")
-                  : t("세션을 직접 나누고 관리하는 익숙한 작업 공간입니다.")}
-              </p>
-              <div className="prompt-grid">
-                {[
-                  [t("글을 간결하게 요약해 줘"), t("가볍게 정리하기"), t("요약 · 번역")],
-                  [
-                    t("코드의 문제를 찾아 해결 방법을 제안해 줘"),
-                    t("함께 문제 풀기"),
-                    t("코드 · 분석"),
-                  ],
-                  [
-                    t("동기화 아키텍처를 설계해 줘"),
-                    t("깊이 생각하기"),
-                    t("설계 · 추론"),
-                  ],
-                ].map(([text, title, note]) => (
-                  <button
-                    key={title}
-                    className="prompt-card"
-                    onClick={() => {
-                      setDraft(text);
-                      setFilter("current");
-                      input.current?.focus();
-                    }}
-                  >
-                    <Sparkles size={17} />
-                    <strong>
-                      {title}
-                      <ArrowUpRight size={14} />
-                    </strong>
-                    <span>{note}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="welcome-note">
-                {t("전송 전에 추천 모델과 예상 소모량을 확인하세요.")}
-              </div>
             </section>
           ) : (
             <section className="messages" aria-label={t("대화 내용")}>
@@ -1091,7 +1088,7 @@ function App() {
             <textarea
               ref={input}
               aria-label={t("메시지")}
-              placeholder={t("계속 이야기하세요. 정리는 함께 할게요.")}
+              placeholder={t("메시지를 입력하세요")}
               maxLength={20000}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
@@ -1108,11 +1105,24 @@ function App() {
             />
             <div className="composer-toolbar">
               <div className="model-control">
-                <Sparkles size={14} />
-                <span>{t("요청별 모델 추천")}</span>
-                <span className="toolbar-divider" />
-                <span>{t("실행 전 확인")}</span>
+                <span>{t("모델 자동 추천 · 보내기 전에 확인")}</span>
               </div>
+              <button
+                type="button"
+                className={`together-toggle ${routing.team && routing.pumasi ? "on" : ""}`}
+                aria-pressed={routing.team && routing.pumasi}
+                title={t("켜면 팀 모드로 실행하고, 리더가 나눈 작업을 다른 사람 앱이 먼저 맡습니다.")}
+                onClick={() =>
+                  setRouting((r) =>
+                    r.team && r.pumasi
+                      ? { ...r, pumasi: false }
+                      : { ...r, team: true, pumasi: true },
+                  )
+                }
+              >
+                <Users size={14} />
+                {t("함께하기")}
+              </button>
               <button
                 className="send-button"
                 aria-label={t("요청 검토")}
@@ -1133,6 +1143,9 @@ function App() {
             <span>{t("Enter 검토 · Shift + Enter 줄바꿈")}</span>
           </div>
         </div>
+          </>
+        )}
+        {appMode === "chat" && (
         <footer className="statusbar">
           <span>
             <span className="status-dot" />
@@ -1142,8 +1155,9 @@ function App() {
           </span>
           <span>{workspace.save ? t("이 기기에 저장 중") : t("대화 저장 꺼짐")}</span>
         </footer>
+        )}
       </main>
-      {usageOpen && (
+      {usageOpen && appMode === "chat" && (
         <aside className="usage-panel" aria-label={t("사용량")}>
           <div className="usage-heading">
             <span>
@@ -1160,17 +1174,7 @@ function App() {
           </div>
           <div className="usage-scroll">
             <div className="usage-intro">
-              <div className="eyebrow">THE RIGHT MODEL. ENOUGH ROOM.</div>
-              <h2>
-                {t("시작하기 전에,")}
-                <br />
-                {t("얼마나 쓸까요?")}
-              </h2>
-              <p>
-                {t("요청과 현재 문맥을 기준으로")}
-                <br />
-                {t("모델 등급과 토큰 범위를 제안합니다.")}
-              </p>
+              <p>{t("보내기 전에 요청과 문맥을 보고 모델 등급과 예상 토큰을 보여 줍니다.")}</p>
             </div>
             <div className="data-source">
               <span className="source-dot" />
@@ -1223,7 +1227,7 @@ function App() {
             </div>
             <div className="next-section">
               <div>
-                <strong>{t("문맥도 필요한 만큼만.")}</strong>
+                <strong>{t("문맥")}</strong>
                 <p>
                   {t("묶거나 보관한 작업은 다음 요청의")}
                   <br />
@@ -1273,7 +1277,7 @@ function App() {
                   : dialog === "search"
                     ? t("대화 검색")
                     : dialog === "pumasi"
-                      ? t("품앗이")
+                      ? t("함께하기")
                       : t("워크스페이스 설정")}
               </h2>
               <button
@@ -1661,6 +1665,60 @@ function App() {
                       ))}
                     </select>
                   </label>
+                  {routing.lead === "auto-free" && (
+                    <div className="setting-row lead-order">
+                      <span>
+                        <strong>{t("리더 순서")}</strong>
+                        <small>
+                          {t(
+                            "측정한 실력 순서입니다. 1등이 한도에 걸리면 다음 순위가 이어받고, 끝낼지는 리더가 정합니다. 리더가 확신하지 못할 때만 2등이 한 번 더 봅니다.",
+                          )}
+                        </small>
+                      </span>
+                      <ol>
+                        {leadRanking(routing.leadOrder).map((m, i, all) => (
+                          <li key={m.id}>
+                            <span>{m.name}</span>
+                            <button
+                              type="button"
+                              className="icon-button"
+                              aria-label={t("{name} 위로", { name: m.name })}
+                              disabled={i === 0}
+                              onClick={() => {
+                                const ids = all.map((x) => x.id);
+                                [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]];
+                                setRouting((r) => ({ ...r, leadOrder: ids }));
+                              }}
+                            >
+                              <ChevronUp size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className="icon-button"
+                              aria-label={t("{name} 아래로", { name: m.name })}
+                              disabled={i === all.length - 1}
+                              onClick={() => {
+                                const ids = all.map((x) => x.id);
+                                [ids[i + 1], ids[i]] = [ids[i], ids[i + 1]];
+                                setRouting((r) => ({ ...r, leadOrder: ids }));
+                              }}
+                            >
+                              <ChevronDown size={14} />
+                            </button>
+                          </li>
+                        ))}
+                      </ol>
+                      {routing.leadOrder.length > 0 && (
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => setRouting((r) => ({ ...r, leadOrder: [] }))}
+                        >
+                          {t("측정 순서로 되돌리기")}
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <label className="setting-row">
                     <span>
                       <strong>{t("작업 모델")}</strong>

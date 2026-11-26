@@ -61,7 +61,11 @@ test("web pages expose localized content, self canonicals, reciprocal alternates
     const { version } = JSON.parse(
       await readFile(new URL("../package.json", import.meta.url), "utf8"),
     );
-    assert.ok(en.includes(`The public ${version} preview`));
+    // A beta names its base version and says it is a beta; the stable version is named as well.
+    const beta = /^(\d+\.\d+\.\d+)-beta\.\d+$/.exec(version);
+    assert.ok(
+      beta ? en.includes(`The ${beta[1]} beta`) : en.includes(`The public ${version} preview`),
+    );
     assert.ok(!ko.includes('src="/assets/app.js"'));
     assert.ok(
       (await readFile(path.join(inputDir, "index.html"), "utf8")).includes(

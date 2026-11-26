@@ -141,7 +141,7 @@ export function PumasiPanel() {
     <section className="secret-settings pumasi-panel" aria-label={t("품앗이")}>
       <p className="small-copy">
         {t(
-          "돕기를 누르면 내 앱이 다른 사람 팀의 작업 모델 한 명이 되어, 내 키와 토큰으로 작업 하나를 처리하고 결과만 넘깁니다. 작업 글과 결과는 암호화되어 이 화면에도 보이지 않습니다.",
+          "함께하기를 누르면 내 앱이 다른 사람 팀의 작업 모델 한 명이 되어, 내 키와 토큰으로 작업 하나를 처리하고 결과만 넘깁니다. 작업 글과 결과는 암호화되어 이 화면에도 보이지 않습니다.",
         )}
       </p>
 
@@ -188,7 +188,7 @@ export function PumasiPanel() {
                     disabled={helping}
                     onClick={() => handleHelp(slot.slotId)}
                   >
-                    {t("돕기")}
+                    {t("함께하기")}
                   </button>
                 </div>
               </div>

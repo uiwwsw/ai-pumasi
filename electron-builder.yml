@@ -48,4 +48,7 @@ publish:
   provider: github
   owner: uiwwsw
   repo: pumasi-agent
-  releaseType: prerelease
+  releaseType: release
+# Always write latest*.yml, also for alpha and beta builds. The updater picks the release by tag
+# (see electron/updates.cjs) and reads latest*.yml from it.
+detectUpdateChannel: false
