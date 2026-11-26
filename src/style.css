@@ -1521,3 +1521,184 @@ html[data-theme="dark"] .composer {
   color: var(--text);
   font-weight: 600;
 }
+.ensemble-picker {
+  padding: 14px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.ensemble-picker-title {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.ensemble-picker-title span {
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.ensemble-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 12px;
+}
+.ensemble-option input {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+.ensemble-option small {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--muted);
+}
+.ensemble-option.is-off span {
+  color: var(--muted);
+}
+.ensemble-note {
+  margin: 8px 0 0;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.ensemble-details {
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.ensemble-details > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 10px 0;
+  cursor: pointer;
+  list-style: none;
+}
+.ensemble-details > summary::-webkit-details-marker {
+  display: none;
+}
+.ensemble-headline {
+  font-weight: 600;
+}
+.ensemble-answer {
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--track);
+}
+.ensemble-muted {
+  color: var(--muted);
+  font-size: 11px;
+}
+.ensemble-toggle {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+}
+.ensemble-toggle::after {
+  content: " ▸";
+}
+.ensemble-details[open] > summary .ensemble-toggle::after {
+  content: " ▾";
+}
+.ensemble-details ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ensemble-details li {
+  padding: 8px 0 8px 10px;
+  border-left: 2px solid var(--line);
+  margin-bottom: 4px;
+}
+.ensemble-details li.is-agreed {
+  border-left-color: var(--accent);
+}
+.ensemble-details li.is-failed {
+  color: var(--muted);
+}
+.ensemble-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+.ensemble-row strong {
+  font-weight: 500;
+}
+.ensemble-pick {
+  font-variant-numeric: tabular-nums;
+}
+.ensemble-meta {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.ensemble-reply summary {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.ensemble-reply .message-text {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.75;
+}
+.ensemble-details > p {
+  margin: 8px 0 0;
+}
+.estimate-basis {
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 8px 2px 0;
+}
+.estimate-basis.is-history {
+  color: var(--accent);
+}
+.stage-estimate {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.stage-estimate li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 2px;
+  font-size: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.stage-estimate li > span:last-child {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.stage-estimate small {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.usage-learning label {
+  cursor: pointer;
+}
+.text-button {
+  font-size: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0 2px;
+}
+.text-button.is-danger {
+  color: #ad5146;
+}
+.text-button:hover {
+  background: none;
+  text-decoration-thickness: 2px;
+}

@@ -75,6 +75,26 @@ else
       (workerStats ??= require("./worker-stats.cjs").createStatsStore({
         file: path.join(app.getPath("userData"), "worker-stats.json"),
       }));
+    let usageLog;
+    // Real token counts per model and request kind, for the next estimate. No text, no keys.
+    const usage = () =>
+      (usageLog ??= require("./usage-log.cjs").createUsageLog({
+        file: path.join(app.getPath("userData"), "usage-log.json"),
+      }));
+    ipcMain.handle("aurora:usage-get", (event) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      return usage().snapshot();
+    });
+    ipcMain.handle("aurora:usage-set", (event, enabled) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      usage().setEnabled(enabled === true);
+      return usage().snapshot();
+    });
+    ipcMain.handle("aurora:usage-clear", (event) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      usage().clear();
+      return usage().snapshot();
+    });
     ipcMain.handle("aurora:ai-status", (event) => {
       if (!authorized(event)) throw new Error("Forbidden");
       return providers.status();
@@ -85,7 +105,9 @@ else
       if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
       inFlight.add(id);
       try {
-        return await providers.request(payload);
+        return await providers.request(payload, {
+          onUsage: (u) => usage().record(u),
+        });
       } finally {
         inFlight.delete(id);
       }
@@ -96,9 +118,36 @@ else
       if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
       inFlight.add(id);
       try {
-        return await require("./team.cjs").orchestrate(payload, {
+        // Count calls per stage so the next team estimate knows how many of each to expect.
+        const calls = { plan: 0, work: 0, review: 0, merge: 0 };
+        const result = await require("./team.cjs").orchestrate(payload, {
           onProgress: (e) => event.sender.send("aurora:team-progress", e),
           stats: stats(),
+          onUsage: (u) => {
+            if (u.kind in calls) calls[u.kind] += 1;
+            usage().record(u);
+          },
+        });
+        usage().recordRun({
+          lead: payload.lead,
+          worker: payload.worker,
+          ...calls,
+        });
+        return result;
+      } finally {
+        inFlight.delete(id);
+      }
+    });
+    ipcMain.handle("aurora:ensemble-run", async (event, payload) => {
+      if (!authorized(event)) throw new Error("Forbidden");
+      const id = event.sender.id;
+      if (inFlight.has(id)) throw new Error("이미 요청을 처리 중입니다.");
+      inFlight.add(id);
+      try {
+        return await require("./ensemble.cjs").runEnsemble(payload, {
+          onProgress: (e) => event.sender.send("aurora:team-progress", e),
+          stats: stats(),
+          onUsage: (u) => usage().record(u),
         });
       } finally {
         inFlight.delete(id);

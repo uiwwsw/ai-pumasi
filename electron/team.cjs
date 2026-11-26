@@ -89,7 +89,7 @@ function validPlan(plan) {
     new Set(plan.tasks.map((t) => t.id)).size !== plan.tasks.length
   )
     throw new Error(
-      "선임 모델의 작업 분할 형식이 잘못되었습니다. 계획 토큰은 이미 청구됐을 수 있고, 주니어 작업은 시작하지 않았습니다.",
+      "총괄 모델의 작업 분할 형식이 잘못되었습니다. 계획 토큰은 이미 청구됐을 수 있고, 작업은 시작하지 않았습니다.",
     );
   return plan;
 }
@@ -138,8 +138,98 @@ function workerChain(worker, env, ollamaUp, stats) {
 }
 
 /**
+ * Two tries on one model. A transient failure (rate limit, server error, timeout, dropped
+ * connection) waits and retries; an empty, too short or cut-off reply is asked again (cut-off with
+ * more room). Every attempt is recorded in the local track record.
+ * Returns {done, attempt, elapsedMs} on an acceptable reply, otherwise {error, partial} where
+ * partial is the longest cut-off or short reply seen, or null.
+ */
+async function superviseModel(
+  model,
+  prompt,
+  {
+    call,
+    action = "work",
+    context = [],
+    minChars = 1,
+    maxOutputTokens: firstMax = WORKER_MAX_OUTPUT,
+    stats,
+    sleep,
+    now,
+    report = () => {},
+    onReply = () => {},
+  },
+) {
+  let last;
+  let partial = null;
+  let maxOutputTokens = firstMax;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const timeoutMs = workerTimeout(prompt.length, maxOutputTokens);
+    const startedAt = now();
+    report("running", { model, attempt, startedAt, timeoutMs });
+    let done;
+    try {
+      done = await call(
+        action,
+        model,
+        prompt,
+        context,
+        maxOutputTokens,
+        timeoutMs,
+      );
+    } catch (error) {
+      last = error;
+      const reason = failureReason(error);
+      const elapsedMs = now() - startedAt;
+      stats.record(model, {
+        ok: false,
+        ms: elapsedMs,
+        reason: reason === "timeout" ? "timeout" : "error",
+      });
+      const transient =
+        error?.transient || error?.status === 429 || error?.status >= 500;
+      if (!transient || attempt === 2) break;
+      report("retry", { model, attempt, reason, elapsedMs });
+      await sleep(WORKER_RETRY_DELAY_MS);
+      continue;
+    }
+    onReply(done);
+    const elapsedMs = now() - startedAt;
+    if (done.substituted)
+      report("substituted", { model, servedBy: done.servedBy });
+    const problem = judgeReply(done, minChars);
+    stats.record(model, {
+      ok: !problem,
+      ms: elapsedMs,
+      reason: problem || undefined,
+      substituted: !!done.substituted,
+      servedBy: done.servedBy ?? undefined,
+    });
+    if (!problem) return { done, attempt, elapsedMs };
+    const text = String(done.text ?? "").trim();
+    if (text && (!partial || text.length > partial.text.trim().length))
+      partial = { ...done, incomplete: true };
+    last = Object.assign(
+      new Error(
+        problem === "empty"
+          ? "작업 모델이 빈 답을 보냈습니다."
+          : problem === "truncated"
+            ? "작업 모델 답이 출력 상한에서 잘렸습니다."
+            : "작업 모델 답이 작업에 비해 너무 짧습니다.",
+      ),
+      { reason: problem },
+    );
+    if (attempt === 2) break;
+    if (problem === "truncated")
+      maxOutputTokens = Math.min(maxOutputTokens * 2, 16000);
+    report("retry", { model, attempt, reason: problem, elapsedMs });
+  }
+  return { error: last, partial };
+}
+
+/**
  * @param {{lead:string, worker:string, text:string, context:any[], maxRounds?:number}} p
- * @param {{env?:object, fetchImpl?:Function, onProgress?:(e:object)=>void, sleep?:(ms:number)=>Promise<void>, now?:()=>number, stats?:object}} opts
+ * @param {{env?:object, fetchImpl?:Function, onProgress?:(e:object)=>void, sleep?:(ms:number)=>Promise<void>, now?:()=>number, stats?:object, onUsage?:(u:object)=>void}} opts
  */
 async function orchestrate(p, opts = {}) {
   const env = opts.env ?? process.env;
@@ -157,7 +247,7 @@ async function orchestrate(p, opts = {}) {
   const call = (action, model, text, context, maxOutputTokens, timeoutMs) =>
     providers.request(
       { action, model, text, context, maxOutputTokens },
-      { env, fetchImpl: opts.fetchImpl, timeoutMs },
+      { env, fetchImpl: opts.fetchImpl, timeoutMs, onUsage: opts.onUsage },
     );
 
   onProgress({ stage: "plan", model: p.lead });
@@ -175,10 +265,9 @@ async function orchestrate(p, opts = {}) {
   const usedWorkers = new Set();
   const substitutions = [];
   /**
-   * Supervise one worker job. Each model gets two tries: a transient failure (rate limit, server
-   * error, timeout, dropped connection) waits and retries, an empty, too short or cut-off reply is
-   * asked again (cut-off with more room). After that the next model in the chain takes over.
-   * If every model only produced a cut-off or short reply, the longest one is kept, marked incomplete.
+   * Supervise one worker job. Each model gets two tries (see superviseModel), then the next model
+   * in the chain takes over. If every model only produced a cut-off or short reply, the longest one
+   * is kept, marked incomplete.
    */
   async function runWorker(
     prompt,
@@ -190,74 +279,31 @@ async function orchestrate(p, opts = {}) {
     let best = null;
     for (const [m, model] of chain.entries()) {
       if (m > 0) report("switch", { model, from: chain[m - 1] });
-      let maxOutputTokens = WORKER_MAX_OUTPUT;
-      for (let attempt = 1; attempt <= 2; attempt++) {
-        const timeoutMs = workerTimeout(prompt.length, maxOutputTokens);
-        const startedAt = now();
-        report("running", { model, attempt, startedAt, timeoutMs });
-        let done;
-        try {
-          done = await call(
-            action,
-            model,
-            prompt,
-            [],
-            maxOutputTokens,
-            timeoutMs,
-          );
-        } catch (error) {
-          last = error;
-          const reason = failureReason(error);
-          const elapsedMs = now() - startedAt;
-          stats.record(model, {
-            ok: false,
-            ms: elapsedMs,
-            reason: reason === "timeout" ? "timeout" : "error",
-          });
-          const transient =
-            error?.transient || error?.status === 429 || error?.status >= 500;
-          if (!transient || attempt === 2) break;
-          report("retry", { model, attempt, reason, elapsedMs });
-          await sleep(WORKER_RETRY_DELAY_MS);
-          continue;
-        }
-        add("worker", done);
-        const elapsedMs = now() - startedAt;
-        if (done.substituted) {
-          substitutions.push({ requested: model, servedBy: done.servedBy });
-          report("substituted", { model, servedBy: done.servedBy });
-        }
-        const problem = judgeReply(done, minChars);
-        stats.record(model, {
-          ok: !problem,
-          ms: elapsedMs,
-          reason: problem || undefined,
-          substituted: !!done.substituted,
-          servedBy: done.servedBy ?? undefined,
-        });
-        if (!problem) {
-          usedWorkers.add(model);
-          report("done", { model, attempt, elapsedMs });
-          return done;
-        }
-        const text = String(done.text ?? "").trim();
-        if (text && (!best || text.length > best.text.trim().length))
-          best = { ...done, incomplete: true, model };
-        last = Object.assign(
-          new Error(
-            problem === "empty"
-              ? "주니어가 빈 답을 보냈습니다."
-              : problem === "truncated"
-                ? "주니어 답이 출력 상한에서 잘렸습니다."
-                : "주니어 답이 작업에 비해 너무 짧습니다.",
-          ),
-          { reason: problem },
-        );
-        if (attempt === 2) break;
-        if (problem === "truncated")
-          maxOutputTokens = Math.min(maxOutputTokens * 2, 16000);
-        report("retry", { model, attempt, reason: problem, elapsedMs });
+      const r = await superviseModel(model, prompt, {
+        call,
+        action,
+        minChars,
+        stats,
+        sleep,
+        now,
+        report,
+        onReply: (done) => {
+          add("worker", done);
+          if (done.substituted)
+            substitutions.push({ requested: model, servedBy: done.servedBy });
+        },
+      });
+      if (r.done) {
+        usedWorkers.add(model);
+        report("done", { model, attempt: r.attempt, elapsedMs: r.elapsedMs });
+        return r.done;
       }
+      last = r.error;
+      if (
+        r.partial &&
+        (!best || r.partial.text.trim().length > best.text.trim().length)
+      )
+        best = { ...r.partial, incomplete: true, model };
     }
     if (best) {
       usedWorkers.add(best.model);
@@ -298,7 +344,7 @@ async function orchestrate(p, opts = {}) {
       });
       const prev = results.get(t.id)?.text;
       const prompt = t.feedback
-        ? `${t.instructions}\n\n이전 결과:\n${prev ?? "(없음)"}\n\n선임 피드백(이것만 고쳐서 전체 결과를 다시 작성):\n${t.feedback}`
+        ? `${t.instructions}\n\n이전 결과:\n${prev ?? "(없음)"}\n\n검토 의견(이것만 고쳐서 전체 결과를 다시 작성):\n${t.feedback}`
         : t.instructions;
       // Workers get only their own task, never the whole conversation: that is the token saving.
       try {
@@ -323,19 +369,19 @@ async function orchestrate(p, opts = {}) {
       const reviewed = await call(
         "review",
         p.lead,
-        `목표: ${goal}\n원래 요청: ${p.text.slice(0, 1500)}\n\n주니어 결과:\n${reviewReport(plan.tasks, results)}`,
+        `목표: ${goal}\n원래 요청: ${p.text.slice(0, 1500)}\n\n작업 결과:\n${reviewReport(plan.tasks, results)}`,
         [],
         2048,
       );
       add("lead", reviewed);
       verdict = extractJSON(reviewed.text);
     } catch (error) {
-      warning = `검수 단계 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}. 주니어 결과를 검수 없이 보여 줍니다.`;
+      warning = `검수 단계 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}. 작업 결과를 검수 없이 보여 줍니다.`;
       break;
     }
     if (!verdict || typeof verdict.approved !== "boolean") {
       warning =
-        "선임 검수 결과를 읽지 못했습니다. 주니어 결과를 검수 없이 보여 줍니다.";
+        "총괄 모델 검수 결과를 읽지 못했습니다. 작업 결과를 검수 없이 보여 줍니다.";
       break;
     }
     if (verdict.approved) {
@@ -352,7 +398,7 @@ async function orchestrate(p, opts = {}) {
     // No valid redo target: another review would only re-read the same results.
     if (!todo.length) {
       warning =
-        "선임이 재작업 대상을 지정하지 못했습니다. 현재 결과로 마감합니다.";
+        "총괄 모델이 재작업 대상을 지정하지 못했습니다. 현재 결과로 마감합니다.";
       break;
     }
   }
@@ -409,6 +455,8 @@ async function orchestrate(p, opts = {}) {
 
 module.exports = {
   orchestrate,
+  superviseModel,
+  failureReason,
   validPlan,
   extractJSON,
   reviewReport,
