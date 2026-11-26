@@ -94,6 +94,11 @@ export function recommend(prompt: string) {
   };
   return { tier, reason: reasons[tier], tokens: tokens(prompt) };
 }
+export const outputRanges: Record<Tier, [number, number]> = {
+  light: [200, 800],
+  standard: [500, 2000],
+  advanced: [1200, 5000],
+};
 export function estimate(
   prompt: string,
   context: Message[],
@@ -101,11 +106,6 @@ export function estimate(
   chosen?: Tier,
 ): Estimate {
   const recommendation = recommend(prompt);
-  const outputRanges: Record<Tier, [number, number]> = {
-    light: [200, 800],
-    standard: [500, 2000],
-    advanced: [1200, 5000],
-  };
   const output = outputRanges[chosen ?? recommendation.tier];
   const input =
     tokens(prompt) +

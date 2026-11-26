@@ -25,14 +25,12 @@ import {
 import {
   Bundle,
   Chat,
-  Estimate,
   LEGACY_KEY,
   Proposal,
   STORAGE_KEY,
   Tier,
   Workspace,
   activeContext,
-  estimate,
   makePreview,
   organize,
   propose,
@@ -57,6 +55,13 @@ import {
   bundleReady,
   ensembleMessage,
 } from "./ensemble";
+import {
+  project,
+  projectTeam,
+  type Projection,
+  type StageLine,
+  type UsageHistory,
+} from "./usage";
 import "./style.css";
 function readSaved(): Workspace {
   try {
@@ -85,8 +90,31 @@ type Pending = {
   selected: Tier;
   proposal: Proposal | null;
   decision: "grouped" | "archived" | "trashed" | "continue" | null;
-  result: Estimate;
 };
+const stageNames: Record<StageLine["kind"], string> = {
+  execute: "실행",
+  analyze: "분석",
+  plan: "계획",
+  work: "작업",
+  review: "검토",
+  merge: "합치기",
+};
+const calls = ([a, b]: [number, number]) =>
+  a === b ? `${a}회` : `${a}–${b}회`;
+/** Where a number came from: the user's own past responses or the fixed tier assumption. */
+function basisText(p: Projection): string {
+  if (p.basis === "history")
+    return p.stages.length > 1
+      ? `단계별 실제 기록 ${p.samples.toLocaleString()}건 기준`
+      : `이 모델의 실제 기록 ${p.samples.toLocaleString()}건 기준`;
+  if (p.basis === "mixed") {
+    const known = p.stages.filter((s) => s.samples > 0).length;
+    return `단계 ${p.stages.length}개 중 ${known}개는 실제 기록, 나머지는 기본 가정`;
+  }
+  return p.stages.length > 1
+    ? "기본 가정 · 단계별로 같은 모델 기록이 5건 모이면 실제 사용량으로 바뀝니다"
+    : "기본 가정 · 같은 모델 기록이 5건 모이면 실제 사용량으로 바뀝니다";
+}
 type WorkerRow = {
   taskId: string;
   title?: string;
@@ -194,6 +222,34 @@ function App() {
     }
   }, [routing]);
   const [pending, setPending] = useState<Pending | null>(null);
+  // Past token counts from the main process; null outside Electron or before the first read.
+  const [history, setHistory] = useState<UsageHistory | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const refreshHistory = () =>
+    window.auroraAI?.usage
+      ?.get()
+      .then(setHistory)
+      .catch(() => {});
+  useEffect(() => {
+    refreshHistory();
+  }, []);
+  const teamRun = routing.live && routing.team;
+  function forecast(
+    text: string,
+    ctx: Chat["messages"],
+    modelId: string,
+  ): Projection {
+    return teamRun
+      ? projectTeam(
+          text,
+          ctx,
+          workspace.budget,
+          modelById(routing.lead),
+          modelById(routing.worker),
+          history,
+        )
+      : project(text, ctx, workspace.budget, modelById(modelId), history);
+  }
   const [sidebar, setSidebar] = useState(
     () => !window.matchMedia("(max-width: 680px)").matches,
   );
@@ -242,7 +298,7 @@ function App() {
       <ol
         ref={extra ? boardRef : undefined}
         className={`worker-board${extra}`}
-        aria-label="주니어 진행 상황"
+        aria-label="작업 진행 상황"
         aria-live="polite"
       >
         {Object.values(workers).map((w) => (
@@ -344,28 +400,17 @@ function App() {
     const suggestion = auto ? propose(workspace.bundles, text) : null;
     setAIError("");
     const initial = modelById(routing.executor);
-    const result = estimate(text, context(), workspace.budget, initial.tier);
     setPending({
       text,
       modelId: initial.id,
       selected: initial.tier,
       proposal: suggestion,
       decision: suggestion ? null : "continue",
-      result,
     });
   }
   function chooseDecision(decision: Pending["decision"]) {
     if (!pending) return;
-    setPending({
-      ...pending,
-      decision,
-      result: estimate(
-        pending.text,
-        context(decision),
-        workspace.budget,
-        pending.selected,
-      ),
-    });
+    setPending({ ...pending, decision });
   }
   async function analyze() {
     if (!pending || busyRef.current || !window.auroraAI) return;
@@ -391,6 +436,7 @@ function App() {
     } finally {
       busyRef.current = false;
       setBusy(false);
+      refreshHistory();
     }
   }
   async function proceed() {
@@ -495,7 +541,7 @@ function App() {
           context: context(p.decision),
         });
         completion = {
-          text: `${team.text}\n\n—\n팀 모드 · 선임 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 주니어 ${team.workersUsed.map((id) => modelById(id).name).join(", ") || modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? " · 선임 승인" : ""}${team.tasks.some((t) => t.failed) ? ` · 실패 작업 ${team.tasks.filter((t) => t.failed).length}개` : ""}${team.tasks.some((t) => t.incomplete) ? " · 일부 작업 출력 상한 도달" : ""}${team.warning ? `\n주의: ${team.warning}` : ""}${[...new Set((team.substitutions ?? []).map((s) => `\n주의: ${modelById(s.requested).name} 대신 ${s.servedBy ?? "다른 모델"}가 답했습니다.`))].join("")}`,
+          text: `${team.text}\n\n—\n팀 모드 · 총괄 ${modelById(team.lead).name} 입력 ${team.usage.lead.in} / 출력 ${team.usage.lead.out} · 작업 ${team.workersUsed.map((id) => modelById(id).name).join(", ") || modelById(team.worker).name} 입력 ${team.usage.worker.in} / 출력 ${team.usage.worker.out} 토큰 · 작업 ${team.tasks.length}개 · ${team.rounds}회차${team.approved ? " · 총괄 모델 승인" : ""}${team.tasks.some((t) => t.failed) ? ` · 실패 작업 ${team.tasks.filter((t) => t.failed).length}개` : ""}${team.tasks.some((t) => t.incomplete) ? " · 일부 작업 출력 상한 도달" : ""}${team.warning ? `\n주의: ${team.warning}` : ""}${[...new Set((team.substitutions ?? []).map((s) => `\n주의: ${modelById(s.requested).name} 대신 ${s.servedBy ?? "다른 모델"}가 답했습니다.`))].join("")}`,
           model: team.lead,
           inputTokens: team.usage.lead.in + team.usage.worker.in,
           outputTokens: team.usage.lead.out + team.usage.worker.out,
@@ -512,6 +558,7 @@ function App() {
         off?.();
         busyRef.current = false;
         setBusy(false);
+        refreshHistory();
       }
     } else if (routing.live) {
       if (!window.auroraAI) {
@@ -537,6 +584,7 @@ function App() {
       } finally {
         busyRef.current = false;
         setBusy(false);
+        refreshHistory();
       }
     }
     const next = [
@@ -654,12 +702,10 @@ function App() {
     );
   }
   const preview = draft.trim()
-    ? estimate(
-        draft,
-        context(),
-        workspace.budget,
-        modelById(routing.executor).tier,
-      )
+    ? forecast(draft, context(), routing.executor)
+    : null;
+  const planned = pending
+    ? forecast(pending.text, context(pending.decision), pending.modelId)
     : null;
   const sideItems: Chat[] = auto ? visible : workspace.legacyChats;
   return (
@@ -1055,8 +1101,12 @@ function App() {
             <div className="usage-explanation">
               <CircleHelp size={15} />
               <p>
-                문자 수와 모델 등급별 출력 가정으로 계산한 범위입니다. 추론·도구
-                호출·재시도 비용은 포함하지 않습니다.
+                {preview?.basis === "history"
+                  ? "이 기기에 남은 실제 사용 기록으로 계산한 범위입니다."
+                  : preview?.basis === "mixed"
+                    ? "기록이 있는 단계는 실제 사용량, 없는 단계는 등급별 가정으로 계산했습니다."
+                    : "문자 수와 모델 등급별 출력 가정으로 계산한 범위입니다. 같은 모델로 5번 이상 실행하면 실제 사용량으로 바뀝니다."}{" "}
+                재시도 비용은 포함하지 않습니다.
               </p>
             </div>
             <div className="next-section">
@@ -1163,9 +1213,58 @@ function App() {
                 )}
                 <div className="recommendation-title">
                   <Sparkles size={17} />
-                  <strong>{tierNames[pending.result.tier]} 모델 추천</strong>
+                  <strong>{tierNames[planned!.tier]} 모델 추천</strong>
                 </div>
-                <p className="review-reason">{pending.result.reason}</p>
+                <p className="review-reason">{planned!.reason}</p>
+                <div className="estimate-breakdown">
+                  <div>
+                    <span>입력 · 문맥 포함</span>
+                    <strong>약 {planned!.input.toLocaleString()}</strong>
+                  </div>
+                  <div>
+                    <span>예상 출력</span>
+                    <strong>{range(planned!.output)}</strong>
+                  </div>
+                  <div>
+                    <span>합계 토큰</span>
+                    <strong>{range(planned!.total)}</strong>
+                  </div>
+                  <div>
+                    <span>이번 요청의 예산 사용</span>
+                    <strong>
+                      {planned!.percent
+                        ? `약 ${percentage(planned!.percent)}`
+                        : "추정 불가"}
+                    </strong>
+                  </div>
+                </div>
+                <p className={`estimate-basis is-${planned!.basis}`}>
+                  {basisText(planned!)}
+                </p>
+                {teamRun && (
+                  <ol
+                    className="stage-estimate"
+                    aria-label="팀 모드 단계별 예상"
+                  >
+                    {planned!.stages.map((st) => (
+                      <li key={st.kind}>
+                        <span>
+                          {stageNames[st.kind]} ·{" "}
+                          {st.role === "lead" ? "총괄 모델" : "작업 모델"}{" "}
+                          {modelById(st.model).name} · {calls(st.calls)}
+                        </span>
+                        <span>
+                          {range(st.total)}
+                          <small>
+                            {st.samples > 0
+                              ? `기록 ${st.samples}건`
+                              : "기본 가정"}
+                          </small>
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
                 <section className="internal-model">
                   <strong>
                     내부 분석 · {modelById(routing.analyzer).name}
@@ -1220,12 +1319,6 @@ function App() {
                         ...pending,
                         modelId: model.id,
                         selected: model.tier,
-                        result: estimate(
-                          pending.text,
-                          context(pending.decision),
-                          workspace.budget,
-                          model.tier,
-                        ),
                       });
                     }}
                   >
@@ -1236,65 +1329,51 @@ function App() {
                     ))}
                   </select>
                 </label>
-                <div className="model-comparison" aria-label="모델별 가정 비교">
-                  <p>
-                    모델별 실측이 아닌 등급별 출력 가정입니다. 같은 등급의
-                    모델은 같은 범위를 표시합니다.
-                  </p>
-                  {models.map((m) => {
-                    const e = estimate(
-                      pending.text,
-                      context(pending.decision),
-                      workspace.budget,
-                      m.tier,
-                    );
-                    return (
-                      <button
-                        disabled={busy}
-                        key={m.id}
-                        aria-pressed={pending.modelId === m.id}
-                        onClick={() =>
-                          setPending({
-                            ...pending,
-                            modelId: m.id,
-                            selected: m.tier,
-                            result: e,
-                          })
-                        }
-                      >
-                        <span>{m.name}</span>
-                        <span>{range(e.total)} 토큰</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="estimate-breakdown">
-                  <div>
-                    <span>입력 · 문맥 포함</span>
-                    <strong>약 {pending.result.input.toLocaleString()}</strong>
+                {!teamRun && (
+                  <div
+                    className="model-comparison"
+                    aria-label="모델별 예상 비교"
+                  >
+                    <p>
+                      실제 기록이 5건 이상인 모델은 그 기록으로, 나머지는 등급별
+                      출력 가정으로 계산합니다.
+                    </p>
+                    {models.map((m) => {
+                      const e = project(
+                        pending.text,
+                        context(pending.decision),
+                        workspace.budget,
+                        m,
+                        history,
+                      );
+                      return (
+                        <button
+                          disabled={busy}
+                          key={m.id}
+                          aria-pressed={pending.modelId === m.id}
+                          onClick={() =>
+                            setPending({
+                              ...pending,
+                              modelId: m.id,
+                              selected: m.tier,
+                            })
+                          }
+                        >
+                          <span>{m.name}</span>
+                          <span>
+                            {range(e.total)} 토큰
+                            {e.samples > 0 && ` · 기록 ${e.samples}건`}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div>
-                    <span>예상 출력</span>
-                    <strong>{range(pending.result.output)}</strong>
-                  </div>
-                  <div>
-                    <span>합계 토큰</span>
-                    <strong>{range(pending.result.total)}</strong>
-                  </div>
-                  <div>
-                    <span>직접 설정 예산 대비</span>
-                    <strong>
-                      {pending.result.percent
-                        ? percentage(pending.result.percent)
-                        : "추정 불가"}
-                    </strong>
-                  </div>
-                </div>
+                )}
                 <p className="small-copy">
-                  실제 계정 한도 대비 %는 추정할 수 없습니다. 출력량은 가정이며
-                  품질·비용을 보장하지 않습니다. API 실행은 생성 상한
-                  4,096토큰이며 입력·내부 분석은 별도입니다. 현재 텍스트 답변만
-                  지원하며 파일 수정·셸 실행은 하지 않습니다.
+                  실제 계정 한도 대비 %는 추정할 수 없습니다. 예상은 품질·비용을
+                  보장하지 않습니다. API 실행은 생성 상한 4,096토큰이며
+                  입력·내부 분석은 별도입니다. 현재 텍스트 답변만 지원하며 파일
+                  수정·셸 실행은 하지 않습니다.
                 </p>
                 {aiError && (
                   <p className="api-error" role="alert">
@@ -1456,11 +1535,11 @@ function App() {
                   </label>
                   <label className="setting-row">
                     <span>
-                      <strong>선임 모델</strong>
+                      <strong>총괄 모델</strong>
                       <small>작업을 나누고 결과를 검수합니다.</small>
                     </span>
                     <select
-                      aria-label="선임 모델"
+                      aria-label="총괄 모델"
                       value={routing.lead}
                       onChange={(e) =>
                         setRouting((r) => ({ ...r, lead: e.target.value }))
@@ -1475,14 +1554,14 @@ function App() {
                   </label>
                   <label className="setting-row">
                     <span>
-                      <strong>주니어 모델</strong>
+                      <strong>작업 모델</strong>
                       <small>
                         나눠진 작업 하나씩만 받습니다. 대화 전체는 보내지
                         않습니다.
                       </small>
                     </span>
                     <select
-                      aria-label="주니어 모델"
+                      aria-label="작업 모델"
                       value={routing.worker}
                       onChange={(e) =>
                         setRouting((r) => ({ ...r, worker: e.target.value }))
@@ -1579,6 +1658,80 @@ function App() {
                     }
                   />
                 </label>
+                {window.auroraAI?.usage && (
+                  <div className="setting-row usage-learning">
+                    <span>
+                      <label htmlFor="usage-learning">
+                        <strong>실제 사용량으로 예상 보정</strong>
+                        <small>
+                          응답이 끝날 때마다 모델, 요청 종류, 글자 수, 토큰 수만
+                          이 기기에 남깁니다. 대화 내용과 키는 남기지 않으며
+                          대화 저장 설정과 별개입니다.
+                        </small>
+                      </label>
+                      <small>
+                        {history?.records.length
+                          ? `지금 기록 ${history.records.length.toLocaleString()}건`
+                          : "아직 기록 없음"}
+                        {confirmClear ? (
+                          <>
+                            {" · 모두 지울까요? "}
+                            <button
+                              type="button"
+                              className="text-button is-danger"
+                              onClick={() => {
+                                setConfirmClear(false);
+                                window.auroraAI?.usage
+                                  ?.clear()
+                                  .then(setHistory)
+                                  .catch(() =>
+                                    setAIError(
+                                      "사용 기록을 지우지 못했습니다.",
+                                    ),
+                                  );
+                              }}
+                            >
+                              기록 지우기
+                            </button>
+                            <button
+                              type="button"
+                              className="text-button"
+                              onClick={() => setConfirmClear(false)}
+                            >
+                              그대로 두기
+                            </button>
+                          </>
+                        ) : (
+                          !!history?.records.length && (
+                            <>
+                              {" · "}
+                              <button
+                                type="button"
+                                className="text-button"
+                                onClick={() => setConfirmClear(true)}
+                              >
+                                사용 기록 지우기
+                              </button>
+                            </>
+                          )
+                        )}
+                      </small>
+                    </span>
+                    <input
+                      id="usage-learning"
+                      type="checkbox"
+                      checked={history?.enabled ?? true}
+                      onChange={(e) =>
+                        window.auroraAI?.usage
+                          ?.setEnabled(e.target.checked)
+                          .then(setHistory)
+                          .catch(() =>
+                            setAIError("사용 기록 설정을 바꾸지 못했습니다."),
+                          )
+                      }
+                    />
+                  </div>
+                )}
                 <label className="setting-row">
                   <span>
                     <strong>계획용 토큰 예산</strong>
