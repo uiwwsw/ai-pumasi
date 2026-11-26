@@ -97,7 +97,7 @@ async function runEnsemble(p, opts = {}) {
   const call = (action, model, text, context, maxOutputTokens, timeoutMs) =>
     providers.request(
       { action, model, text, context, maxOutputTokens },
-      { env, fetchImpl, timeoutMs },
+      { env, fetchImpl, timeoutMs, onUsage: opts.onUsage },
     );
   const supervise = (model, prompt, job, extra) =>
     superviseModel(model, prompt, {
