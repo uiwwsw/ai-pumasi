@@ -21,6 +21,8 @@ RULES = [
 SECRET_RULES = [
     ("credential", re.compile(r"(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|npm_[A-Za-z0-9]{30,}|sk-(?:proj-)?[A-Za-z0-9_-]{30,}|AKIA[A-Z0-9]{16})")),
     ("private-key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
+    # The maintainer's own model gateway and its routing names must not ship in the public repo.
+    ("personal-gateway", re.compile(r"Omni[R]oute|\.omni[r]oute|127\.0\.0\.1:2012[8]|nvidia/nvidi[a]/", re.I)),
 ]
 
 

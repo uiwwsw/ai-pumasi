@@ -35,7 +35,7 @@ The lead is called once to plan and once per review round, billed to the lead pr
 
 ## Measurements outside the app
 
-`bench/` holds measurement scripts that are separate from the app. They call free models through a local [a local gateway](https://github.com/diegosouzapw/a local gateway) (an open-source gateway that puts many free providers behind one address). The setups below are **not in the app**.
+`bench/` holds the measurement records. Free models were called through each provider's free API; the bundle vote is in the app from 0.1.6.
 
 | Measurement | Free-model bundle | ChatGPT free | Note |
 | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ electron/   main process: window, IPC, provider adapter (providers.cjs), team mo
 src/        React UI (main.tsx), token estimates and rules (domain.ts), model roles (routing.ts), model list (catalog.json)
 scripts/    web demo build, packaging, signing checks, release publishing, Playwright checks
 tests/      node:test unit tests (provider calls are mocked)
-bench/      measurement scripts and results, separate from the app (needs a local gateway)
+bench/      measurement records: items, exam generators, graders, raw data
 docs/       configuration, release and design notes
 ```
 

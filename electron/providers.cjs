@@ -15,8 +15,7 @@ const keyNames = {
 };
 function compatEndpoint(env) {
   const urlStr =
-    env.AURORA_OPENAI_COMPAT_URL ||
-    "http://127.0.0.1:8080/v1/chat/completions";
+    env.AURORA_OPENAI_COMPAT_URL || "";
   try {
     const url = new URL(urlStr);
     if (url.protocol === "https:") return url.href;

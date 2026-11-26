@@ -35,7 +35,7 @@ Anthropic이 [Building effective agents](https://www.anthropic.com/engineering/b
 
 ## 앱 밖에서 한 측정
 
-`bench/`에는 앱과 별개인 측정 스크립트가 있습니다. 스크립트는 로컬 [a local gateway](https://github.com/diegosouzapw/a local gateway)(여러 무료 제공자를 한 주소로 모아 주는 오픈소스 게이트웨이)를 거쳐 무료 모델을 부릅니다. 아래 구성은 **앱에 들어 있지 않습니다.**
+`bench/`에는 측정 기록이 있습니다. 무료 모델은 각 제공자의 무료 API로 불렀고, 묶음 투표는 0.1.6부터 앱에 들어 있습니다.
 
 | 측정 | 무료 모델 묶음 | ChatGPT 무료 | 참고 |
 | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ electron/   메인 프로세스: 창, IPC, 제공자 어댑터(providers.cjs), �
 src/        React 화면(main.tsx), 토큰 추정과 규칙(domain.ts), 모델 역할(routing.ts), 모델 목록(catalog.json)
 scripts/    웹 데모 생성, 패키징, 서명 확인, 릴리스 게시, Playwright 점검
 tests/      node:test 단위 테스트 (제공자 호출은 모의 응답)
-bench/      앱과 별개인 측정 스크립트와 결과 (a local gateway 필요)
+bench/      측정 기록: 문항, 시험 생성기, 채점기, 원자료
 docs/       구성·릴리스·설계 문서
 ```
 

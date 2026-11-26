@@ -6,7 +6,7 @@ Aurora 저장소에 들어 있는 파일, 의존하는 라이브러리와 외부
 
 - Aurora는 새로운 라우팅 알고리즘을 만들지 않았다. 앱 안의 "추천"은 분석용 모델에게 어떤 모델이 좋을지 물어보는 프롬프트 한 번이고, 실행 모델은 사람이 고른다.
 - 팀 모드의 총괄 모델 기본값은 Claude Opus 5.5(OpenAI 프리셋에서는 GPT-6 Astra)로, 유료 API 키가 필요하다. 무료로 돌아가는 쪽은 작업 모델(Gemini Flash 무료 한도, Ollama 로컬)뿐이다. 총괄 모델에 무료 모델을 고를 수는 있지만 그 조합은 측정하지 않았다.
-- `bench/`의 "무료 모델 묶음"은 앱 기능이 아니다. 별도 스크립트가 로컬 [a local gateway](https://github.com/diegosouzapw/a local gateway)를 거쳐 무료 제공자들을 부른 실험이고, 여러 무료 제공자를 하나의 주소로 모아 주는 일은 a local gateway가 한다.
+- `bench/`는 측정 기록이다. 무료 모델 묶음의 투표 규칙은 0.1.6부터 앱의 묶음 투표(`electron/ensemble.cjs`)에 들어 있다.
 
 ## 파일 구조
 
@@ -36,14 +36,7 @@ aurora/
 │   ├── check-packaged-notice.mjs  # 패키지 안 고지 파일 확인
 │   └── icons.mjs              # SVG 아이콘을 PNG로 변환
 ├── tests/                     # node:test 단위 테스트 (모델 API는 모의 응답)
-├── bench/                     # 앱과 별개인 측정 스크립트 (a local gateway 필요)
-│   ├── run_models.mjs         # 무료 모델별로 같은 문항을 돌려 답 수집
-│   ├── run_aurora.mjs         # 무료 모델 3개가 답하고 1개가 합치는 구성
-│   ├── run_aurora_search.mjs  # 위키백과 검색 결과를 붙이고 쉬운 질문은 1개만
-│   ├── run_verify.mjs         # 다른 무료 모델이 숫자·시간·전화번호만 대조
-│   ├── grade.mjs              # 코드·문서 자동 채점, 블라인드 채점 묶음 생성
-│   ├── judge_auto.mjs, duel.mjs  # a local gateway 자동 라우터로 채점 시도 (결론에 쓰지 않음)
-│   └── items/, results/, checks/ # 문항, 원자료, 코드 채점 샌드박스
+├── bench/                     # 측정 기록: 문항, 시험 생성기, 채점기, 원자료
 ├── docs/                      # 설정·릴리스·설계 문서
 └── .workspace/                # 개인 작업 공간 도구용 메타데이터 (showcase.json 등)
 ```
@@ -90,8 +83,7 @@ aurora/
 | Anthropic Messages API | 분석·실행·총괄 모델 (팀 모드 총괄 모델 기본값) | 유료 API 키 |
 | Google Gemini (OpenAI 호환 주소) | 작업 모델 기본값 | 무료 한도 안에서 무료 |
 | [Ollama](https://ollama.com) | 작업 모델 (내 컴퓨터에서 실행, 기본 `qwen3`) | 무료, 대신 내 컴퓨터 자원 사용 |
-| [a local gateway](https://github.com/diegosouzapw/a local gateway) | `bench/` 스크립트만 | 무료 제공자 묶음. 앱은 쓰지 않음 |
-| 위키백과 API | `bench/run_aurora_search.mjs`만 | 무료 |
+| OpenAI 호환 서버 (OpenRouter, NVIDIA 등) | `.env`에 주소를 넣은 경우 묶음 투표·팀 모드 | 제공자마다 다름 |
 | GitHub Releases, Vercel | 설치 파일 배포, 웹 데모 | — |
 
 ## 빌려 온 아이디어
@@ -101,7 +93,7 @@ Aurora의 구조는 이미 알려진 방식들을 가져와 작게 붙인 것이
 - **팀 모드 (총괄 모델이 나누고 작업 모델이 처리, 총괄 모델이 판정):** Anthropic의 [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)에 정리된 orchestrator-workers와 evaluator-optimizer 패턴 그대로다.
 - **`bench/`의 "여러 모델이 답하고 하나가 합치기":** Together AI의 [Mixture-of-Agents](https://github.com/togethercomputer/MoA)(2024)와 같은 구조다. 여러 답을 모아 합치는 연구로는 [LLM-Blender](https://github.com/yuchenlin/LLM-Blender)(2023)도 있다.
 - **질문마다 모델 고르기:** 학습된 라우터는 LMSYS의 [RouteLLM](https://github.com/lm-sys/RouteLLM), 서비스로는 [OpenRouter](https://openrouter.ai)의 `openrouter/auto`가 있다. Aurora는 라우터를 학습하지 않았고, 분석 모델에게 묻는 방식이라 이것들보다 단순하다.
-- **여러 제공자를 하나의 주소로:** [LiteLLM](https://github.com/BerriAI/litellm)과 a local gateway가 하는 일이다. Aurora의 `providers.cjs`는 네 제공자만 직접 연결한 작은 어댑터다.
+- **여러 제공자를 하나의 주소로:** [LiteLLM](https://github.com/BerriAI/litellm) 같은 게이트웨이가 하는 일이다. Aurora의 `providers.cjs`는 네 제공자만 직접 연결한 작은 어댑터다.
 - **검색 결과를 붙여 답하기, 다른 모델로 사실 대조:** 일반적인 RAG와 자기 검증(self-verification) 방식이다.
 
 문서 구성은 [nanochat](https://github.com/karpathy/nanochat) README의 파일 구조 설명과 감사의 말 형식을 참고했다.

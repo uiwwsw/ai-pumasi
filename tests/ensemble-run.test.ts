@@ -297,7 +297,10 @@ test("measured free models on an OpenAI-compatible server vote with their measur
   const out = await runEnsemble(
     { models: ids, text: "3 곱하기 4는?", context: [] },
     {
-      env: { AURORA_OPENAI_COMPAT_KEY: "unit-c" },
+      env: {
+        AURORA_OPENAI_COMPAT_KEY: "unit-c",
+        AURORA_OPENAI_COMPAT_URL: "https://gateway.example/v1/chat/completions",
+      },
       sleep: async () => {},
       stats: createStatsStore(),
       fetchImpl: async (url: string, init: any) => {
@@ -319,9 +322,9 @@ test("measured free models on an OpenAI-compatible server vote with their measur
     },
   );
   assert.deepEqual(urls, [
-    "http://127.0.0.1:8080/v1/chat/completions",
-    "http://127.0.0.1:8080/v1/chat/completions",
-    "http://127.0.0.1:8080/v1/chat/completions",
+    "https://gateway.example/v1/chat/completions",
+    "https://gateway.example/v1/chat/completions",
+    "https://gateway.example/v1/chat/completions",
   ]);
   assert.deepEqual(
     out.models.map((m: any) => [m.model, m.weight]),
