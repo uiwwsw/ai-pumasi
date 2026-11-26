@@ -88,7 +88,12 @@ function substituted(requested, servedBy) {
 const DEFAULT_TIMEOUT_MS = 120000;
 async function request(
   p,
-  { env = process.env, fetchImpl = fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {},
+  {
+    env = process.env,
+    fetchImpl = fetch,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    onUsage = null,
+  } = {},
 ) {
   validate(p);
   const model = catalog.find((m) => m.id === p.model);
@@ -204,6 +209,18 @@ async function request(
     servedBy,
     substituted: substituted(body.model, servedBy),
   };
+  // Report the real token counts (never text) so the next estimate can learn from them.
+  if (onUsage && result.inputTokens !== null && result.outputTokens !== null)
+    try {
+      onUsage({
+        model: p.model,
+        kind: p.action,
+        inputChars:
+          p.text.length + p.context.reduce((n, m) => n + m.text.length, 0),
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+      });
+    } catch {}
   if (p.action === "analyze") {
     if (result.incomplete)
       throw new Error(
