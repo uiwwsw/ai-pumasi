@@ -55,7 +55,7 @@
 
 Built and shipped one at a time, in this order.
 
-1. **A team that runs itself.** Each free model drafts a plan, they vote on the plans without seeing who wrote them, and the winner leads: it splits the work, the others do it, and they vote on whether the result is done. No human-picked lead, no paid model needed. The goal is smarter and leaner: it ships only if it beats Nemotron Super alone and today's team mode on large, multi-part tasks while using the same or fewer tokens.
+1. **A team that runs itself.** The lead is picked by measured skill, not by a vote: each kind of task (reasoning, code, writing) has its own ranking from our benchmarks, and you can reorder it in settings. If the top model hits its free limit, the next one takes over. The lead splits the work, the others do it, and the lead decides when it's done, asking the runner-up only when unsure. No extra calls to choose a lead, no paid model needed. It ships only if it beats Nemotron Super alone and today's team mode on large, multi-part tasks while using the same or fewer tokens.
 2. **Pumasi, next steps.** Help automatically while the app is idle, report and block bad results, then open sign-up.
 3. **Rethink bundle vote.** Keep it only if the self-running team needs it; otherwise remove it.
 4. **Streaming answers.**
