@@ -112,5 +112,6 @@
   "저장할 내용이 올바르지 않습니다.": "The content to save is not valid.",
   "파일이 너무 큽니다 (1MB 초과).": "The file is too large (over 1 MB).",
   "파일이 아닙니다.": "That is not a file.",
-  "2분이 지나 멈췄습니다.": "Stopped after 2 minutes."
+  "2분이 지나 멈췄습니다.": "Stopped after 2 minutes.",
+  "총괄 모델이 결과를 확신하지 못했지만 다시 풀지는 않았습니다. 확인해 주세요.": "The lead wasn't sure about the results but didn't have them solved again. Please check them."
 }

@@ -7,7 +7,10 @@ const { tr } = require("./i18n.cjs");
 
 const REVIEW_BUDGET = 18000; // characters of worker output the lead sees per review
 const WORKER_RETRY_DELAY_MS = 4000;
-const WORKER_MAX_OUTPUT = 4096;
+// Start workers with room to think. A reply cut off at a small cap is thrown away and the task
+// solved again from scratch, so starting at 4096 and doubling paid for every discarded try.
+// Only the tokens actually produced are billed; a higher first cap costs nothing on short answers.
+const WORKER_MAX_OUTPUT = 16000;
 // Reasoning models (Nemotron Super) think before the JSON; a small cap left plans empty.
 // Only the tokens actually produced are billed, so a high cap costs nothing extra.
 // Hard reasoning tasks need room: Nemotron Super scored 30/30 on the reasoning exam with 30000.
@@ -493,6 +496,12 @@ async function orchestrate(p, opts = {}) {
     }
     if (verdict.approved) {
       approved = true;
+      break;
+    }
+    // Redoing a task means solving it again in full. Do that only when the lead is sure the result
+    // is wrong; an unsure rejection keeps the results and says so.
+    if (verdict.sure === false) {
+      warning = tr("총괄 모델이 결과를 확신하지 못했지만 다시 풀지는 않았습니다. 확인해 주세요.");
       break;
     }
     const redo = Array.isArray(verdict.redo) ? verdict.redo : [];
