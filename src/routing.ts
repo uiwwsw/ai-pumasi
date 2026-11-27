@@ -303,6 +303,13 @@ export interface AIBridge {
   secrets?: {
     list(): Promise<SecretsState>;
     set(name: SecretName, value: string): Promise<SecretsState>;
+    /** Paste any key: the provider is worked out from its shape and the key is checked first. */
+    add?(value: string): Promise<{
+      name: SecretName;
+      provider: string;
+      check: "ok" | "unknown";
+      state: SecretsState;
+    }>;
     remove(name: SecretName): Promise<SecretsState>;
     setCompatUrl(url: string): Promise<SecretsState>;
     openSignup(

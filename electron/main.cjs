@@ -124,6 +124,18 @@ else
         );
       }
     });
+    // One paste box: work out the provider, check the key with it, then save it.
+    ipcMain.handle("aurora:secrets-add", async (event, value) => {
+      if (!authorized(event)) throw forbiddenError();
+      try {
+        const r = await providers.addKey(value, { save: async (name, v) => secrets.set(name, v) });
+        return { name: r.name, provider: r.provider, check: r.check, state: r.state };
+      } catch (error) {
+        throw new Error(redact(error?.message ?? tr("저장하지 못했습니다."), {
+            [providers.detectKey(value) ?? "OPENAI_API_KEY"]: String(value ?? ""),
+          }));
+      }
+    });
     ipcMain.handle("aurora:secrets-remove", (event, name) => {
       if (!authorized(event)) throw forbiddenError();
       return secrets.remove(name);

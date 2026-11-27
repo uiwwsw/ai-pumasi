@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld("auroraAI", {
   secrets: {
     list: () => ipcRenderer.invoke("aurora:secrets-list"),
     set: (name, value) => ipcRenderer.invoke("aurora:secrets-set", name, value),
+    add: (value) => ipcRenderer.invoke("aurora:secrets-add", value),
     remove: (name) => ipcRenderer.invoke("aurora:secrets-remove", name),
     setCompatUrl: (url) => ipcRenderer.invoke("aurora:secrets-compat-url", url),
     openSignup: (host) => ipcRenderer.invoke("aurora:open-signup", host),
