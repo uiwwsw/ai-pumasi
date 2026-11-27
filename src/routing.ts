@@ -281,10 +281,11 @@ export type CodeFolder = { root: string; name: string };
 /** What the code agent did, step by step. File text and command output come from the user's folder. */
 export type AgentEvent =
   | { type: "thinking"; step: number }
+  | { type: "draft"; text: string }
   | { type: "say"; text: string; model?: string }
   | { type: "tool"; id: number; kind: "list" | "read" | "search"; path?: string; query?: string; count?: number; lines?: number }
   | { type: "tool-error"; id: number; kind: string; arg: string; error: string }
-  | { type: "edit"; id: number; path: string; before: string; after: string }
+  | { type: "edit"; id: number; path: string; before: string; after: string; existed?: boolean }
   | { type: "edit-done"; id: number; saved: boolean }
   | { type: "run"; id: number; command: string }
   | { type: "run-done"; id: number; code?: number | null; output?: string; declined?: boolean }
@@ -312,7 +313,10 @@ export interface AIBridge {
       model?: string;
       autoOrder?: string[];
     }): Promise<{ usage: { in: number; out: number }; steps: number }>;
-    answer(id: number, allow: boolean): Promise<void>;
+    answer(id: number, allow: boolean, all?: boolean): Promise<void>;
+    undo(id: number): Promise<boolean>;
+    gitStatus(): Promise<{ state: string; path: string }[] | null>;
+    gitDiff(rel: string): Promise<string>;
     stop(): Promise<void>;
     onEvent(fn: (e: AgentEvent) => void): () => void;
   };

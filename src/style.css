@@ -1634,6 +1634,7 @@ html[data-theme="dark"] .composer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 10px 20px;
 }
 .folder-chip {
@@ -1691,6 +1692,67 @@ html[data-theme="dark"] .composer {
 }
 .code-say {
   white-space: pre-wrap;
+}
+.code-say.streaming {
+  color: var(--muted);
+}
+.code-changes-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12.5px;
+}
+.code-panel-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 6px 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.code-panel-tabs button {
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: var(--muted);
+  background: transparent;
+  border-bottom: 2px solid transparent;
+}
+.code-panel-tabs button[aria-selected="true"] {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+.code-changes {
+  grid-row: 2 / 4;
+  overflow: auto;
+  padding: 8px 4px;
+  min-height: 0;
+}
+.code-changes .code-note {
+  padding: 4px 8px;
+}
+.git-state {
+  width: 2.5ch;
+  flex-shrink: 0;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  color: var(--muted);
+}
+.code-diff-text .add {
+  background: #e7f1e4;
+}
+.code-diff-text .del {
+  background: #f6e4e1;
+}
+.code-diff-text .hunk {
+  color: var(--muted);
+}
+.code-diff-text {
+  margin: 8px 4px 0;
+  padding: 8px;
+  border-top: 1px solid var(--line);
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
 }
 .code-tool {
   display: inline-flex;
@@ -1856,7 +1918,7 @@ html[data-theme="dark"] .composer {
 .code-panel {
   border-left: 1px solid var(--line);
   display: grid;
-  grid-template-rows: minmax(120px, 40%) minmax(0, 1fr);
+  grid-template-rows: auto minmax(120px, 40%) minmax(0, 1fr);
   min-height: 0;
   background: var(--panel);
 }
@@ -1946,10 +2008,12 @@ html[data-theme="dark"] .composer {
 .lead-order li > span {
   flex: 1;
 }
-html[data-theme="dark"] .diff-row.add {
+html[data-theme="dark"] .diff-row.add,
+html[data-theme="dark"] .code-diff-text .add {
   background: #24371f;
 }
-html[data-theme="dark"] .diff-row.del {
+html[data-theme="dark"] .diff-row.del,
+html[data-theme="dark"] .code-diff-text .del {
   background: #3d2420;
 }
 html[data-theme="dark"] .primary-button {

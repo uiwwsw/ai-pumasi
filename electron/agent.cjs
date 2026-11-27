@@ -57,6 +57,18 @@ const numbered = (text) =>
     .map((l, i) => `${String(i + 1).padStart(4)}  ${l}`)
     .join("\n");
 
+/**
+ * What to show while a reply streams: the prose so far, without action lines, finished file
+ * blocks, or a file block that is still being written.
+ */
+function draftProse(text) {
+  const s = String(text ?? "");
+  const open = s.lastIndexOf("<<<FILE");
+  const closed = s.lastIndexOf(">>>FILE");
+  const visible = open > closed ? s.slice(0, open) : s;
+  return parseActions(visible.replace(/<<<[A-Z]*[^\n>]*$/, "")).prose;
+}
+
 const cut = (s, n) => (s.length > n ? `${s.slice(0, n)}\n…(${s.length - n} chars cut)` : s);
 
 /**
@@ -97,14 +109,29 @@ async function runAgent(p, io) {
     }
     steps++;
     emit({ type: "thinking", step: steps });
-    const r = await request({
-      action: "agent",
-      model: p.model,
-      text: ask_text,
-      context,
-      maxOutputTokens: 16000,
-      autoOrder: p.autoOrder,
-    });
+    // Show the reply as it is written, at most ~12 times a second.
+    let shown = "";
+    let lastDraft = 0;
+    const onDelta = (sofar) => {
+      const now = Date.now();
+      if (now - lastDraft < 80) return;
+      const prose = draftProse(sofar);
+      if (prose === shown) return;
+      lastDraft = now;
+      shown = prose;
+      emit({ type: "draft", text: prose });
+    };
+    const r = await request(
+      {
+        action: "agent",
+        model: p.model,
+        text: ask_text,
+        context,
+        maxOutputTokens: 16000,
+        autoOrder: p.autoOrder,
+      },
+      { onDelta },
+    );
     usage.in += r.inputTokens ?? 0;
     usage.out += r.outputTokens ?? 0;
     const { actions, prose } = parseActions(r.text);
@@ -134,12 +161,16 @@ async function runAgent(p, io) {
           );
         } else if (a.kind === "write") {
           let before = "";
+          let existed = false;
           try {
             before = workspace.read(a.arg).text;
+            existed = true;
           } catch {}
-          emit({ type: "edit", id: n, path: a.arg, before, after: a.text });
+          emit({ type: "edit", id: n, path: a.arg, before, after: a.text, existed });
           if (await ask({ id: n, kind: "edit" })) {
             workspace.write(a.arg, a.text);
+            // Remember what was there so the user can undo this one change later.
+            io.saved?.({ id: n, path: a.arg, before, after: a.text, existed });
             emit({ type: "edit-done", id: n, saved: true });
             results.push(`FILE ${a.arg}: saved`);
           } else {
@@ -175,4 +206,4 @@ async function runAgent(p, io) {
   return { usage, steps };
 }
 
-module.exports = { runAgent, parseActions };
+module.exports = { runAgent, parseActions, draftProse };

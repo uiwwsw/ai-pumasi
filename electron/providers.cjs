@@ -402,7 +402,8 @@ async function call(
     body = { model: p.model, system, messages, max_tokens: p.maxOutputTokens };
   }
   // Only a plain answer streams; plans, reviews and votes need the whole JSON at once.
-  const streaming = typeof onDelta === "function" && p.action === "execute";
+  const streaming =
+    typeof onDelta === "function" && (p.action === "execute" || p.action === "agent");
   if (streaming) {
     body.stream = true;
     if (provider !== "openai" && provider !== "anthropic")
