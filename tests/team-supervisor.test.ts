@@ -112,10 +112,19 @@ test("a cut-off reply is retried with more room, then handed to the next free mo
   assert.equal(out.text, "로컬 결과");
   assert.deepEqual(
     r.workerCalls.map((c) => c.model),
-    ["gemini-flash-latest", "gemini-flash-latest", "ollama-local"],
+    [
+      "gemini-flash-latest",
+      "gemini-flash-latest",
+      "gemini-flash-latest",
+      "gemini-flash-latest",
+      "ollama-local",
+    ],
   );
-  assert.equal(r.workerCalls[0].body.max_tokens, 4096);
-  assert.equal(r.workerCalls[1].body.max_tokens, 8192);
+  // The budget doubles up to 32000 before the next model takes over.
+  assert.deepEqual(
+    r.workerCalls.slice(0, 4).map((c) => c.body.max_tokens),
+    [4096, 8192, 16384, 32000],
+  );
   const sw = r.events.find((e) => e.state === "switch");
   assert.equal(sw.from, "gemini-flash-latest");
   assert.equal(sw.model, "ollama-local");
@@ -131,8 +140,9 @@ test("when every model cuts off, the longest partial is kept and marked incomple
     ),
   );
   const out = await r.result;
-  // Gemini Flash, Gemini 3.1 Flash Lite (Google host, same key) and Ollama: two tries each.
-  assert.equal(r.workerCalls.length, 6);
+  // Gemini Flash, Gemini 3.1 Flash Lite (Google host, same key) and Ollama: the budget grows
+  // 4096 → 8192 → 16384 → 32000 on each.
+  assert.equal(r.workerCalls.length, 12);
   assert.equal(out.text, "더 긴 잘린 답입니다");
   assert.equal(out.tasks[0].failed, false);
   assert.equal(out.tasks[0].incomplete, true);
@@ -160,7 +170,8 @@ test("a timeout is transient: wait, retry the same model, and size the limit to 
   assert.ok(workerTimeout(18000, 4096) > workerTimeout(100, 4096));
   assert.ok(workerTimeout(100, 8192) > workerTimeout(100, 4096));
   assert.equal(workerTimeout(0, 128), 45000);
-  assert.equal(workerTimeout(20000, 16000), 240000);
+  assert.equal(workerTimeout(20000, 16000), 480000);
+  assert.equal(workerTimeout(40000, 32000), 900000);
   const r = run((_m, _b, n) => {
     if (n === 1) {
       const e = new Error("timed out");
