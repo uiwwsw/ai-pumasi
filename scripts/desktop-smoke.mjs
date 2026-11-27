@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { _electron as electron, expect } from "@playwright/test";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -305,6 +306,14 @@ try {
       2,
     ),
   );
+  // With the sidebar closed on macOS, the top bar starts to the right of the window buttons.
+  if (process.platform === "darwin") {
+    await page.getByRole("button", { name: "사이드바 접기", exact: true }).click();
+    const box = await page.getByRole("button", { name: "사이드바 열기", exact: true }).boundingBox();
+    assert.ok(box && box.x >= 88, `sidebar button under the window buttons: x=${box?.x}`);
+    await page.screenshot({ path: "artifacts/aurora-sidebar-closed.png" });
+    await page.getByRole("button", { name: "사이드바 열기", exact: true }).click();
+  }
   console.log(
     "Desktop checks passed: send without a dialog, Auto by default, real usage only, errors keep the draft, legacy sessions, storage and layout.",
   );

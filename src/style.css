@@ -373,6 +373,10 @@ button:hover {
   gap: 12px;
   -webkit-app-region: drag;
 }
+/* With the sidebar closed the top bar reaches the corner where macOS draws the window buttons. */
+.mac-window.sidebar-closed .topbar {
+  padding-left: 92px;
+}
 .breadcrumb {
   display: flex;
   align-items: center;
