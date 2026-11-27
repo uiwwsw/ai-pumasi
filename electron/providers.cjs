@@ -123,7 +123,7 @@ function validate(p) {
     ) ||
     !Number.isInteger(p.maxOutputTokens) ||
     p.maxOutputTokens < 128 ||
-    p.maxOutputTokens > 16000
+    p.maxOutputTokens > 32000
   )
     throw new Error(tr("요청 형식 또는 출력 한도가 올바르지 않습니다."));
   if (p.context.reduce((n, m) => n + m.text.length, 0) + p.text.length > 200000)

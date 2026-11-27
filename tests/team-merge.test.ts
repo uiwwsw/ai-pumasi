@@ -52,3 +52,34 @@ test("a full merge is used as the answer", async () => {
   const { result } = await run(() => `합친 답\n${full}`);
   assert.ok(result.text.startsWith("합친 답"));
 });
+
+test("a reasoning model that spends its budget thinking gets more room, and its placeholder is never a result", async () => {
+  const budgets: number[] = [];
+  const fetchImpl = async (_url: string, init: any) => {
+    const body = JSON.parse(init.body);
+    const system = String(body.messages?.[0]?.content ?? "");
+    if (system.includes("Split the user request"))
+      return reply(JSON.stringify({ goal: "g", tasks: [tasks[0]] }));
+    if (system.includes("reviewing junior results"))
+      return reply(JSON.stringify({ approved: true, sure: true, redo: [] }));
+    budgets.push(body.max_tokens);
+    // Thinking used the whole budget: no visible text, cut at the limit.
+    if (body.max_tokens < 16000)
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [{ message: { content: "" }, finish_reason: "length" }],
+          usage: { prompt_tokens: 5, completion_tokens: body.max_tokens },
+        }),
+      };
+    return reply("문제 1 풀이입니다. ".repeat(10) + "\n정답 1: 11");
+  };
+  const result = await orchestrate(
+    { lead: "auto-free", worker: SUPER, text: "풀어 주세요", context: [] },
+    { env: { NVIDIA_API_KEY: "k", AURORA_OLLAMA: "0" }, fetchImpl, stats: createStatsStore(), sleep: async () => {} },
+  );
+  assert.deepEqual(budgets.slice(0, 2), [4096, 8192]);
+  assert.match(result.text, /정답 1: 11/);
+  assert.doesNotMatch(result.text, /보이는 답변이 생성되지/);
+});

@@ -10,14 +10,17 @@ const WORKER_RETRY_DELAY_MS = 4000;
 const WORKER_MAX_OUTPUT = 4096;
 // Reasoning models (Nemotron Super) think before the JSON; a small cap left plans empty.
 // Only the tokens actually produced are billed, so a high cap costs nothing extra.
+// Hard reasoning tasks need room: Nemotron Super scored 30/30 on the reasoning exam with 30000.
+const MAX_OUTPUT = 32000;
 const LEAD_MAX_OUTPUT = 16000;
 const REVIEW_MAX_OUTPUT = 12000;
 const LEAD_TIMEOUT_MS = 300000;
 
 /** Time budget for one worker call: room to stream the allowed output plus reading the prompt. */
 function workerTimeout(promptChars, maxOutputTokens) {
+  // About 40 output tokens a second, so a 32000-token retry may need up to ~14 minutes.
   return Math.min(
-    240000,
+    900000,
     Math.max(45000, 20000 + maxOutputTokens * 25 + promptChars * 3),
   );
 }
@@ -30,8 +33,10 @@ function minReplyChars(promptChars) {
 /** Why a worker reply cannot be accepted as done, or "" when it can. */
 function judgeReply(done, minChars) {
   const text = String(done?.text ?? "").trim();
+  // A reasoning model can spend the whole budget thinking and write nothing: that is a cut-off,
+  // and the retry needs more room, not the same budget again.
+  if (done?.incomplete) return "truncated";
   if (done?.empty || !text) return "empty";
-  if (done.incomplete) return "truncated";
   if (text.length < minChars) return "short";
   return "";
 }
@@ -183,7 +188,8 @@ async function superviseModel(
   let last;
   let partial = null;
   let maxOutputTokens = firstMax;
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  // Two tries per model; a cut-off reply may keep growing its budget up to MAX_OUTPUT first.
+  for (let attempt = 1; attempt <= 5; attempt++) {
     const timeoutMs = workerTimeout(prompt.length, maxOutputTokens);
     const startedAt = now();
     report("running", { model, attempt, startedAt, timeoutMs });
@@ -208,7 +214,7 @@ async function superviseModel(
       });
       const transient =
         error?.transient || error?.status === 429 || error?.status >= 500;
-      if (!transient || attempt === 2) break;
+      if (!transient || attempt >= 2) break;
       report("retry", { model, attempt, reason, elapsedMs });
       await sleep(WORKER_RETRY_DELAY_MS);
       continue;
@@ -226,7 +232,8 @@ async function superviseModel(
       servedBy: done.servedBy ?? undefined,
     });
     if (!problem) return { done, attempt, elapsedMs };
-    const text = String(done.text ?? "").trim();
+    // An empty reply carries only a placeholder message; it is never kept as a result.
+    const text = done.empty ? "" : String(done.text ?? "").trim();
     if (text && (!partial || text.length > partial.text.trim().length))
       partial = { ...done, incomplete: true };
     last = Object.assign(
@@ -239,9 +246,10 @@ async function superviseModel(
       ),
       { reason: problem },
     );
-    if (attempt === 2) break;
+    const canGrow = problem === "truncated" && maxOutputTokens < MAX_OUTPUT;
+    if (attempt >= 2 && !canGrow) break;
     if (problem === "truncated")
-      maxOutputTokens = Math.min(maxOutputTokens * 2, 16000);
+      maxOutputTokens = Math.min(maxOutputTokens * 2, MAX_OUTPUT);
     report("retry", { model, attempt, reason: problem, elapsedMs });
   }
   return { error: last, partial };
