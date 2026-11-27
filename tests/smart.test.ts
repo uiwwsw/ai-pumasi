@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-const { run, splitByHeadings, readTriage, partPrompt } = require("../electron/smart.cjs");
+const { run, splitByHeadings, readTriage, partPrompt, logSteps, checkJobs } = require("../electron/smart.cjs");
 const { createStatsStore } = require("../electron/worker-stats.cjs");
 
 const env = { NVIDIA_API_KEY: "k", AURORA_OLLAMA: "0" };
@@ -130,6 +130,42 @@ test("split and roles together: only a deep part is checked, and only a failed c
   assert.deepEqual({ ...r.parts[1].check, problem: undefined }, { model: checks[0].model, verdict: "wrong", revised: true, problem: undefined });
   assert.ok(events.some((e) => e.stage === "part" && e.id === "p2" && e.state === "checking"));
   assert.ok(events.some((e) => e.stage === "part" && e.id === "p2" && e.state === "revising"));
+});
+
+test("a work log is cut into slices for several checkers; a short one is one job", () => {
+  assert.equal(logSteps("풀이 기록\n1. a=3\n2. b=4\n- 3. c=7\n**4.** d=1\n\n정답: 7"), 4);
+  // Numbers out of order stop the count; prose has no steps.
+  assert.equal(logSteps("1. a\n3. b"), 1);
+  assert.equal(logSteps("그냥 설명입니다."), 0);
+  assert.deepEqual(checkJobs(2), [{ scope: "" }]);
+  const jobs = checkJobs(7);
+  assert.equal(jobs.length, 4);
+  assert.ok(jobs[0].scope.includes("steps 1 to 2") && jobs[1].scope.includes("steps 3 to 4") && jobs[2].scope.includes("steps 5 to 7"));
+  assert.ok(jobs[3].scope.includes("final result"));
+});
+
+test("sliced check: slices run on different models, and the earliest failed step is the objection", async () => {
+  const log = "풀이 기록\n1. 17×20=340\n2. 17×3=41\n3. 340+41=381\n\n정답: 381";
+  const w = world((kind, user) => {
+    if (kind === "triage") return JSON.stringify({ mode: "roles", effort: "mid" });
+    if (kind === "check") {
+      if (user.includes("steps 2 to 2")) return JSON.stringify({ verdict: "wrong", problem: "2단계: 17×3은 51입니다." });
+      if (user.includes("steps 3 to 3")) return JSON.stringify({ verdict: "wrong", problem: "3단계 합이 다릅니다." });
+      return JSON.stringify({ verdict: "right", problem: "" });
+    }
+    return user.includes("다른 모델이 짚은 단계") ? (user.includes("2단계") ? "정답: 391" : "정답: ???") : log;
+  });
+  const text = [long("다음 계산 문제를 풀어 주세요."), "", long("17 곱하기 23을 계산하고 풀이를 검산할 수 있게 적어 주세요.")].join("\n");
+  const r = await run({ text, context: [], model: "nvidia/nemotron-3.5-super-vl-120b-a12b" }, w.io);
+  const checks = w.calls.filter((c) => c.kind === "check");
+  // Three one-step slices and the final-result job, none on the solving model.
+  assert.equal(checks.length, 4);
+  assert.ok(checks.every((c) => c.model !== w.calls.find((x) => x.kind === "answer")!.model));
+  assert.ok(new Set(checks.map((c) => c.model)).size > 1);
+  assert.equal(r.text, "정답: 391");
+  assert.equal(r.check.verdict, "wrong");
+  assert.equal(r.check.checks, 4);
+  assert.equal(r.check.revised, true);
 });
 
 test("a short question is answered directly with no routing call, and streams", async () => {

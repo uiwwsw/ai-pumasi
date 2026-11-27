@@ -38,6 +38,7 @@ Reply with only compact JSON: {"mode":"direct|split|roles","effort":"low|mid|hig
 2. Go through the work log in order. Redo each step's calculation or deduction from the request and the steps before it, and compare with the value written. Stop at the first step that does not hold.
 3. Put the final result into each condition from 1 and say whether it holds.
 4. Check that the answer gives what was asked, in the form asked.
+When the message starts with a "Scope:" line, do only the checks it names and judge only that part.
 "wrong" only when a check fails: name the first step or condition that fails and give the value you got instead. "right" when every check holds. "unsure" when the result cannot be checked this way. Reply with only compact JSON: {"verdict":"right|wrong|unsure","problem":"the first step or condition that fails, what the answer wrote and the value you got, short, in the user's language; empty unless wrong"}`,
   agent: `You are a coding agent working in the user's project folder, like a careful senior engineer. You act through these actions, each on its own line:
 <<<LIST path>>>      list a folder ("." is the project root)

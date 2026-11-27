@@ -102,7 +102,36 @@ function readTriage(reply, text) {
 // Asked of work that will be checked: the checker verifies these steps instead of solving again,
 // and a fix continues from the step that failed instead of starting over.
 const WORK_LOG =
-  "Before the final answer, write a short work log under its own heading: the intermediate values your answer rests on (tables, running totals, each deduction and what it rules out), one step per line, so that someone else can verify each step from the ones before it. Keep it compact: values, not prose.";
+  "Before the final answer, write a short work log under its own heading: the intermediate values your answer rests on (tables, running totals, each deduction and what it rules out), as numbered steps, one per line (1. 2. 3. ...), so that someone else can verify each step from the ones before it. Keep it compact: values, not prose.";
+// A long log is verified in slices, one small job per checker, plus one job for the final result.
+const STEP_CHECKERS = 3;
+const SLICE_OUTPUT = 8000;
+/** The step numbers of a work log: lines "1." "2." ... counted while they run in order. */
+function logSteps(text) {
+  let n = 0;
+  for (const m of String(text ?? "").matchAll(/^\s*(?:[-*]\s*)?\**(\d{1,3})[.)]\**\s+\S/gm))
+    if (+m[1] === n + 1) n++;
+  return n;
+}
+/** What each checker is asked to verify. Fewer than three steps: one job for everything. */
+function checkJobs(steps) {
+  if (steps < 3) return [{ scope: "" }];
+  const k = Math.min(STEP_CHECKERS, steps);
+  const jobs = [];
+  for (let i = 0; i < k; i++) {
+    const from = Math.floor((i * steps) / k) + 1;
+    const to = Math.floor(((i + 1) * steps) / k);
+    jobs.push({
+      from,
+      scope: `Scope: verify only steps ${from} to ${to} of the work log. Take the steps before ${from} as given and do checks 1 and 2 for these steps only.`,
+    });
+  }
+  jobs.push({
+    from: steps + 1,
+    scope: "Scope: take the work log as given and do checks 1, 3 and 4 only: put the final result into every condition of the request.",
+  });
+  return jobs;
+}
 const FIX =
   "First decide whether the objection is right by redoing only that step. If it is not, say so in one line and repeat the earlier final answer unchanged. If it is, keep every step of the work log before it as it stands, redo the work from that step on, and write the corrected work log and final answer. Do not start over.";
 const withLog = (prompt) => `${prompt}\n\n${WORK_LOG}`;
@@ -233,31 +262,50 @@ async function run(p, io = {}) {
    * gets it solved again. Returns the answer to use and what the check found.
    */
   const checkAndFix = async (id, title, request_, answered, { onDelta, report } = {}) => {
-    const checker = providers.autoCandidates(env, p.autoOrder).find((m) => m !== answered.model);
-    if (!checker || answered.incomplete) return { text: answered.text, check: null };
-    report("check", checker);
-    let c;
-    try {
-      c = await request(
-        {
-          action: "check",
-          model: checker,
-          text: `${tr("요청:")}\n${request_.slice(0, 12000)}\n\n${tr("답:")}\n${answered.text.slice(0, 14000)}`,
-          context: [],
-          maxOutputTokens: CHECK_OUTPUT,
-        },
-        { timeoutMs: 300000, signal: io.signalFor?.(id) ?? io.signal },
-      );
-    } catch (error) {
-      if (error?.stopped) throw error;
-      // The checker could not answer: the first answer stands, unchecked.
-      return { text: answered.text, check: { model: checker, verdict: "unsure", revised: false } };
-    }
-    add("check", c);
-    const v = team.extractJSON(c.text);
-    const verdict = ["right", "wrong", "unsure"].includes(v?.verdict) ? v.verdict : "unsure";
-    const problem = typeof v?.problem === "string" ? v.problem.trim().slice(0, 2000) : "";
-    const check = { model: checker, verdict, revised: false, ...(problem ? { problem } : {}) };
+    const checkers = providers.autoCandidates(env, p.autoOrder).filter((m) => m !== answered.model);
+    if (!checkers.length || answered.incomplete) return { text: answered.text, check: null };
+    report("check", checkers[0]);
+    const body = `${tr("요청:")}\n${request_.slice(0, 12000)}\n\n${tr("답:")}\n${answered.text.slice(0, 14000)}`;
+    const jobs = checkJobs(logSteps(answered.text));
+    // Each slice goes to a checker of its own where there are enough models; all at the same time.
+    const found = await Promise.all(
+      jobs.map(async (job, i) => {
+        const model = checkers[i % checkers.length];
+        try {
+          const c = await request(
+            {
+              action: "check",
+              model,
+              text: job.scope ? `${job.scope}\n\n${body}` : body,
+              context: [],
+              maxOutputTokens: job.scope ? SLICE_OUTPUT : CHECK_OUTPUT,
+            },
+            { timeoutMs: 300000, signal: io.signalFor?.(id) ?? io.signal },
+          );
+          add("check", c);
+          const v = team.extractJSON(c.text);
+          const verdict = ["right", "wrong", "unsure"].includes(v?.verdict) ? v.verdict : "unsure";
+          const problem = typeof v?.problem === "string" ? v.problem.trim().slice(0, 2000) : "";
+          // "wrong" without a concrete reason is not an objection.
+          return { model, from: job.from ?? 0, verdict: verdict === "wrong" && !problem ? "unsure" : verdict, problem };
+        } catch (error) {
+          if (error?.stopped) throw error;
+          // This checker could not answer: its slice stays unchecked.
+          return { model, from: job.from ?? 0, verdict: "unsure", problem: "" };
+        }
+      }),
+    );
+    // The earliest failed step is the objection; "right" needs every slice to hold.
+    const failed = found.filter((f) => f.verdict === "wrong").sort((x, y) => x.from - y.from)[0];
+    const verdict = failed ? "wrong" : found.every((f) => f.verdict === "right") ? "right" : "unsure";
+    const problem = failed?.problem ?? "";
+    const check = {
+      model: (failed ?? found[0]).model,
+      verdict,
+      revised: false,
+      ...(found.length > 1 ? { checks: found.length } : {}),
+      ...(problem ? { problem } : {}),
+    };
     // Redo only on a concrete objection; "unsure" keeps the answer and says so.
     if (verdict !== "wrong" || !problem) return { text: answered.text, check };
     report("revise", answered.model);
@@ -399,4 +447,4 @@ function createControl() {
   };
 }
 
-module.exports = { run, createControl, splitByHeadings, readTriage, partPrompt, EFFORT_OUTPUT };
+module.exports = { run, createControl, splitByHeadings, readTriage, partPrompt, logSteps, checkJobs, EFFORT_OUTPUT };

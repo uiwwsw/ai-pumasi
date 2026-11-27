@@ -264,9 +264,9 @@ export type AskResult = {
     failed: boolean;
     skipped: boolean;
     incomplete: boolean;
-    check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean } | null;
+    check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean; checks?: number } | null;
   }[];
-  check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean } | null;
+  check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean; checks?: number } | null;
   usage: Record<"route" | "work" | "check", { in: number; out: number }>;
 };
 /** What is happening right now while a question is being answered. */
