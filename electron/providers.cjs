@@ -198,6 +198,8 @@ async function request(
     autoOrder = null,
     // Called with the answer so far while it streams in. Only plain answers stream.
     onDelta = null,
+    // Called with the model's own reasoning so far, when the provider sends it while streaming.
+    onThinking = null,
     // Stream even without onDelta, only to notice a stalled model early.
     stream = false,
     idleMs = DEFAULT_IDLE_MS,
@@ -216,6 +218,7 @@ async function request(
     onUsage,
     signal,
     onDelta,
+    onThinking,
     stream,
     idleMs,
   };
@@ -311,8 +314,17 @@ async function readEvents(response, onEvent, kick = () => {}, abort = null) {
  * Stream an answer and rebuild the provider's ordinary JSON shape from it, so the code that reads
  * a finished response does not care whether it streamed.
  */
-async function readStream(response, provider, onDelta, kick, abort) {
+async function readStream(response, provider, onDelta, kick, abort, onThinking) {
   let text = "";
+  let thought = "";
+  // Reasoning is shown while waiting and never becomes part of the answer.
+  const think = (piece) => {
+    if (typeof piece !== "string" || !piece || typeof onThinking !== "function") return;
+    thought += piece;
+    try {
+      onThinking(thought);
+    } catch {}
+  };
   let model = null;
   let usage = {};
   let finish = null;
@@ -330,6 +342,7 @@ async function readStream(response, provider, onDelta, kick, abort) {
     (e) => {
       if (provider === "openai") {
         if (e.type === "response.output_text.delta") grow(e.delta);
+        if (e.type === "response.reasoning_summary_text.delta") think(e.delta);
         if (e.response) {
           model = e.response.model ?? model;
           if (e.response.usage) usage = e.response.usage;
@@ -342,6 +355,8 @@ async function readStream(response, provider, onDelta, kick, abort) {
         }
         if (e.type === "content_block_delta" && e.delta?.type === "text_delta")
           grow(e.delta.text);
+        if (e.type === "content_block_delta" && e.delta?.type === "thinking_delta")
+          think(e.delta.thinking);
         if (e.type === "message_delta") {
           stop = e.delta?.stop_reason ?? stop;
           usage = { ...usage, ...(e.usage ?? {}) };
@@ -350,6 +365,7 @@ async function readStream(response, provider, onDelta, kick, abort) {
         if (e.model) model = e.model;
         if (e.usage) usage = e.usage;
         const choice = e.choices?.[0];
+        think(choice?.delta?.reasoning_content ?? choice?.delta?.reasoning);
         if (choice?.delta?.content) grow(choice.delta.content);
         if (choice?.finish_reason) finish = choice.finish_reason;
       }
@@ -387,6 +403,7 @@ async function call(
     onUsage,
     signal,
     onDelta,
+    onThinking,
     stream,
     idleMs = DEFAULT_IDLE_MS,
   },
@@ -458,7 +475,7 @@ async function call(
   // Plain answers stream so the window can show them; team calls ask to stream only so a stalled
   // model is noticed early. The analysis call is small and stays a single response.
   const streaming =
-    (typeof onDelta === "function" &&
+    ((typeof onDelta === "function" || typeof onThinking === "function") &&
       (p.action === "execute" || p.action === "agent")) ||
     (stream === true && p.action !== "analyze");
   if (streaming) {
@@ -539,7 +556,7 @@ async function call(
   try {
     data =
       streaming && response.body?.getReader
-        ? await readStream(response, provider, onDelta, kick, callSignal)
+        ? await readStream(response, provider, onDelta, kick, callSignal, onThinking)
         : await response.json();
     // A stream cut short by the watchdog or a stop is not an answer.
     if (callSignal.aborted) throw new Error("aborted");

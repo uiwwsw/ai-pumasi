@@ -1,5 +1,6 @@
 // Code mode: a coding agent working in one folder. It looks around and reads on its own;
 // every file change and command waits for the user's answer in the transcript.
+import { Markdown } from "./markdown";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
@@ -472,7 +473,11 @@ export function CodeWorkspace() {
                 ),
               )}
               {undoError && <div className="code-error">{undoError}</div>}
-              {draftReply && <div className="code-say streaming">{draftReply}</div>}
+              {draftReply && (
+                <div className="code-say streaming">
+                  <Markdown text={draftReply} />
+                </div>
+              )}
               {busy && (
                 <div className="code-working">
                   <span className="code-dot" />

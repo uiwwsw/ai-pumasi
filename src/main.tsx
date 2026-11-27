@@ -59,11 +59,14 @@ import {
   emptyRun,
   finishedText,
   howLine,
+  clock,
   type AskRun,
 } from "./ask-progress";
 import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import "./style.css";
 import { installWebBridge } from "./web-bridge";
+import { Markdown } from "./markdown";
+import { CopyButton, ShareButton, conversationMarkdown } from "./message-actions";
 // In a browser there is no desktop main process: the web version provides the same bridge.
 installWebBridge();
 function readSaved(): Workspace {
@@ -331,6 +334,7 @@ function App() {
   const messages = auto
     ? visible.flatMap((b) => b.messages)
     : (legacyChat?.messages ?? []);
+  const shareTitle = auto ? t("하나의 대화") : (legacyChat?.title ?? t("새 세션"));
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
@@ -599,13 +603,15 @@ function App() {
       try {
         if (window.auroraAI.ask) {
           // The app decides how to work: answer directly, split into parts, or solve and check.
+          const askedAt = Date.now();
           const r = await window.auroraAI.ask({
             text: asked,
             context: context(),
             model: p.modelId,
             autoOrder: routing.leadOrder.length ? routing.leadOrder : undefined,
           });
-          how = howLine(r);
+          // How it was produced and how long it took.
+          how = `${howLine(r)} · ${clock(Date.now() - askedAt)}`;
           completion = {
             text: r.text,
             model: r.model ?? p.modelId,
@@ -954,6 +960,14 @@ function App() {
             ))}
           </div>
           <div className="top-actions">
+            {appMode === "chat" && messages.length > 0 && (
+              // The whole conversation as text: the system share sheet where there is one,
+              // otherwise the clipboard.
+              <ShareButton
+                title={shareTitle}
+                text={conversationMarkdown(shareTitle, messages)}
+              />
+            )}
             {appMode === "chat" && (
               <button
                 className="icon-button"
@@ -1035,22 +1049,16 @@ function App() {
                   />
                   <AskProgressView
                     run={run}
+                    writing={Boolean(streamed)}
                     onSkip={(id) => void window.auroraAI?.askControl?.("skip", id)}
                     onFinish={() => void window.auroraAI?.askControl?.("finish")}
                   />
                   {streamed || finishedText(run) ? (
                     // Finished parts show right away; a single answer shows as it is written.
                     <article className="message assistant">
-                      <div className="message-text">{finishedText(run) || streamed}</div>
+                      <div className="message-text"><Markdown text={finishedText(run) || streamed} /></div>
                     </article>
-                  ) : (
-                    run.mode !== "split" &&
-                    run.stage !== "route" && (
-                      <p className="answer-working" role="status">
-                        {t("답을 쓰는 중…")}
-                      </p>
-                    )
-                  )}
+                  ) : null}
                 </>
               )}
               {aiError && !sending && (
@@ -1589,7 +1597,9 @@ function App() {
 function MessageView({ message }: { message: Chat["messages"][number] }) {
   return (
     <article className={`message ${message.role}`}>
-      <div className="message-text">{message.text}</div>
+      <div className="message-text">
+        {message.role === "assistant" ? <Markdown text={message.text} /> : message.text}
+      </div>
       {message.files?.length ? (
         <div className="attach-chips in-message">
           {message.files.map((f, i) => (
@@ -1603,11 +1613,14 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
       {message.role === "assistant" && (
         // Which model answered, quietly under the answer.
         <div className="message-meta">
-          {message.live
-            ? message.how ||
-              (message.model && modelById(message.model)?.name) ||
-              t("API 응답")
-            : t("로컬 미리보기")}
+          <span>
+            {message.live
+              ? message.how ||
+                (message.model && modelById(message.model)?.name) ||
+                t("API 응답")
+              : t("로컬 미리보기")}
+          </span>
+          <CopyButton text={message.text} label={t("답 복사")} />
         </div>
       )}
     </article>

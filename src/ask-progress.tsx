@@ -14,14 +14,21 @@ export type AskPart = {
   startedAt?: number;
   text?: string;
   message?: string;
+  /** The last stretch of the model's own reasoning, when it sends any. */
+  thinking?: string;
 };
 export type AskRun = {
   stage: "start" | "route" | "work" | "check" | "revise";
   mode?: AskResult["mode"];
   parts: AskPart[];
   checker?: string;
+  /** The single answer when the work is not split. */
+  answer?: AskPart;
+  startedAt: number;
 };
-export const emptyRun = (): AskRun => ({ stage: "start", parts: [] });
+export const emptyRun = (): AskRun => ({ stage: "start", parts: [], startedAt: Date.now() });
+/** Several models worked on it together: split between them, or one solving and one checking. */
+export const MODE_NAME = "Pumasi mode";
 
 /** Fold one progress event into the run shown on screen. */
 export function applyProgress(run: AskRun, e: AskProgress): AskRun {
@@ -29,14 +36,23 @@ export function applyProgress(run: AskRun, e: AskProgress): AskRun {
   if (e.stage === "plan") return { ...run, stage: "work", mode: e.mode };
   if (e.stage === "check") return { ...run, stage: "check", checker: e.model };
   if (e.stage === "revise") return { ...run, stage: "revise" };
-  if (e.stage !== "part" || e.id === "answer") return run;
-  const found = run.parts.find((p) => p.id === e.id);
+  if (e.stage === "think") {
+    if (e.id === "answer")
+      return run.answer ? { ...run, answer: { ...run.answer, thinking: e.text } } : run;
+    return {
+      ...run,
+      parts: run.parts.map((p) => (p.id === e.id ? { ...p, thinking: e.text } : p)),
+    };
+  }
+  if (e.stage !== "part") return run;
+  const found = e.id === "answer" ? run.answer : run.parts.find((p) => p.id === e.id);
   const next: AskPart = {
     ...(found ?? { id: e.id, title: e.title, state: e.state }),
     ...Object.fromEntries(Object.entries(e).filter(([k, v]) => k !== "stage" && v !== undefined)),
     // A new try starts clean: no reason left over from the last one.
-    ...(e.state === "running" ? { reason: undefined, from: undefined } : {}),
+    ...(e.state === "running" ? { reason: undefined, from: undefined, thinking: undefined } : {}),
   } as AskPart;
+  if (e.id === "answer") return { ...run, answer: next };
   return {
     ...run,
     parts: found ? run.parts.map((p) => (p.id === e.id ? next : p)) : [...run.parts, next],
@@ -44,7 +60,7 @@ export function applyProgress(run: AskRun, e: AskProgress): AskRun {
 }
 
 const name = (id?: string) => (id ? (modelById(id)?.name ?? id) : "");
-const clock = (ms: number) => {
+export const clock = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return s < 60 ? t("{s}초", { s }) : t("{m}분 {s}초", { m: Math.floor(s / 60), s: s % 60 });
 };
@@ -67,12 +83,18 @@ function partLine(p: AskPart, now: number) {
   return t("{model} · {time}", { model: name(p.model), time: clock(now - (p.startedAt ?? now)) });
 }
 
+/** The last lines of a model's reasoning, as plain text. */
+const lastThought = (text?: string) => (text ?? "").replace(/\s+/g, " ").trim().slice(-220);
+
 export function AskProgressView({
   run,
+  writing,
   onSkip,
   onFinish,
 }: {
   run: AskRun;
+  /** The answer has started to appear below. */
+  writing: boolean;
   onSkip: (id: string) => void;
   onFinish: () => void;
 }) {
@@ -83,6 +105,19 @@ export function AskProgressView({
   }, []);
   const done = run.parts.filter((p) => p.state === "done").length;
   const open = run.parts.filter((p) => !["done", "skipped", "failed"].includes(p.state)).length;
+  const a = run.answer;
+  const single =
+    a?.state === "switch"
+      ? t("{why} {model}(으)로 넘김", { why: why(a.reason), model: name(a.model) })
+      : a?.state === "retry"
+        ? t("{why} 다시 묻는 중", { why: why(a.reason) })
+        : writing
+          ? a?.model
+            ? t("{model}이(가) 답을 쓰는 중", { model: name(a.model) })
+            : t("답을 쓰는 중")
+          : a?.model
+            ? t("{model}이(가) 생각하는 중", { model: name(a.model) })
+            : t("답할 모델을 부르는 중");
   const headline =
     run.stage === "route"
       ? t("어떻게 풀지 정하는 중")
@@ -92,23 +127,34 @@ export function AskProgressView({
           ? t("검수에서 나온 지적을 반영해 고치는 중")
           : run.mode === "split"
             ? t("{total}개로 나눠 푸는 중 · {done}개 끝남", { total: run.parts.length, done })
-            : "";
-  if (!headline) return null;
+            : single;
+  const together = run.mode === "split" || run.mode === "roles";
+  const thought = run.mode === "split" || writing ? "" : lastThought(a?.thinking);
   return (
     <div className="ask-progress" role="status" aria-live="polite">
       <div className="ask-headline">
-        <span>{headline}</span>
+        <span className="ask-headline-text">
+          {together && <span className="mode-chip">{MODE_NAME}</span>}
+          <span>{headline}</span>
+          <span className="ask-elapsed">{clock(now - run.startedAt)}</span>
+        </span>
         {run.mode === "split" && done > 0 && open > 0 && (
           <button type="button" onClick={onFinish}>
             {t("지금까지로 마무리")}
           </button>
         )}
       </div>
+      {thought && <p className="ask-thought">{thought}</p>}
       {run.mode === "split" && (
         <ol>
           {run.parts.map((p) => (
             <li key={p.id} className={`is-${p.state}`}>
-              <span className="ask-part-title">{p.title}</span>
+              <span className="ask-part-title">
+                {p.title}
+                {p.state === "running" && p.thinking && (
+                  <span className="ask-part-thought">{lastThought(p.thinking)}</span>
+                )}
+              </span>
               <span className="ask-part-state">{partLine(p, now)}</span>
               {!["done", "skipped", "failed"].includes(p.state) && (
                 <button type="button" onClick={() => onSkip(p.id)}>
@@ -137,6 +183,7 @@ export function howLine(r: AskResult): string {
     const skipped = r.parts?.filter((p) => p.skipped).length ?? 0;
     const failed = r.parts?.filter((p) => p.failed).length ?? 0;
     return [
+      MODE_NAME,
       t("{n}개로 나눠 풂", { n }),
       skipped ? t("{n}개 건너뜀", { n: skipped }) : "",
       failed ? t("{n}개 실패", { n: failed }) : "",
@@ -147,6 +194,7 @@ export function howLine(r: AskResult): string {
   const model = name(r.model);
   if (r.mode === "roles" && r.check)
     return [
+      MODE_NAME,
       model,
       r.check.revised
         ? t("{model}의 검수를 반영해 고침", { model: name(r.check.model) })
