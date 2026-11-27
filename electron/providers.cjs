@@ -394,6 +394,9 @@ async function call(
   } else {
     headers["x-api-key"] = key;
     headers["anthropic-version"] = "2023-06-01";
+    // The web version calls Anthropic from the user's own browser with the user's own key.
+    if (typeof window !== "undefined")
+      headers["anthropic-dangerous-direct-browser-access"] = "true";
     body = { model: p.model, system, messages, max_tokens: p.maxOutputTokens };
   }
   // Only a plain answer streams; plans, reviews and votes need the whole JSON at once.

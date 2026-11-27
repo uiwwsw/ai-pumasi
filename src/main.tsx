@@ -51,6 +51,9 @@ import { PumasiPanel } from "./pumasi";
 import { CodeWorkspace } from "./code-view";
 import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import "./style.css";
+import { installWebBridge } from "./web-bridge";
+// In a browser there is no desktop main process: the web version provides the same bridge.
+installWebBridge();
 function readSaved(): Workspace {
   try {
     return restoreWorkspace(
@@ -1047,7 +1050,13 @@ function App() {
                 type="button"
                 className={`together-toggle ${routing.team && routing.pumasi ? "on" : ""}`}
                 aria-pressed={routing.team && routing.pumasi}
-                title={t("켜면 팀 모드로 실행하고, 리더가 나눈 작업을 다른 사람 앱이 먼저 맡습니다.")}
+                // Pitch in needs the desktop app; the web version has no helper network.
+                disabled={!window.auroraAI?.pumasi}
+                title={
+                  window.auroraAI?.pumasi
+                    ? t("켜면 팀 모드로 실행하고, 리더가 나눈 작업을 다른 사람 앱이 먼저 맡습니다.")
+                    : t("함께하기는 설치 앱에서 쓸 수 있습니다.")
+                }
                 onClick={() =>
                   setRouting((r) =>
                     r.team && r.pumasi

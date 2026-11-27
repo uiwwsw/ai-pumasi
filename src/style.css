@@ -1944,3 +1944,9 @@ html[data-theme="dark"] .code-error {
 .attach-button {
   color: var(--muted);
 }
+.secret-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--muted);
+}

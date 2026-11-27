@@ -56,8 +56,15 @@ test("web pages expose localized content, self canonicals, reciprocal alternates
         ),
       );
     }
-    assert.ok(en.includes('src="/assets/app.js"'));
-    assert.ok(en.includes('href="/assets/app.css"'));
+    // The landing pages carry no app; the web version of the app has its own page at /app/.
+    const app = await readFile(path.join(outputDir, "app/index.html"), "utf8");
+    assert.ok(!en.includes('src="/assets/app.js"'));
+    assert.ok(app.includes('src="/assets/app.js"'));
+    assert.ok(app.includes('href="/assets/app.css"'));
+    assert.ok(en.includes('href="/app/"') && ko.includes('href="/app/"'));
+    // Only the app page may connect out, and only to https or this computer.
+    assert.ok(en.includes("connect-src 'none'"));
+    assert.ok(app.includes("connect-src https: http://127.0.0.1:* http://localhost:*"));
     const { version } = JSON.parse(
       await readFile(new URL("../package.json", import.meta.url), "utf8"),
     );
@@ -73,7 +80,7 @@ test("web pages expose localized content, self canonicals, reciprocal alternates
       ),
     );
     const sitemap = await readFile(path.join(outputDir, "sitemap.xml"), "utf8");
-    assert.equal((sitemap.match(/<loc>/g) || []).length, 2);
+    assert.equal((sitemap.match(/<loc>/g) || []).length, 3);
     assert.ok(
       (await readFile(path.join(outputDir, "robots.txt"), "utf8")).includes(
         `Sitemap: ${origin}/sitemap.xml`,

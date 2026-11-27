@@ -37,7 +37,7 @@
   "최신 버전을 사용하고 있습니다.": "You are using the latest version.",
   "도움말": "Help",
   "업데이트 확인…": "Check for Updates…",
-  "키 형식이 올바르지 않습니다.": "Invalid key format.",
+  "키 형식이 올바르지 않습니다.": "That key doesn't look right.",
   "주소 형식이 올바르지 않습니다.": "Invalid address format.",
   "https 주소이거나 이 기기(127.0.0.1·localhost) 주소여야 합니다.": "Must be an https address or a local address (127.0.0.1·localhost).",
   "주소에 계정 정보를 넣지 마세요. 키는 키 칸에 따로 넣으세요.": "Do not include credentials in the address. Put the key in the key field.",
@@ -99,5 +99,6 @@
   "2분이 지나 멈췄습니다.": "Stopped after 2 minutes.",
   "답할 모델이 없습니다. 설정 → API 키에서 키를 하나 넣으세요. NVIDIA·OpenRouter·Groq·Gemini 키는 무료입니다.": "No model to answer with. Add a key in Settings → API keys. NVIDIA, OpenRouter, Groq and Gemini keys are free.",
   "되돌릴 변경을 찾지 못했습니다.": "Couldn't find that change to undo.",
-  "저장한 뒤 파일이 바뀌어 되돌리지 않았습니다.": "The file changed after it was saved, so it wasn't undone."
+  "저장한 뒤 파일이 바뀌어 되돌리지 않았습니다.": "The file changed after it was saved, so it wasn't undone.",
+  "https 주소여야 합니다.": "The address must start with https."
 }
