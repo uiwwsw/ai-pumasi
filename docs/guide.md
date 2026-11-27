@@ -38,7 +38,7 @@ Anthropic이 [Building effective agents](https://www.anthropic.com/engineering/b
 
 ## 앱 밖에서 한 측정
 
-`bench/`에는 측정 기록이 있습니다. 무료 모델은 각 제공자의 무료 API로 불렀고, 묶음 투표는 0.1.6부터 앱에 들어 있습니다.
+`bench/`에는 측정 기록이 있습니다. 무료 모델은 각 제공자의 무료 API로 불렀고, 묶음 투표는 0.1.6부터 0.2.0-beta.2까지 앱에 있었고 이후 없앴습니다.
 
 | 측정 | 무료 모델 묶음 | ChatGPT 무료 | 참고 |
 | --- | --- | --- | --- |

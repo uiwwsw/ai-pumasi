@@ -5,7 +5,6 @@ contextBridge.exposeInMainWorld("auroraAI", {
   setLang: (lang) => ipcRenderer.invoke("aurora:set-lang", lang),
   request: (payload) => ipcRenderer.invoke("aurora:ai-request", payload),
   team: (payload) => ipcRenderer.invoke("aurora:team-run", payload),
-  ensemble: (payload) => ipcRenderer.invoke("aurora:ensemble-run", payload),
   // Write-only: the window can save, replace or remove a key and see whether one is set.
   // There is deliberately no way to read a saved key back.
   secrets: {

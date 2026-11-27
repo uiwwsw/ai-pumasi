@@ -1,7 +1,6 @@
 // UI language. Korean source strings are the keys; English comes from src/i18n/en-*.json.
 // Placeholders look like {name} and are filled from the second argument.
 import main from "./i18n/en-main.json";
-import ensemble from "./i18n/en-ensemble.json";
 import secrets from "./i18n/en-secrets.json";
 import domain from "./i18n/en-domain.json";
 import electron from "./i18n/en-electron.json";
@@ -16,7 +15,6 @@ const EN: Record<string, string> = {
   ...code,
   ...domain,
   ...secrets,
-  ...ensemble,
   ...main,
 };
 

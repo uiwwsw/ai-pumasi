@@ -6,7 +6,7 @@ Pumasi Agent 저장소에 들어 있는 파일, 의존하는 라이브러리와 
 
 - 품앗이 에이전트는 새로운 라우팅 알고리즘을 만들지 않았다. 앱 안의 "추천"은 분석용 모델에게 어떤 모델이 좋을지 물어보는 프롬프트 한 번이고, 실행 모델은 사람이 고른다.
 - 팀 모드의 총괄 모델 기본값은 Claude Opus 5.5(OpenAI 프리셋에서는 GPT-6 Astra)로, 유료 API 키가 필요하다. 무료로 돌아가는 쪽은 작업 모델(Gemini Flash 무료 한도, Ollama 로컬)뿐이다. 총괄 모델에 무료 모델을 고를 수는 있지만 그 조합은 측정하지 않았다.
-- `bench/`는 측정 기록이다. 무료 모델 묶음의 투표 규칙은 0.1.6부터 앱의 묶음 투표(`electron/ensemble.cjs`)에 들어 있다.
+- `bench/`는 측정 기록이다. 묶음 투표는 0.1.6~0.2.0-beta.2에 있었고, Super 혼자보다 낫지 않아 이후 없앴다. 측정한 모델 점수(`src/ensemble-weights.json`)는 자동 모델과 리더 순위에 계속 쓴다.
 
 ## 파일 구조
 
@@ -83,7 +83,7 @@ pumasi-agent/
 | Anthropic Messages API | 분석·실행·총괄 모델 (팀 모드 총괄 모델 기본값) | 유료 API 키 |
 | Google Gemini (OpenAI 호환 주소) | 작업 모델 기본값 | 무료 한도 안에서 무료 |
 | [Ollama](https://ollama.com) | 작업 모델 (내 컴퓨터에서 실행, 기본 `qwen3`) | 무료, 대신 내 컴퓨터 자원 사용 |
-| OpenAI 호환 서버 (OpenRouter, NVIDIA 등) | `.env`에 주소를 넣은 경우 묶음 투표·팀 모드 | 제공자마다 다름 |
+| OpenAI 호환 서버 (OpenRouter, NVIDIA 등) | `.env`에 주소를 넣은 경우 자동 모델·팀 모드 | 제공자마다 다름 |
 | GitHub Releases, Vercel | 설치 파일 배포, 웹 데모 | — |
 
 ## 빌려 온 아이디어

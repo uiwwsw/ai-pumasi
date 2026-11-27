@@ -112,11 +112,21 @@ try {
   await page.getByText("고급: 모델과 팀").click();
   await page.getByLabel("답할 모델", { exact: true }).selectOption("gpt-6.1-sol");
   await close();
+  // A text file rides along with the question: the model gets its content, the chat shows its name.
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "notes.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("첨부 내용 한 줄"),
+  });
+  await expect(page.locator(".composer .attach-chip")).toContainText("notes.txt");
   await send("이어서 설명해 줘");
   // Wait for the streamed answer to be replaced by the finished one.
   await expect(page.locator(".message.assistant").nth(1)).toContainText("모의 API 답변");
   await expect(page.locator(".message")).toHaveCount(4);
+  await expect(page.locator(".message.user .attach-chip")).toContainText("notes.txt");
+  await expect(page.locator(".composer .attach-chip")).toHaveCount(0);
   let calls = await app.evaluate(() => globalThis.auroraTestCalls);
+  expect(calls[1].text).toContain('<file name="notes.txt">\n첨부 내용 한 줄\n</file>');
   expect(calls.map((c) => [c.action, c.model, c.maxOutputTokens])).toEqual([
     ["execute", "auto-free", 4096],
     ["execute", "gpt-6.1-sol", 4096],
@@ -217,6 +227,7 @@ try {
           "missing-key-message",
           "enter-sends-without-dialog",
           "answer-streams",
+          "text-attachment",
           "auto-default-and-advanced-model",
           "real-usage-only",
           "API-error-retains-draft-no-retry",

@@ -31,14 +31,7 @@ export type RoutingSettings = {
   /** Team mode hands its tasks to other people's apps first (Pumasi). */
   pumasi: boolean;
   pumasiCopies: number;
-  /** Bundle vote: ask several free or light models at once and vote. Overrides team mode. */
-  ensemble: boolean;
-  ensembleModels: string[];
 };
-/** Models a bundle may hold: free ones and each provider's light tier. */
-export const bundleModels = models.filter(
-  (m) => m.provider !== "auto" && (m.free === true || m.tier === "light"),
-);
 const weightOf = (id: string) =>
   (weights.models as Record<string, number>)[id] ?? weights.default ?? 0;
 /** Free models that can lead with the automatic lead, in measured order (strongest first). */
@@ -52,11 +45,7 @@ export function leadRanking(order: string[]) {
     .map((id) => leadCandidates.find((m) => m.id === id))
     .filter((m): m is (typeof models)[number] => !!m);
 }
-export const BUNDLE_MIN = 2;
-export const BUNDLE_MAX = 5;
 const teamDefaults = {
-  ensemble: false,
-  ensembleModels: [] as string[],
   team: false,
   pumasi: false,
   pumasiCopies: 2,
@@ -104,16 +93,6 @@ export function readRouting(raw: string | null): RoutingSettings {
         worker: models.some((m) => m.id === d.worker)
           ? d.worker
           : teamDefaults.worker,
-        ensemble: d.ensemble === true,
-        ensembleModels: Array.isArray(d.ensembleModels)
-          ? [...new Set(d.ensembleModels as unknown[])]
-              .filter(
-                (id): id is string =>
-                  typeof id === "string" &&
-                  bundleModels.some((m) => m.id === id),
-              )
-              .slice(0, BUNDLE_MAX)
-          : [],
       };
   } catch {}
   return { ...presets.openai };
@@ -230,37 +209,6 @@ export type TeamResult = {
   worker: string;
   substitutions?: { requested: string; servedBy: string | null }[];
 };
-export type EnsembleModelResult = {
-  model: string;
-  weight: number;
-  ok: boolean;
-  /** Not waited for: the vote was already settled. */
-  stopped?: boolean;
-  answer: string;
-  agreed: boolean;
-  reason?: string;
-  text: string;
-  usage: { in: number; out: number };
-};
-export type EnsembleResult = {
-  kind: "vote" | "merge" | "single";
-  text: string;
-  writer: string;
-  answer: string;
-  agree: number;
-  voters: number;
-  asked: number;
-  /** The vote was settled before every model answered; the rest were not waited for. */
-  stoppedEarly?: boolean;
-  score: number;
-  models: EnsembleModelResult[];
-  usage: {
-    total: { in: number; out: number };
-    byModel: Record<string, { in: number; out: number }>;
-  };
-  warning: string;
-  substitutions: { requested: string; servedBy: string | null }[];
-};
 /** Free hosts whose key a helper may lend to Pumasi. Paid keys are never lent. */
 export type PumasiHost = "nvidia" | "groq" | "openrouter" | "google";
 export const PUMASI_HOSTS: PumasiHost[] = ["nvidia", "openrouter", "groq", "google"];
@@ -332,11 +280,6 @@ export interface AIBridge {
     help(slotId: string): Promise<{ tokens: number }>;
     onProgress(fn: (e: PumasiProgress) => void): () => void;
   };
-  ensemble?(payload: {
-    models: string[];
-    text: string;
-    context: AIRequest["context"];
-  }): Promise<EnsembleResult>;
   team?(payload: {
     lead: string;
     worker: string;

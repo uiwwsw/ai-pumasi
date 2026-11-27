@@ -43,7 +43,7 @@ const translations = {
       ],
       [
         "정말 무료 모델로 충분한가요?",
-        "질문에 따라 다릅니다. 직접 만든 추론 시험과 AIME 2026에서 Nemotron 3.5 Super 혼자서 ChatGPT 무료보다 높았습니다. 같은 질문을 여러 모델에 묻는 방식은 Super 혼자보다 점수가 높지 않고 토큰이 여러 배 들어 기본으로 꺼 두었습니다. 측정 방법과 원자료는 저장소의 측정 기록에 있습니다."
+        "질문에 따라 다릅니다. 직접 만든 추론 시험과 AIME 2026에서 Nemotron 3.5 Super 혼자서 ChatGPT 무료보다 높았습니다. 같은 질문을 여러 모델에 묻고 투표하는 방식은 Super 혼자보다 점수가 높지 않고 토큰이 여러 배 들어 없앴습니다. 측정 방법과 원자료는 저장소의 측정 기록에 있습니다."
       ],
       [
         "키는 어디에 저장되나요?",
@@ -104,7 +104,7 @@ const translations = {
       ],
       [
         "Are free models really enough?",
-        "For a lot of questions, yes. On our reasoning exam and AIME 2026, Nemotron 3.5 Super alone beat ChatGPT free. Asking several models the same question did not score higher than Super alone and costs several times the tokens, so it is off by default. Methods and raw data are in the repository."
+        "For a lot of questions, yes. On our reasoning exam and AIME 2026, Nemotron 3.5 Super alone beat ChatGPT free. Asking several models the same question and voting did not score higher than Super alone and cost several times the tokens, so it was removed. Methods and raw data are in the repository."
       ],
       [
         "Who can read a task I hand to Pumasi?",
