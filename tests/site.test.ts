@@ -165,7 +165,7 @@ test("Vercel upload retains build dependencies while excluding desktop and priva
   }
 });
 
-test("the desktop sign-in return page only ever forwards to this computer", async () => {
+test("the desktop sign-in return page only ever hands the code to this computer", async () => {
   const js = await readFile(new URL("../public/desktop-login.js", import.meta.url), "utf8");
   const run = (search: string) => {
     let went = "";
@@ -176,9 +176,12 @@ test("the desktop sign-in return page only ever forwards to this computer", asyn
     );
     return { went, failed: !els[1].hidden };
   };
+  // From 0.2.1 the app opens through its own link.
+  assert.equal(run("?code=abc&state=xY_-z").went, "pumasi-agent://openrouter?state=xY_-z&code=abc");
+  // Apps up to 0.2.0 carry a port after the last dot and wait on 127.0.0.1.
   assert.equal(run("?code=abc&state=xY_-z.51423").went, "http://127.0.0.1:51423/callback?state=xY_-z.51423&code=abc");
-  // No port, a port outside the range, or a host smuggled into state: nothing is opened.
-  for (const bad of ["?code=abc&state=nostate", "?code=a&state=s.80", "?code=a&state=s.evil.com:8080", "?code=a&state=s.99999"]) {
+  // No state, a port outside the range, or a host smuggled into state: nothing is opened.
+  for (const bad of ["?code=abc", "?code=a&state=s.80", "?code=a&state=s.evil.com:8080", "?code=a&state=s.99999", "?code=a&state=a/b", "?code=a&state=x%26y"]) {
     const r = run(bad);
     assert.equal(r.went, "");
     assert.equal(r.failed, true);
