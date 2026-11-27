@@ -45,7 +45,7 @@ Most token-sharing projects collect keys or credits in one place and hand them o
 
 Pitch in works the other way round. You share the problem. Someone who wants to help picks it up, solves it with their own tools, and sends back the result. Keys and credits stay with the people who own them, and nothing sits in the middle that could be abused.
 
-Today's app has the first piece: another user's app runs one of your team's tasks on their own free key, sealed between the two devices. The full version, where a person takes a role the lead hands out and works on it until the answer is right, is still an idea. It isn't built yet, and we're looking for contributors to build it. See [CONTRIBUTING.md](CONTRIBUTING.md), or open an issue to talk it through.
+Today's app has the first piece: another user's app runs one of your team's tasks on their own free key, sealed between the two devices. The full version, where a person takes a role the lead hands out and works on it until the answer is right, is still an idea. It isn't built yet, and we're looking for contributors to build it. [docs/pitch-in.md](docs/pitch-in.md) lists what's built and the open problems; pick one and open an issue.
 
 ## Also in the box
 
