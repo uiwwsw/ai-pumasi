@@ -33,8 +33,9 @@ try {
     timeout: 60000,
   });
   const page = await app.firstWindow();
+  // A fresh install has no key yet, so it opens on the key setup screen.
   await expect(
-    page.getByRole("heading", { name: "무엇을 도와드릴까요?" }),
+    page.getByRole("heading", { name: "API 키를 등록해 주세요" }),
   ).toBeVisible();
   expect(await app.evaluate(({ app }) => app.isPackaged)).toBe(true);
   const status = await page.evaluate(() => window.auroraAI.status());
