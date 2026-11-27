@@ -21,6 +21,7 @@ import {
   Undo2,
   Users,
   X,
+  Download,
 } from "lucide-react";
 import {
   Chat,
@@ -1140,20 +1141,20 @@ function App() {
                 type="button"
                 className={`together-toggle ${routing.team && routing.pumasi ? "on" : ""}`}
                 aria-pressed={routing.team && routing.pumasi}
-                // Pitch in needs the desktop app; the web version has no helper network.
-                disabled={!window.auroraAI?.pumasi}
                 title={
                   window.auroraAI?.pumasi
                     ? t("켜면 팀 모드로 실행하고, 리더가 나눈 작업을 다른 사람 앱이 먼저 맡습니다.")
                     : t("Pitch in은 설치 앱에서 쓸 수 있습니다.")
                 }
-                onClick={() =>
+                onClick={() => {
+                  // Pitch in needs the desktop app; on the web, say so and offer the download.
+                  if (!window.auroraAI?.pumasi) return setDialog("pumasi");
                   setRouting((r) =>
                     r.team && r.pumasi
                       ? { ...r, pumasi: false }
                       : { ...r, team: true, pumasi: true },
-                  )
-                }
+                  );
+                }}
               >
                 <Users size={14} />
                 {t("Pitch in")}
@@ -1294,7 +1295,26 @@ function App() {
               </button>
             </header>
             {dialog === "pumasi" ? (
-              <PumasiPanel />
+              window.auroraAI?.pumasi ? (
+                <PumasiPanel />
+              ) : (
+                <div className="desktop-only">
+                  <p>
+                    {t(
+                      "Pitch in은 데스크톱 앱에서만 쓸 수 있습니다. 다른 사람의 작업을 받아 푸는 일은 앱이 켜져 있는 동안 내 컴퓨터에서 돌아갑니다.",
+                    )}
+                  </p>
+                  <a
+                    className="primary-button"
+                    href="https://yatko.app/uiwwsw/pumasi-agent"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <Download size={16} />
+                    {t("데스크톱 앱 받기")}
+                  </a>
+                </div>
+              )
             ) : (
               <>
                 <SecretSettings
