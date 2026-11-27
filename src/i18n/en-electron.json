@@ -116,5 +116,9 @@
   "로그인했습니다": "You're signed in",
   "이 창을 닫고 Pumasi Agent로 돌아가세요.": "Close this tab and go back to Pumasi Agent.",
   "OpenRouter 로그인을 취소했습니다.": "Cancelled signing in to OpenRouter.",
-  "OpenRouter 로그인을 마치지 못했습니다. 다시 시도해 주세요.": "Couldn't finish signing in to OpenRouter. Please try again."
+  "OpenRouter 로그인을 마치지 못했습니다. 다시 시도해 주세요.": "Couldn't finish signing in to OpenRouter. Please try again.",
+  "건너뜀": "skipped",
+  "답:": "Answer:",
+  "이전 답:": "Previous answer:",
+  "다른 모델의 지적(맞는지 따져 보고, 맞으면 고쳐서 전체 답을 다시 쓰세요):": "Another model's objection (weigh it; if it is right, fix the answer and write it out in full again):"
 }
