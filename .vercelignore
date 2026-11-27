@@ -12,7 +12,13 @@ distribution
 dist
 artifacts
 build
-electron
+# The web version bundles the shared provider and team code; nothing else from electron/.
+electron/*
+!electron/providers.cjs
+!electron/team.cjs
+!electron/router.cjs
+!electron/i18n.cjs
+!electron/worker-stats.cjs
 tests
 scripts/*
 !scripts/build-web.mjs
