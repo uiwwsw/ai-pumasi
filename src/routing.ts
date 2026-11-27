@@ -2,7 +2,6 @@ import catalog from "./catalog.json";
 import weights from "./ensemble-weights.json";
 import { modelName } from "./i18n";
 import type { Tier } from "./domain";
-import type { UsageHistory } from "./usage";
 export type Provider =
   "openai" | "anthropic" | "gemini" | "ollama" | "compat" | "auto";
 export type Model = {
@@ -69,10 +68,9 @@ const teamDefaults = {
 export const presets: Record<"openai" | "anthropic", RoutingSettings> = {
   openai: {
     analyzer: "gpt-6-luna",
-    executor: "gpt-6.1-sol",
+    executor: "auto-free",
     live: false,
     ...teamDefaults,
-    lead: "gpt-6-astra",
   },
   anthropic: {
     analyzer: "claude-haiku-5-5",
@@ -156,6 +154,8 @@ export type Completion = {
   inputTokens: number | null;
   outputTokens: number | null;
   incomplete: boolean;
+  /** With Auto: the model that actually answered. */
+  modelId?: string;
 };
 export type Analysis = Completion & {
   summary: string;
@@ -345,11 +345,7 @@ export interface AIBridge {
     leadOrder?: string[];
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
-  usage?: {
-    get(): Promise<UsageHistory>;
-    setEnabled(enabled: boolean): Promise<UsageHistory>;
-    clear(): Promise<UsageHistory>;
-  };
+
   status(): Promise<ProviderStatus>;
   setLang?(lang: "ko" | "en"): Promise<void>;
   secrets?: {

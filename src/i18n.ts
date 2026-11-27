@@ -54,7 +54,7 @@ export const appName = () => (lang === "en" ? "Pumasi Agent" : "품앗이 에이
 export function modelName(name: string) {
   if (lang !== "en") return name;
   return name
-    .replace("자동 (무료 모델 중 지금 되는 가장 강한 것)", "Auto (strongest free model available now)")
+    .replace(/^자동$/, "Auto")
     .replace("(무료 한도)", "(free tier)")
     .replace("Ollama 로컬", "Ollama local")
     .replace("(무료)", "(free)");

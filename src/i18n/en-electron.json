@@ -2,7 +2,6 @@
   "요청 형식 또는 출력 한도가 올바르지 않습니다.": "Invalid request format or output limit.",
   "전송할 문맥이 너무 큽니다. 이전 작업을 묶거나 보관한 뒤 다시 검토해 주세요.": "The context to send is too large. Bundle or archive previous work and try again.",
   "결과가 이미 정해져 이 요청은 멈췄습니다.": "The result has already been decided, so this request has stopped.",
-  "자동으로 쓸 무료 모델이 없습니다. 설정 → API 키에서 NVIDIA·OpenRouter·Groq·Gemini 중 하나의 키를 넣으세요.": "No free model available for auto. Add a key for NVIDIA, OpenRouter, Groq, or Gemini in Settings → API Keys.",
   "빈 답이 와서 다음 무료 모델로 넘겼습니다.": "Received an empty answer, moving to the next free model.",
   "{name}을(를) 줄 수 있는 무료 제공자 키가 없습니다. 설정 → API 키에서 넣으세요.": "No free provider key available for {name}. Add one in Settings → API Keys.",
   "{keyName}가 설정되지 않았습니다.": "{keyName} is not set.",
@@ -58,11 +57,8 @@
   "[결과 없음]": "[No result]",
   "[…검수용으로 {count}자 생략. 생략분은 최종 답에 그대로 포함됨]": "[…{count} chars omitted for review. Omitted part is included in the final answer]",
   "출력 상한 도달": "Output limit reached",
-  "(실패: {error})": "(Failed: {error})",
-  "(결과 없음)": "(No result)",
   "이전 결과:": "Previous result:",
   "없음": "None",
-  "검토 의견(이것만 고쳐서 전체 결과를 다시 작성:)": "Review feedback (fix only this and rewrite the full result):",
   "저장하지 못했습니다.": "Could not save.",
   "요청:": "Request:",
   "같은 요청에 대한 여러 모델의 답:": "Multiple model answers for the same request:",
@@ -112,5 +108,6 @@
   "저장할 내용이 올바르지 않습니다.": "The content to save is not valid.",
   "파일이 너무 큽니다 (1MB 초과).": "The file is too large (over 1 MB).",
   "파일이 아닙니다.": "That is not a file.",
-  "2분이 지나 멈췄습니다.": "Stopped after 2 minutes."
+  "2분이 지나 멈췄습니다.": "Stopped after 2 minutes.",
+  "답할 모델이 없습니다. 설정 → API 키에서 키를 하나 넣으세요. NVIDIA·OpenRouter·Groq·Gemini 키는 무료입니다.": "No model to answer with. Add a key in Settings → API keys. NVIDIA, OpenRouter, Groq and Gemini keys are free."
 }

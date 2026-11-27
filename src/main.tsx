@@ -2,15 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
-  Archive,
   ArrowUp,
-  ArrowUpRight,
-  Check,
   ChevronDown,
   ChevronRight,
   ChevronUp,
-  CircleHelp,
-  Folder,
   Layers,
   Menu,
   MessageSquare,
@@ -20,38 +15,30 @@ import {
   Search,
   Settings2,
   Sparkles,
-  Trash2,
   Undo2,
   Users,
   X,
 } from "lucide-react";
 import {
-  Bundle,
   Chat,
   LEGACY_KEY,
-  Proposal,
   STORAGE_KEY,
   Tier,
   Workspace,
   activeContext,
   makePreview,
-  organize,
-  propose,
   restoreWorkspace,
-  tierNames,
 } from "./domain";
 import {
   models,
   modelById,
   leadRanking,
-  presets,
   readRouting,
   ROUTING_KEY,
   type RoutingSettings,
   type ProviderStatus,
   modelReady,
   type TeamResult,
-  type Analysis,
   type Completion,
 } from "./routing";
 import {
@@ -64,13 +51,6 @@ import { SecretSettings } from "./secrets";
 import { PumasiPanel } from "./pumasi";
 import { CodeWorkspace } from "./code-view";
 import { appName, getLang, setLang, t, type Lang } from "./i18n";
-import {
-  project,
-  projectTeam,
-  type Projection,
-  type StageLine,
-  type UsageHistory,
-} from "./usage";
 import "./style.css";
 function readSaved(): Workspace {
   try {
@@ -82,10 +62,6 @@ function readSaved(): Workspace {
     return restoreWorkspace(null, null);
   }
 }
-const range = (numbers: [number, number]) =>
-  numbers.map((n) => Math.ceil(n).toLocaleString()).join("–");
-const percentage = (numbers: [number, number]) =>
-  numbers.map((n) => (n < 0.1 ? "<0.1" : n.toFixed(1))).join("–") + "%";
 const statusNames = {
   active: t("진행 중"),
   grouped: t("묶음"),
@@ -95,44 +71,8 @@ const statusNames = {
 type Pending = {
   text: string;
   modelId: string;
-  analysis?: Analysis;
   selected: Tier;
-  proposal: Proposal | null;
-  decision: "grouped" | "archived" | "trashed" | "continue" | null;
 };
-const stageNames: Record<StageLine["kind"], string> = {
-  execute: t("실행"),
-  analyze: t("분석"),
-  plan: t("계획"),
-  work: t("작업"),
-  review: t("검토"),
-  merge: t("합치기"),
-};
-const calls = ([a, b]: [number, number]) =>
-  a === b ? t("{a}회", { a }) : t("{a}–{b}회", { a, b });
-/** Where a number came from: the user's own past responses or the fixed tier assumption. */
-function basisText(p: Projection): string {
-  if (p.basis === "history")
-    return p.stages.length > 1
-      ? t("단계별 실제 기록 {samples}건 기준", {
-          samples: p.samples.toLocaleString(),
-        })
-      : t("이 모델의 실제 기록 {samples}건 기준", {
-          samples: p.samples.toLocaleString(),
-        });
-  if (p.basis === "mixed") {
-    const known = p.stages.filter((s) => s.samples > 0).length;
-    return t("단계 {total}개 중 {known}개는 실제 기록, 나머지는 기본 가정", {
-      total: p.stages.length,
-      known,
-    });
-  }
-  return p.stages.length > 1
-    ? t(
-        "기본 가정 · 단계별로 같은 모델 기록이 5건 모이면 실제 사용량으로 바뀝니다",
-      )
-    : t("기본 가정 · 같은 모델 기록이 5건 모이면 실제 사용량으로 바뀝니다");
-}
 type WorkerRow = {
   taskId: string;
   title?: string;
@@ -222,11 +162,19 @@ function App() {
   );
   const [draft, setDraft] = useState("");
   const [routing, setRouting] = useState<RoutingSettings>(() => {
+    let saved: RoutingSettings;
     try {
-      return readRouting(localStorage.getItem(ROUTING_KEY));
+      saved = readRouting(localStorage.getItem(ROUTING_KEY));
     } catch {
-      return readRouting(null);
+      saved = readRouting(null);
     }
+    // The desktop app always calls real models; the browser demo never does.
+    const live = !!window.auroraAI;
+    return {
+      ...saved,
+      executor: saved.live ? saved.executor : "auto-free",
+      live,
+    };
   });
   const [providerStatus, setProviderStatus] = useState<ProviderStatus>({
     openai: false,
@@ -238,7 +186,12 @@ function App() {
   });
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
-  const [aiError, setAIError] = useState("");
+  const [aiError, setAIErrorRaw] = useState("");
+  // Electron prefixes errors from the main process; show only the message itself.
+  const setAIError = (message: string) =>
+    setAIErrorRaw(
+      message.replace(/^Error invoking remote method '[^']+': (Error: )?/, ""),
+    );
   const refreshStatus = () =>
     window.auroraAI
       ?.status()
@@ -255,35 +208,14 @@ function App() {
       setAIError(t("모델 설정을 저장하지 못했습니다."));
     }
   }, [routing]);
-  const [pending, setPending] = useState<Pending | null>(null);
-  // Past token counts from the main process; null outside Electron or before the first read.
-  const [history, setHistory] = useState<UsageHistory | null>(null);
-  const [confirmClear, setConfirmClear] = useState(false);
-  const refreshHistory = () =>
-    window.auroraAI?.usage
-      ?.get()
-      .then(setHistory)
-      .catch(() => {});
-  useEffect(() => {
-    refreshHistory();
-  }, []);
-  const teamRun = routing.live && routing.team;
-  function forecast(
-    text: string,
-    ctx: Chat["messages"],
-    modelId: string,
-  ): Projection {
-    return teamRun
-      ? projectTeam(
-          text,
-          ctx,
-          workspace.budget,
-          modelById(routing.lead),
-          modelById(routing.worker),
-          history,
-        )
-      : project(text, ctx, workspace.budget, modelById(modelId), history);
-  }
+  // The question being answered right now, shown in the conversation until the answer lands.
+  const [sending, setSending] = useState<string | null>(null);
+  // Tokens the provider reported for the last answer. Nothing is guessed before sending.
+  const [lastUsage, setLastUsage] = useState<{
+    model: string;
+    input: number;
+    output: number;
+  } | null>(null);
   const [sidebar, setSidebar] = useState(
     () => !window.matchMedia("(max-width: 680px)").matches,
   );
@@ -393,7 +325,6 @@ function App() {
       if (busyRef.current) return;
       if (e.key === "Escape") {
         setDialog(null);
-        setPending(null);
       }
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
@@ -404,7 +335,7 @@ function App() {
     return () => window.removeEventListener("keydown", listener);
   }, []);
   useEffect(() => {
-    if (!dialog && !pending) return;
+    if (!dialog) return;
     const previous = document.activeElement as HTMLElement | null;
     const modal = document.querySelector<HTMLElement>('[role="dialog"]');
     modal?.querySelector<HTMLElement>("input,select,button")?.focus();
@@ -430,70 +361,29 @@ function App() {
       document.removeEventListener("keydown", trap);
       previous?.focus();
     };
-  }, [dialog, !!pending]);
-  function context(decision: Pending["decision"] = null) {
+  }, [dialog]);
+  function context() {
     return auto
       ? activeContext(
-          decision && decision !== "continue"
-            ? workspace.bundles.filter(
-                (b) => b.id !== pending?.proposal?.bundleId,
-              )
-            : workspace.bundles,
+          workspace.bundles,
         )
       : (legacyChat?.messages ?? []);
   }
+  // Enter sends. No confirmation step: the model comes from settings (Auto by default).
   function review() {
     const text = draft.trim();
-    if (!text || pending) return;
-    const suggestion = auto ? propose(workspace.bundles, text) : null;
+    if (!text || busyRef.current) return;
     setAIError("");
-    const initial = modelById(routing.executor);
-    setPending({
+    const model = modelById(routing.executor);
+    void proceed({
       text,
-      modelId: initial.id,
-      selected: initial.tier,
-      proposal: suggestion,
-      decision: suggestion ? null : "continue",
+      modelId: model.id,
+      selected: model.tier,
     });
   }
-  function chooseDecision(decision: Pending["decision"]) {
-    if (!pending) return;
-    setPending({ ...pending, decision });
-  }
-  async function analyze() {
-    if (!pending || busyRef.current || !window.auroraAI) return;
-    busyRef.current = true;
-    setBusy(true);
-    setAIError("");
-    try {
-      const result = (await window.auroraAI.request({
-        action: "analyze",
-        model: routing.analyzer,
-        text: pending.text,
-        context: context(pending.decision),
-        maxOutputTokens: 2048,
-      })) as Analysis;
-      setPending((p) => (p ? { ...p, analysis: result } : p));
-      setNotice(
-        t("내부 분석 · {model} · 입력 {input} / 출력 {output} 토큰 사용", {
-          model: modelById(result.model).name,
-          input: result.inputTokens ?? t("미확인"),
-          output: result.outputTokens ?? t("미확인"),
-        }),
-      );
-    } catch (error) {
-      setAIError(
-        error instanceof Error ? error.message : t("내부 분석에 실패했습니다."),
-      );
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-      refreshHistory();
-    }
-  }
-  async function proceed() {
-    if (!pending || !pending.decision || busyRef.current) return;
-    const p = pending;
+  async function proceed(p: Pending) {
+    if (busyRef.current) return;
+    setSending(p.text);
     let completion: Completion | null = null;
     let team: TeamResult | null = null;
     let bundle: ReturnType<typeof ensembleMessage> | null = null;
@@ -530,7 +420,7 @@ function App() {
         const r = await window.auroraAI.ensemble({
           models: picked,
           text: p.text,
-          context: context(p.decision),
+          context: context(),
         });
         bundle = ensembleMessage(r);
         setNotice(t("묶음 투표 · 완료"));
@@ -547,6 +437,7 @@ function App() {
             ? error.message
             : t("묶음 투표 실행에 실패했습니다."),
         );
+        setSending(null);
         return;
       } finally {
         off?.();
@@ -607,7 +498,7 @@ function App() {
           lead: routing.lead,
           worker: routing.worker,
           text: p.text,
-          context: context(p.decision),
+          context: context(),
           pumasi: routing.pumasi ? { copies: routing.pumasiCopies } : undefined,
           leadOrder: routing.lead === "auto-free" ? routing.leadOrder : undefined,
         });
@@ -668,16 +559,17 @@ function App() {
             ? error.message
             : t("팀 모드 실행에 실패했습니다."),
         );
+        setSending(null);
         return;
       } finally {
         off?.();
         busyRef.current = false;
         setBusy(false);
-        refreshHistory();
       }
     } else if (routing.live) {
       if (!window.auroraAI) {
         setAIError(t("Electron 앱에서 실행해 주세요."));
+        setSending(null);
         return;
       }
       busyRef.current = true;
@@ -688,20 +580,33 @@ function App() {
           action: "execute",
           model: p.modelId,
           text: p.text,
-          context: context(p.decision),
+          context: context(),
           maxOutputTokens: 4096,
         });
       } catch (error) {
         setAIError(
           error instanceof Error ? error.message : t("API 실행에 실패했습니다."),
         );
+        setSending(null);
         return;
       } finally {
         busyRef.current = false;
         setBusy(false);
-        refreshHistory();
       }
     }
+    if (
+      completion &&
+      typeof completion.inputTokens === "number" &&
+      typeof completion.outputTokens === "number"
+    )
+      setLastUsage({
+        model:
+          team || bundle
+            ? t("팀·묶음 합계")
+            : modelById(completion.modelId ?? p.modelId).name,
+        input: completion.inputTokens,
+        output: completion.outputTokens,
+      });
     const next = [
       { id: crypto.randomUUID(), role: "user" as const, text: p.text },
       {
@@ -711,24 +616,14 @@ function App() {
           team || bundle
             ? completion!.text
             : completion
-              ? t(
-                  "{text}\n\n—\n{model} · 실제 입력 {input} / 출력 {output} 토큰{incomplete}",
-                  {
+              ? completion.incomplete
+                ? t("{text}\n\n—\n출력 한도에 닿아 답이 중간에 끊겼을 수 있습니다.", {
                     text: completion.text,
-                    model: modelById(p.modelId).name,
-                    input: completion.inputTokens ?? t("미확인"),
-                    output: completion.outputTokens ?? t("미확인"),
-                    incomplete: completion.incomplete
-                      ? t(" · 생성 상한 도달: 미완성일 수 있음")
-                      : "",
-                  },
-                )
-              : t("{preview}\n선택한 실행 모델: {model}", {
-                  preview: makePreview(p.text, p.selected),
-                  model: modelById(p.modelId).name,
-                }),
+                  })
+                : completion.text
+              : makePreview(),
         live: !!completion,
-        model: bundle?.model ?? p.modelId,
+        model: bundle?.model ?? completion?.modelId ?? p.modelId,
         ...(bundle ? { ensemble: bundle.ensemble } : {}),
       },
     ];
@@ -759,14 +654,7 @@ function App() {
               ],
         };
       }
-      const organized =
-        p.proposal && p.decision !== "continue"
-          ? organize(
-              w.bundles,
-              p.proposal.bundleId,
-              p.decision as "grouped" | "archived" | "trashed",
-            )
-          : w.bundles;
+      const organized = w.bundles;
       const current = organized.findLast((b) => b.status === "active");
       return {
         ...w,
@@ -789,25 +677,18 @@ function App() {
       };
     });
     if (!auto && !legacyChat) setLegacyId(newId);
-    if (p.proposal && p.decision !== "continue")
-      setNotice(
-        p.decision === "trashed"
-          ? t("이전 작업을 휴지통으로 옮겼습니다. 복원할 수 있습니다.")
-          : t("이전 작업을 정리했습니다. 대화 흐름은 계속 이어집니다."),
-      );
     setFilter("current");
     setDraft("");
-    setPending(null);
+    setSending(null);
     input.current?.focus();
   }
   function switchMode(mode: Workspace["mode"]) {
     setWorkspace((w) => ({ ...w, mode }));
-    setPending(null);
     setFilter("current");
     setNotice(
       mode === "legacy"
-        ? t("레거시 모드: 직접 세션을 관리합니다. 자동 정리는 꺼집니다.")
-        : t("자동 정리 모드: 하나의 대화 흐름을 이어갑니다."),
+        ? t("세션 모드: 대화를 세션으로 나눠 직접 관리합니다.")
+        : t("하나의 대화 모드: 대화 하나를 계속 이어갑니다."),
     );
   }
   function jump(id: string) {
@@ -830,12 +711,6 @@ function App() {
       t("작업 묶음을 복원했습니다. 새 요청의 문맥에는 자동 포함하지 않습니다."),
     );
   }
-  const preview = draft.trim()
-    ? forecast(draft, context(), routing.executor)
-    : null;
-  const planned = pending
-    ? forecast(pending.text, context(pending.decision), pending.modelId)
-    : null;
   const sideItems: Chat[] = auto ? visible : workspace.legacyChats;
   return (
     <div
@@ -954,7 +829,7 @@ function App() {
           <button className="account" onClick={() => setDialog("settings")}>
             <span className="avatar">A</span>
             <span>
-              <strong>{auto ? t("자동 정리 모드") : t("레거시 모드")}</strong>
+              <strong>{auto ? t("하나의 대화") : t("세션 모드")}</strong>
               <small>{t("모드 및 데이터 설정")}</small>
             </span>
             <Settings2 size={16} />
@@ -1028,7 +903,7 @@ function App() {
           <>
         {workerBoard()}
         <div className="conversation">
-          {!messages.length ? (
+          {!messages.length && !sending && !aiError ? (
             <section className="welcome">
               <h1>
                 {auto && filter === "current"
@@ -1067,23 +942,26 @@ function App() {
                     </section>
                   ))
                 : messages.map((m) => <MessageView key={m.id} message={m} />)}
+              {sending && (
+                <>
+                  <MessageView
+                    message={{ id: "sending", role: "user", text: sending }}
+                  />
+                  <p className="answer-working" role="status">
+                    {t("답을 쓰는 중…")}
+                  </p>
+                </>
+              )}
+              {aiError && !sending && (
+                <p className="api-error" role="alert">
+                  {aiError}
+                </p>
+              )}
               <div ref={end} />
             </section>
           )}
         </div>
         <div className="composer-area">
-          {preview && (
-            <div className="draft-estimate" aria-live="polite">
-              <Sparkles size={13} />
-              <span>{t("{tier} 추천", { tier: tierNames[preview.tier] })}</span>
-              <span>{t("약 {tokens} 토큰", { tokens: range(preview.total) })}</span>
-              <span>
-                {preview.percent
-                  ? t("설정 예산 {percent}", { percent: percentage(preview.percent) })
-                  : t("계정 한도 % 추정 불가")}
-              </span>
-            </div>
-          )}
           <div className="composer">
             <textarea
               ref={input}
@@ -1104,9 +982,14 @@ function App() {
               }}
             />
             <div className="composer-toolbar">
-              <div className="model-control">
-                <span>{t("모델 자동 추천 · 보내기 전에 확인")}</span>
-              </div>
+              <button
+                type="button"
+                className="model-control"
+                title={t("모델 바꾸기")}
+                onClick={() => setDialog("settings")}
+              >
+                {modelById(routing.executor).name}
+              </button>
               <button
                 type="button"
                 className={`together-toggle ${routing.team && routing.pumasi ? "on" : ""}`}
@@ -1125,8 +1008,8 @@ function App() {
               </button>
               <button
                 className="send-button"
-                aria-label={t("요청 검토")}
-                disabled={!draft.trim()}
+                aria-label={t("보내기")}
+                disabled={!draft.trim() || busy}
                 onClick={review}
               >
                 <ArrowUp size={19} />
@@ -1140,7 +1023,7 @@ function App() {
                 ? t("선택한 제공자 API로 전송 · 사용량 발생")
                 : t("외부 전송 없음 · 로컬 미리보기")}
             </span>
-            <span>{t("Enter 검토 · Shift + Enter 줄바꿈")}</span>
+            <span>{t("Enter 보내기 · Shift + Enter 줄바꿈")}</span>
           </div>
         </div>
           </>
@@ -1150,8 +1033,8 @@ function App() {
           <span>
             <span className="status-dot" />
             {auto
-              ? t("하나의 대화 · 자동 정리")
-              : t("레거시 · 직접 세션 관리")}
+              ? t("하나의 대화")
+              : t("세션 모드")}
           </span>
           <span>{workspace.save ? t("이 기기에 저장 중") : t("대화 저장 꺼짐")}</span>
         </footer>
@@ -1173,65 +1056,43 @@ function App() {
             </button>
           </div>
           <div className="usage-scroll">
-            <div className="usage-intro">
-              <p>{t("보내기 전에 요청과 문맥을 보고 모델 등급과 예상 토큰을 보여 줍니다.")}</p>
-            </div>
             <div className="data-source">
               <span className="source-dot" />
               {routing.live
-                ? t("API 키 모드 · 잔여 한도 미연결")
+                ? t("API 키 모드")
                 : t("미리보기 · API 호출 꺼짐")}
             </div>
             <section className="usage-card">
               <div className="usage-card-title">
-                <span>{t("실제 계정 잔여 한도")}</span>
-                <span>ACCOUNT</span>
+                <span>{t("마지막 응답")}</span>
               </div>
-              <div className="usage-number">
-                —<small>{t("연결 전")}</small>
-              </div>
-              <p className="small-copy">
-                {t("확인되지 않은 잔여량은 표시하지 않습니다.")}
-              </p>
+              {lastUsage ? (
+                <>
+                  <div className="usage-number">
+                    {(lastUsage.input + lastUsage.output).toLocaleString()}
+                    <small>{t("토큰")}</small>
+                  </div>
+                  <p className="small-copy">
+                    {t("{model} · 입력 {input} / 출력 {output}. 제공자가 알려 준 숫자입니다.", {
+                      model: lastUsage.model,
+                      input: lastUsage.input.toLocaleString(),
+                      output: lastUsage.output.toLocaleString(),
+                    })}
+                  </p>
+                </>
+              ) : (
+                <p className="small-copy">
+                  {t("응답을 받으면 실제로 쓴 토큰이 여기에 나옵니다. 보내기 전에는 예상하지 않습니다.")}
+                </p>
+              )}
             </section>
-            <section className="usage-card">
-              <div className="usage-card-title">
-                <span>{t("이번 요청 예상")}</span>
-                <span>ESTIMATE</span>
-              </div>
-              <div className="estimate-total">
-                {preview ? range(preview.total) : "—"}
-                <small>{t("토큰 · 입력 + 출력")}</small>
-              </div>
-              <div className="budget-value">
-                {preview?.percent
-                  ? percentage(preview.percent)
-                  : t("퍼센트 추정 불가")}
-              </div>
-              <p className="small-copy">
-                {workspace.budget
-                  ? t("직접 설정한 토큰 예산 대비 비율입니다. 계정 한도가 아닙니다.")
-                  : t("토큰 예산을 설정하면 예산 대비 비율을 볼 수 있습니다.")}
-              </p>
-            </section>
-            <div className="usage-explanation">
-              <CircleHelp size={15} />
-              <p>
-                {preview?.basis === "history"
-                  ? t("이 기기에 남은 실제 사용 기록으로 계산한 범위입니다.")
-                  : preview?.basis === "mixed"
-                    ? t("기록이 있는 단계는 실제 사용량, 없는 단계는 등급별 가정으로 계산했습니다.")
-                    : t("문자 수와 모델 등급별 출력 가정으로 계산한 범위입니다. 같은 모델로 5번 이상 실행하면 실제 사용량으로 바뀝니다.")}{" "}
-                {t("재시도 비용은 포함하지 않습니다.")}
-              </p>
-            </div>
             <div className="next-section">
               <div>
                 <strong>{t("문맥")}</strong>
                 <p>
                   {t("묶거나 보관한 작업은 다음 요청의")}
                   <br />
-                  {t("예상 문맥에서 제외합니다.")}
+                  {t("문맥에서 제외합니다.")}
                   <br />
                   {t("현재 문맥 {count}개 메시지", { count: context().length })}
                 </p>
@@ -1242,7 +1103,7 @@ function App() {
               onClick={() => setDialog("settings")}
             >
               <Settings2 size={14} />
-              {t("모드 및 예산 설정")}
+              {t("모드 설정")}
               <ChevronRight size={14} />
             </button>
           </div>
@@ -1254,27 +1115,24 @@ function App() {
           </div>
         </aside>
       )}
-      {(dialog || pending) && (
+      {dialog && (
         <div
           className="modal-backdrop"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget && !busyRef.current) {
               setDialog(null);
-              setPending(null);
             }
           }}
         >
           <section
-            className={`modal ${pending ? "review-modal" : ""}`}
+            className="modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="dialog-title"
           >
             <header>
               <h2 id="dialog-title">
-                {pending
-                  ? t("실행 전에 확인해 주세요")
-                  : dialog === "search"
+                {dialog === "search"
                     ? t("대화 검색")
                     : dialog === "pumasi"
                       ? t("함께하기")
@@ -1286,239 +1144,12 @@ function App() {
                 disabled={busy}
                 onClick={() => {
                   setDialog(null);
-                  setPending(null);
                 }}
               >
                 <X size={18} />
               </button>
             </header>
-            {pending ? (
-              <>
-                <div className="request-summary">{pending.text}</div>
-                {pending.proposal && (
-                  <section className="organize-proposal">
-                    <div className="proposal-label">
-                      <Sparkles size={15} />
-                      {t("정리 제안")} <span className="sample-tag">{t("로컬 규칙")}</span>
-                    </div>
-                    <strong>{pending.proposal.reason}</strong>
-                    <p>{t("이전 작업을 묶을까요, 버릴까요, 보관할까요?")}</p>
-                    <div className="decision-grid">
-                      {(
-                        [
-                          ["grouped", t("묶기"), Layers],
-                          ["trashed", t("버리기"), Trash2],
-                          ["archived", t("보관하기"), Archive],
-                          ["continue", t("계속 이어가기"), MessageSquare],
-                        ] as const
-                      ).map(([action, label, Icon]) => (
-                        <button
-                          key={action}
-                          disabled={busy}
-                          aria-pressed={pending.decision === action}
-                          onClick={() => chooseDecision(action)}
-                        >
-                          <Icon size={15} />
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                    <small>
-                      {t("버리기는 휴지통 이동입니다. 모든 선택은 아래 진행 버튼을 눌러야 적용됩니다.")}
-                    </small>
-                  </section>
-                )}
-                <div className="recommendation-title">
-                  <Sparkles size={17} />
-                  <strong>{t("{tier} 모델 추천", { tier: tierNames[planned!.tier] })}</strong>
-                </div>
-                <p className="review-reason">{planned!.reason}</p>
-                <div className="estimate-breakdown">
-                  <div>
-                    <span>{t("입력 · 문맥 포함")}</span>
-                    <strong>{t("약 {count}", { count: planned!.input.toLocaleString() })}</strong>
-                  </div>
-                  <div>
-                    <span>{t("예상 출력")}</span>
-                    <strong>{range(planned!.output)}</strong>
-                  </div>
-                  <div>
-                    <span>{t("합계 토큰")}</span>
-                    <strong>{range(planned!.total)}</strong>
-                  </div>
-                  <div>
-                    <span>{t("이번 요청의 예산 사용")}</span>
-                    <strong>
-                      {planned!.percent
-                        ? t("약 {percent}", { percent: percentage(planned!.percent) })
-                        : t("추정 불가")}
-                    </strong>
-                  </div>
-                </div>
-                <p className={`estimate-basis is-${planned!.basis}`}>
-                  {basisText(planned!)}
-                </p>
-                {teamRun && (
-                  <ol
-                    className="stage-estimate"
-                    aria-label={t("팀 모드 단계별 예상")}
-                  >
-                    {planned!.stages.map((st) => (
-                      <li key={st.kind}>
-                        <span>
-                          {stageNames[st.kind]} ·{" "}
-                          {t(st.role === "lead" ? "총괄 모델" : "작업 모델")}{" "}
-                          {modelById(st.model).name} · {calls(st.calls)}
-                        </span>
-                        <span>
-                          {range(st.total)}
-                          <small>
-                            {st.samples > 0
-                              ? t("기록 {count}건", { count: st.samples })
-                              : t("기본 가정")}
-                          </small>
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-                <section className="internal-model">
-                  <strong>
-                    {t("내부 분석")} · {modelById(routing.analyzer).name}
-                  </strong>
-                  <p>
-                    {t("요청과 현재 문맥을 분석 제공자에게 전송합니다. 분석도 별도로 과금되며 실제 작업은 실행하지 않습니다.")}
-                  </p>
-                  <button
-                    disabled={
-                      busy ||
-                      !routing.live ||
-                      !modelReady(routing.analyzer, providerStatus)
-                    }
-                    onClick={analyze}
-                  >
-                    {busy ? t("요청 처리 중…") : t("내부 모델로 분석")}
-                  </button>
-                  {!routing.live && (
-                    <small>
-                      {t("현재는 로컬 규칙 추천입니다. API 모드를 켜야 내부 모델을 호출합니다.")}
-                    </small>
-                  )}
-                  {pending.analysis && (
-                    <div className="analysis-result">
-                      <strong>{t("AI 분석")}</strong>
-                      <p>{pending.analysis.summary}</p>
-                      <p>{pending.analysis.reason}</p>
-                      <p>
-                        {t("추천:")}{" "}
-                        {modelById(pending.analysis.recommendedModel).name} ·
-                        {t("선택은 아래에서 직접 변경하세요.")}
-                      </p>
-                      <small>
-                        {t("분석 사용량: 입력 {input} / 출력 {output} 토큰", {
-                          input: pending.analysis.inputTokens ?? t("미확인"),
-                          output: pending.analysis.outputTokens ?? t("미확인"),
-                        })}
-                      </small>
-                    </div>
-                  )}
-                </section>
-                <label className="review-model">
-                  {t("이번 요청의 실행 모델")}
-                  <select
-                    aria-label={t("이번 요청 모델")}
-                    disabled={busy}
-                    value={pending.modelId}
-                    onChange={(e) => {
-                      const model = modelById(e.target.value);
-                      setPending({
-                        ...pending,
-                        modelId: model.id,
-                        selected: model.tier,
-                      });
-                    }}
-                  >
-                    {models.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name} · {tierNames[m.tier]}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                {!teamRun && (
-                  <div
-                    className="model-comparison"
-                    aria-label={t("모델별 예상 비교")}
-                  >
-                    <p>
-                      {t("실제 기록이 5건 이상인 모델은 그 기록으로, 나머지는 등급별 출력 가정으로 계산합니다.")}
-                    </p>
-                    {models.map((m) => {
-                      const e = project(
-                        pending.text,
-                        context(pending.decision),
-                        workspace.budget,
-                        m,
-                        history,
-                      );
-                      return (
-                        <button
-                          disabled={busy}
-                          key={m.id}
-                          aria-pressed={pending.modelId === m.id}
-                          onClick={() =>
-                            setPending({
-                              ...pending,
-                              modelId: m.id,
-                              selected: m.tier,
-                            })
-                          }
-                        >
-                          <span>{m.name}</span>
-                          <span>
-                            {t("{tokens} 토큰", { tokens: range(e.total) })}
-                            {e.samples > 0 && t(" · 기록 {count}건", { count: e.samples })}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                <p className="small-copy">
-                  {t("실제 계정 한도 대비 %는 추정할 수 없습니다. 예상은 품질·비용을 보장하지 않습니다. API 실행은 생성 상한 4,096토큰이며 입력·내부 분석은 별도입니다. 현재 텍스트 답변만 지원하며 파일 수정·셸 실행은 하지 않습니다.")}
-                </p>
-                {aiError && (
-                  <p className="api-error" role="alert">
-                    {aiError}
-                  </p>
-                )}
-                {busy && workerBoard(" in-dialog")}
-                <div className="review-actions">
-                  <button disabled={busy} onClick={() => setPending(null)}>
-                    {t("다시 작성")}
-                  </button>
-                  <button
-                    className="primary-action"
-                    disabled={
-                      busy ||
-                      !pending.decision ||
-                      (routing.live &&
-                        !bundleReady(routing, providerStatus) &&
-                        !modelReady(pending.modelId, providerStatus))
-                    }
-                    onClick={proceed}
-                  >
-                    {busy
-                      ? t("요청 처리 중…")
-                      : routing.live && bundleReady(routing, providerStatus)
-                        ? t("묶은 모델로 API 실행")
-                        : routing.live
-                          ? t("선택한 모델로 API 실행")
-                          : t("이 모델로 미리보기")}
-                  </button>
-                </div>
-              </>
-            ) : dialog === "pumasi" ? (
+            {dialog === "pumasi" ? (
               <PumasiPanel />
             ) : dialog === "search" ? (
               <>
@@ -1563,57 +1194,26 @@ function App() {
               </>
             ) : (
               <>
-                <section
-                  className="routing-settings"
-                  aria-label={t("모델 기본 설정")}
-                >
-                  <h3>{t("모델 기본 설정")}</h3>
-                  <div className="preset-buttons">
-                    <button
-                      onClick={() =>
-                        setRouting({ ...presets.openai, live: routing.live })
-                      }
-                    >
-                      {t("OpenAI 기본값")}
-                    </button>
-                    <button
-                      onClick={() =>
-                        setRouting({ ...presets.anthropic, live: routing.live })
-                      }
-                    >
-                      {t("Claude 기본값")}
-                    </button>
-                  </div>
+                <SecretSettings
+                  status={providerStatus}
+                  onChanged={() => void refreshStatus()}
+                />
+                <details className="routing-settings">
+                  <summary>
+                    {t("고급: 모델과 팀")}
+                    <small>
+                      {t("그대로 두면 알아서 고릅니다. 무료 모델이 먼저 답하고, 무료 한도가 모두 막히면 넣어 둔 유료 키를 씁니다.")}
+                    </small>
+                  </summary>
                   <label className="setting-row">
                     <span>
-                      <strong>{t("내부 분석 모델")}</strong>
+                      <strong>{t("답할 모델")}</strong>
                       <small>
-                        {t("요청 분류·추천에 사용. 실행 모델과 독립적입니다.")}
+                        {t("자동이면 지금 쓸 수 있는 모델 중 측정 성적이 가장 높은 것부터 씁니다.")}
                       </small>
                     </span>
                     <select
-                      aria-label={t("내부 분석 모델")}
-                      value={routing.analyzer}
-                      onChange={(e) =>
-                        setRouting((r) => ({ ...r, analyzer: e.target.value }))
-                      }
-                    >
-                      {models.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="setting-row">
-                    <span>
-                      <strong>{t("기본 실행 모델")}</strong>
-                      <small>
-                        {t("새 요청의 초기값. 요청마다 다시 선택할 수 있습니다.")}
-                      </small>
-                    </span>
-                    <select
-                      aria-label={t("기본 실행 모델")}
+                      aria-label={t("답할 모델")}
                       value={routing.executor}
                       onChange={(e) =>
                         setRouting((r) => ({ ...r, executor: e.target.value }))
@@ -1630,7 +1230,7 @@ function App() {
                     <span>
                       <strong>{t("팀 모드")}</strong>
                       <small>
-                        {t("비싼 모델은 나누기와 검수만, 실제 작업은 싼 모델이 합니다. 실제 API 사용이 켜져 있어야 동작합니다.")}
+                        {t("리더가 요청을 작업 여러 개로 나누고 작업 모델이 처리합니다. 토큰을 훨씬 많이 씁니다.")}
                       </small>
                     </span>
                     <input
@@ -1785,21 +1385,6 @@ function App() {
                     setRouting={setRouting}
                     status={providerStatus}
                   />
-                  <label className="setting-row">
-                    <span>
-                      <strong>{t("실제 API 사용")}</strong>
-                      <small>
-                        {t("분석·실행 버튼을 누르면 선택한 제공자로 요청을 전송합니다.")}
-                      </small>
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={routing.live}
-                      onChange={(e) =>
-                        setRouting((r) => ({ ...r, live: e.target.checked }))
-                      }
-                    />
-                  </label>
                   <p className="small-copy">
                     {t("OpenAI 키 {openai} · Claude 키 {anthropic} · Gemini 키 {gemini} · 무료 제공자 {compat}. 키는 아래 API 키에서 넣거나 환경 변수로 줄 수 있습니다. 모델 접근 권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과 별도로 이 기기에 유지됩니다.", {
                       openai: providerStatus.openai ? t("감지됨 (미검증)") : t("없음"),
@@ -1808,11 +1393,7 @@ function App() {
                       compat: providerStatus.compat ? t("연결됨 (미검증)") : t("없음"),
                     })}
                   </p>
-                </section>
-                <SecretSettings
-                  status={providerStatus}
-                  onChanged={() => void refreshStatus()}
-                />
+                </details>
                 <label className="setting-row">
                   <span>
                     <strong>{t("화면 언어")}</strong>
@@ -1845,8 +1426,8 @@ function App() {
                       switchMode(e.target.value as Workspace["mode"])
                     }
                   >
-                    <option value="auto">{t("자동 정리")}</option>
-                    <option value="legacy">{t("레거시")}</option>
+                    <option value="auto">{t("하나의 대화")}</option>
+                    <option value="legacy">{t("세션 모드")}</option>
                   </select>
                 </label>
                 <label className="setting-row">
@@ -1878,110 +1459,6 @@ function App() {
                     }
                   />
                 </label>
-                {window.auroraAI?.usage && (
-                  <div className="setting-row usage-learning">
-                    <span>
-                      <label htmlFor="usage-learning">
-                        <strong>{t("실제 사용량으로 예상 보정")}</strong>
-                        <small>
-                          {t("응답이 끝날 때마다 모델, 요청 종류, 글자 수, 토큰 수만 이 기기에 남깁니다. 대화 내용과 키는 남기지 않으며 대화 저장 설정과 별개입니다.")}
-                        </small>
-                      </label>
-                      <small>
-                        {history?.records.length
-                          ? t("지금 기록 {count}건", { count: history.records.length.toLocaleString() })
-                          : t("아직 기록 없음")}
-                        {confirmClear ? (
-                          <>
-                            {" · "}
-                            {t("모두 지울까요?")}
-                            <button
-                              type="button"
-                              className="text-button is-danger"
-                              onClick={() => {
-                                setConfirmClear(false);
-                                window.auroraAI?.usage
-                                  ?.clear()
-                                  .then(setHistory)
-                                  .catch(() =>
-                                    setAIError(t("사용 기록을 지우지 못했습니다.")),
-                                  );
-                              }}
-                            >
-                              {t("기록 지우기")}
-                            </button>
-                            <button
-                              type="button"
-                              className="text-button"
-                              onClick={() => setConfirmClear(false)}
-                            >
-                              {t("그대로 두기")}
-                            </button>
-                          </>
-                        ) : (
-                          !!history?.records.length && (
-                            <>
-                              {" · "}
-                              <button
-                                type="button"
-                                className="text-button"
-                                onClick={() => setConfirmClear(true)}
-                              >
-                                {t("사용 기록 지우기")}
-                              </button>
-                            </>
-                          )
-                        )}
-                      </small>
-                    </span>
-                    <input
-                      id="usage-learning"
-                      type="checkbox"
-                      checked={history?.enabled ?? true}
-                      onChange={(e) =>
-                        window.auroraAI?.usage
-                          ?.setEnabled(e.target.checked)
-                          .then(setHistory)
-                          .catch(() =>
-                            setAIError(t("사용 기록 설정을 바꾸지 못했습니다.")),
-                          )
-                      }
-                    />
-                  </div>
-                )}
-                <label className="setting-row">
-                  <span>
-                    <strong>{t("계획용 토큰 예산")}</strong>
-                    <small>
-                      {t("예: 100000. 계정 한도와 무관한 개인 예산입니다.")}
-                    </small>
-                  </span>
-                  <input
-                    aria-label={t("계획용 토큰 예산")}
-                    className="budget-input"
-                    type="number"
-                    min="1"
-                    max="1000000000"
-                    placeholder={t("미설정")}
-                    value={workspace.budget ?? ""}
-                    onChange={(e) => {
-                      const n = Number(e.target.value);
-                      setWorkspace((w) => ({
-                        ...w,
-                        budget:
-                          Number.isFinite(n) && n > 0 ? Math.min(n, 1e9) : null,
-                      }));
-                    }}
-                  />
-                </label>
-                <div className="connection-info">
-                  <Check size={16} />
-                  <span>
-                    {t("자동 정리는 로컬 규칙으로 동작합니다. 내부 분석과 실행 모델은 API 모드에서 별도로 호출합니다.")}
-                    <br />
-                    {t("계정 잔여 한도와 전체 작업 예산 강제 제한은 미연결입니다.")}
-                  </span>
-                </div>
               </>
             )}
           </section>
@@ -2004,7 +1481,10 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
             <span className="assistant-symbol">✦</span>
             {appName()}
             <span className="sample-tag">
-              {message.live ? t("API 응답") : t("로컬 미리보기")}
+              {message.live
+                ? (message.model && modelById(message.model)?.name) ||
+                  t("API 응답")
+                : t("로컬 미리보기")}
             </span>
           </>
         ) : (

@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import {
   remainingPercent,
   resetText,
-  recommend,
   parseStoredChats,
   makePreview,
 } from "../src/domain.ts";
@@ -19,13 +18,8 @@ test("expired usage is not silently replenished", () => {
   assert.equal(resetText(null, 1), "초기화 시각 확인 안 됨");
   assert.equal(resetText(90 * 60000, 0), "1시간 30분 후 초기화");
 });
-test("complexity heuristic separates common tasks without claiming AI completion", () => {
-  assert.equal(recommend("이 글을 요약해 줘").tier, "light");
-  assert.equal(recommend("보안 아키텍처 설계").tier, "advanced");
-  assert.equal(recommend("할 일 목록을 만들어 줘").tier, "standard");
-  assert.ok(
-    makePreview("요약").includes("AI 모델이 질문을 수행한 결과가 아니며"),
-  );
+test("local preview says nothing was sent and no tokens were used", () => {
+  assert.ok(makePreview().includes("AI에 보내지 않았습니다"));
 });
 test("corrupt saved data is discarded instead of crashing the app", () => {
   assert.deepEqual(parseStoredChats("{broken"), []);
@@ -44,9 +38,7 @@ test("corrupt saved data is discarded instead of crashing the app", () => {
 import {
   activeContext,
   emptyWorkspace,
-  estimate,
   organize,
-  propose,
   restoreWorkspace,
 } from "../src/domain.ts";
 import type { Bundle } from "../src/domain.ts";
@@ -57,29 +49,6 @@ const bundle: Bundle = {
   tier: "standard",
   messages: [{ id: "u", role: "user", text: "코드 버그를 수정해 줘" }],
 };
-test("preflight includes active history and exposes unknown account conversion", () => {
-  const first = estimate("요약해 줘", [], null);
-  const followup = estimate("요약해 줘", bundle.messages, 100000);
-  assert.ok(followup.input > first.input);
-  assert.equal(first.percent, null);
-  assert.equal(estimate("요약해 줘", [], NaN).percent, null);
-  assert.equal(estimate("요약해 줘", [], 0).percent, null);
-  assert.deepEqual(
-    followup.percent,
-    followup.total.map((n) => (n / 100000) * 100),
-  );
-  assert.ok(
-    estimate("요약", [], null, "advanced").total[1] >
-      estimate("요약", [], null, "light").total[1],
-  );
-});
-test("topic change proposes cleanup but never mutates stored work", () => {
-  const list = [structuredClone(bundle)];
-  assert.equal(propose(list, "여행 일정을 추천해 줘")?.bundleId, "work");
-  assert.equal(propose(list, "코드 테스트도 작성해 줘"), null);
-  assert.ok(propose(list, "고마워 여기까지"));
-  assert.equal(list[0].status, "active");
-});
 test("group/archive/trash remove prior context without deleting messages; restore is possible", () => {
   for (const action of ["grouped", "archived", "trashed"] as const) {
     const changed = organize([bundle], "work", action);

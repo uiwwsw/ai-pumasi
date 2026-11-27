@@ -24,8 +24,8 @@ const translations = {
         "팀 모드는 요청 하나를 작업 최대 6개로 나눕니다. 리더가 계획하고 승인하며 작업과 합치기는 무료 모델이 합니다. 리더도 무료로 둘 수 있고, 유료 리더는 계획과 승인에만 토큰을 씁니다."
       ],
       [
-        "키는 그대로, 손만 빌립니다",
-        "품앗이를 켜면 다른 사용자가 빌려주기로 한 무료 키로 내 작업 하나를 처리합니다. 작업과 답은 두 기기 사이에서만 풀리고, 서버는 암호문만 나르며 돕는 사람에게는 토큰 수만 보입니다."
+        "문제를 나눕니다",
+        "토큰을 한곳에 모아 나눠 주는 대신 문제를 공유합니다. 돕는 사람이 자기 키로 풀어 결과만 돌려주니, 가운데에서 오남용될 곳이 없습니다. 지금은 작업 하나를 다른 사용자의 앱이 맡는 첫 단계이고, 사람이 역할을 맡는 부분은 함께 만들 기여자를 모으고 있습니다."
       ],
       [
         "무료 모델도 충분히 셉니다",
@@ -85,8 +85,8 @@ const translations = {
         "Team mode turns one request into up to six tasks. A lead plans and signs off, free models do the tasks and merge them. The lead can be free, or a paid model that spends tokens only on planning and approval."
       ],
       [
-        "Borrow hands, not keys",
-        "Pumasi lets other users run one of your tasks on a free key they chose to lend. The task and the answer are sealed between two devices. The relay moves ciphertext; the helper sees a token count."
+        "Share the problem",
+        "Instead of pooling tokens in one place, you share the problem. A helper solves it with their own key and sends back the result, so there is no central pool to abuse. Today another user's app can take one task; the part where people take roles is still an idea, and we're looking for contributors."
       ],
       [
         "Free models that hold their own",

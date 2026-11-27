@@ -15,11 +15,6 @@ contextBridge.exposeInMainWorld("auroraAI", {
     setCompatUrl: (url) => ipcRenderer.invoke("aurora:secrets-compat-url", url),
     openSignup: (host) => ipcRenderer.invoke("aurora:open-signup", host),
   },
-  usage: {
-    get: () => ipcRenderer.invoke("aurora:usage-get"),
-    setEnabled: (enabled) => ipcRenderer.invoke("aurora:usage-set", enabled),
-    clear: () => ipcRenderer.invoke("aurora:usage-clear"),
-  },
   // Pumasi: states and token counts only. Task and result text never comes to the window.
   pumasi: {
     state: () => ipcRenderer.invoke("aurora:pumasi-state"),

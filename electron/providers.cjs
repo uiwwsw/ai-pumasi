@@ -58,7 +58,7 @@ async function status(env = process.env, fetchImpl = fetch) {
     gemini: !!env.GEMINI_API_KEY,
     ollama: env.AURORA_OLLAMA === "0" ? false : await ollamaUp(fetchImpl),
     compat: compatModels().some((m) => router.available(m.id, env)),
-    auto: autoCandidates(env).length > 0,
+    auto: autoCandidates(env).length > 0 || paidFallback(env).length > 0,
     // Per free model: can any host serve it with the keys present? Model ids only.
     models: Object.fromEntries(
       compatModels().map((m) => [m.id, router.available(m.id, env)]),
@@ -79,6 +79,13 @@ function autoCandidates(env, order = null) {
   if (!Array.isArray(order) || !order.length) return ids;
   const picked = order.filter((id) => ids.includes(id));
   return [...new Set([...picked, ...ids])];
+}
+/** Paid models to try after the free ones, for the user's own requests: the standard tier. */
+function paidFallback(env) {
+  return [
+    env.ANTHROPIC_API_KEY ? "claude-sonnet-5-5" : null,
+    env.OPENAI_API_KEY ? "gpt-6.1-sol" : null,
+  ].filter(Boolean);
 }
 function autoRanked(env) {
   return catalog
@@ -178,6 +185,9 @@ async function request(
     onUsage = null,
     signal = null,
     autoOrder = null,
+    // Your own requests may fall back to a paid key you added once every free model is out.
+    // Helping someone else (Pumasi) and team leads never do.
+    allowPaid = false,
   } = {},
 ) {
   validate(p);
@@ -186,11 +196,11 @@ async function request(
   const opts = { env, fetchImpl, timeoutMs, onUsage, signal };
   if (provider === "auto") {
     // Strongest free model first; on a rate limit, failure or empty reply, the next one.
-    const ids = autoCandidates(env, autoOrder);
+    const ids = [...autoCandidates(env, autoOrder), ...(allowPaid ? paidFallback(env) : [])];
     if (!ids.length)
       throw new Error(
         tr(
-          "자동으로 쓸 무료 모델이 없습니다. 설정 → API 키에서 NVIDIA·OpenRouter·Groq·Gemini 중 하나의 키를 넣으세요.",
+          "답할 모델이 없습니다. 설정 → API 키에서 키를 하나 넣으세요. NVIDIA·OpenRouter·Groq·Gemini 키는 무료입니다.",
         ),
       );
     let last;
