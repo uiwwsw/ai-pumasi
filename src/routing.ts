@@ -258,7 +258,14 @@ export type AskResult = {
   effort: "low" | "mid" | "high";
   model?: string;
   incomplete?: boolean;
-  parts?: { title: string; model: string | null; failed: boolean; skipped: boolean; incomplete: boolean }[];
+  parts?: {
+    title: string;
+    model: string | null;
+    failed: boolean;
+    skipped: boolean;
+    incomplete: boolean;
+    check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean } | null;
+  }[];
   check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean } | null;
   usage: Record<"route" | "work" | "check", { in: number; out: number }>;
 };
@@ -270,7 +277,17 @@ export type AskProgress =
       stage: "part";
       id: string;
       title: string;
-      state: "waiting" | "running" | "retry" | "switch" | "substituted" | "done" | "failed" | "skipped";
+      state:
+        | "waiting"
+        | "running"
+        | "retry"
+        | "switch"
+        | "substituted"
+        | "checking"
+        | "revising"
+        | "done"
+        | "failed"
+        | "skipped";
       model?: string;
       from?: string;
       reason?: string;

@@ -196,5 +196,9 @@
   "틀린 곳을 지적함": "pointed out a mistake",
   "확신하지 못함": "not sure",
   "지적을 반영해 다시 풀이": "Solved again with the objection",
-  "질문을 보고 일하는 방식을 정합니다. 양이 많으면 나눠서 동시에 풀고, 틀리기 쉬운 문제는 한 모델이 풀고 다른 모델이 검수합니다.": "The app looks at the question and decides how to work. A lot of work is split and done at once; a problem that is easy to get wrong is solved by one model and checked by another."
+  "질문을 보고 일하는 방식을 정합니다. 양이 많으면 나눠서 동시에 풀고, 틀리기 쉬운 문제는 한 모델이 풀고 다른 모델이 검수합니다.": "The app looks at the question and decides how to work. A lot of work is split and done at once; a problem that is easy to get wrong is solved by one model and checked by another.",
+  "{model}이(가) 확인하는 중": "{model} is checking",
+  "지적을 반영해 고치는 중": "Fixing what the check found",
+  "지적을 반영해 고침": "fixed what the check found",
+  "{n}개 검수": "{n} checked"
 }

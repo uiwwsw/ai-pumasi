@@ -51,6 +51,7 @@ function splitByHeadings(text) {
   const parts = marks.map((m, k) => ({
     title: m.title.slice(0, 60),
     text: lines.slice(m.i, marks[k + 1]?.i ?? lines.length).join("\n").trim(),
+    check: true,
   }));
   if (parts.some((p) => p.text.length < 20)) return null;
   return { shared: lines.slice(0, marks[0].i).join("\n").trim(), parts };
@@ -90,6 +91,8 @@ function readTriage(reply, text) {
     title: (typeof p.title === "string" && p.title.trim() ? p.title.trim() : `${k + 1}`).slice(0, 60),
     text: cut(p.lines),
     note: typeof p.note === "string" ? p.note.trim().slice(0, 200) : "",
+    // Deep parts get a second model to check them; easy ones do not.
+    check: p.check === true,
   }));
   if (parts.some((p) => !p.text)) return direct;
   return { mode: "split", effort, shared, parts };
@@ -218,6 +221,49 @@ async function run(p, io = {}) {
     throw last ?? new Error(tr("실행 실패"));
   };
 
+  /**
+   * A different model checks an answer step by step; only a failed check with a concrete reason
+   * gets it solved again. Returns the answer to use and what the check found.
+   */
+  const checkAndFix = async (id, title, request_, answered, { onDelta, report } = {}) => {
+    const checker = providers.autoCandidates(env, p.autoOrder).find((m) => m !== answered.model);
+    if (!checker || answered.incomplete) return { text: answered.text, check: null };
+    report("check", checker);
+    let c;
+    try {
+      c = await request(
+        {
+          action: "check",
+          model: checker,
+          text: `${tr("요청:")}\n${request_.slice(0, 12000)}\n\n${tr("답:")}\n${answered.text.slice(0, 7000)}`,
+          context: [],
+          maxOutputTokens: CHECK_OUTPUT,
+        },
+        { timeoutMs: 300000, signal: io.signalFor?.(id) ?? io.signal },
+      );
+    } catch (error) {
+      if (error?.stopped) throw error;
+      // The checker could not answer: the first answer stands, unchecked.
+      return { text: answered.text, check: { model: checker, verdict: "unsure", revised: false } };
+    }
+    add("check", c);
+    const v = team.extractJSON(c.text);
+    const verdict = ["right", "wrong", "unsure"].includes(v?.verdict) ? v.verdict : "unsure";
+    const problem = typeof v?.problem === "string" ? v.problem.trim().slice(0, 2000) : "";
+    const check = { model: checker, verdict, revised: false, ...(problem ? { problem } : {}) };
+    // Redo only on a concrete objection; "unsure" keeps the answer and says so.
+    if (verdict !== "wrong" || !problem) return { text: answered.text, check };
+    report("revise", answered.model);
+    const fixed = await solve(
+      id,
+      title,
+      `${request_}\n\n${tr("이전 답:")}\n${answered.text.slice(0, 7000)}\n\n${tr("다른 모델의 지적(맞는지 따져 보고, 맞으면 고쳐서 전체 답을 다시 쓰세요):")}\n${problem}`,
+      { ctx: context, onDelta },
+    );
+    if (fixed.incomplete) return { text: answered.text, check };
+    return { text: fixed.text, check: { ...check, revised: true } };
+  };
+
   // 2a. Independent parts, at the same time. Each finished part is reported at once.
   if (plan.mode === "split") {
     const results = new Array(plan.parts.length);
@@ -230,7 +276,14 @@ async function run(p, io = {}) {
         return;
       }
       try {
-        const done = await solve(id, part.title, partPrompt(plan.shared, part), { ctx: context });
+        const prompt = partPrompt(plan.shared, part);
+        let done = await solve(id, part.title, prompt, { ctx: context });
+        // A deep part is checked by a different model before it counts as done.
+        if (part.check && !io.skipped?.(id)) {
+          const report = (state, model) => onProgress({ stage: "part", id, title: part.title, state: state === "check" ? "checking" : "revising", model });
+          const checked = await checkAndFix(id, part.title, prompt, done, { report });
+          done = { ...done, text: checked.text, check: checked.check };
+        }
         results[i] = io.skipped?.(id) ? { skipped: true } : done;
         onProgress({
           stage: "part",
@@ -278,6 +331,7 @@ async function run(p, io = {}) {
         failed: !!results[i].error,
         skipped: !!results[i].skipped,
         incomplete: !!results[i].incomplete,
+        check: results[i].check ?? null,
       })),
       usage,
     };
@@ -287,46 +341,11 @@ async function run(p, io = {}) {
   const answered = await solve("answer", "", p.text, { ctx: context, onDelta: io.onDelta });
   let text = answered.text;
   let check = null;
-  if (plan.mode === "roles" && !answered.incomplete) {
-    const checker = providers.autoCandidates(env, p.autoOrder).find((id) => id !== answered.model);
-    if (checker) {
-      onProgress({ stage: "check", model: checker });
-      try {
-        const c = await request(
-          {
-            action: "check",
-            model: checker,
-            text: `${tr("요청:")}\n${p.text.slice(0, 12000)}\n\n${tr("답:")}\n${text.slice(0, 7000)}`,
-            context: [],
-            maxOutputTokens: CHECK_OUTPUT,
-          },
-          { timeoutMs: 300000 },
-        );
-        add("check", c);
-        const v = team.extractJSON(c.text);
-        const verdict = ["right", "wrong", "unsure"].includes(v?.verdict) ? v.verdict : "unsure";
-        const problem = typeof v?.problem === "string" ? v.problem.trim().slice(0, 2000) : "";
-        check = { model: checker, verdict, revised: false };
-        // Redo only on a concrete objection; "unsure" keeps the answer and says so.
-        if (verdict === "wrong" && problem) {
-          onProgress({ stage: "revise", model: answered.model });
-          const fixed = await solve(
-            "answer",
-            "",
-            `${p.text}\n\n${tr("이전 답:")}\n${text.slice(0, 7000)}\n\n${tr("다른 모델의 지적(맞는지 따져 보고, 맞으면 고쳐서 전체 답을 다시 쓰세요):")}\n${problem}`,
-            { ctx: context, onDelta: io.onDelta },
-          );
-          if (!fixed.incomplete) {
-            text = fixed.text;
-            check.revised = true;
-          }
-        }
-      } catch (error) {
-        if (error?.stopped) throw error;
-        // The checker could not answer: the first answer stands, unchecked.
-        check = { model: checker, verdict: "unsure", revised: false };
-      }
-    }
+  if (plan.mode === "roles") {
+    ({ text, check } = await checkAndFix("answer", "", p.text, answered, {
+      onDelta: io.onDelta,
+      report: (stage, model) => onProgress({ stage, model }),
+    }));
   }
   onProgress({ stage: "done" });
   return {

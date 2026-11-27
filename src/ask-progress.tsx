@@ -82,6 +82,8 @@ function partLine(p: AskPart, now: number) {
   if (p.state === "switch")
     return t("{why} {model}(으)로 넘김", { why: why(p.reason), model: name(p.model) });
   if (p.state === "retry") return t("{why} 다시 묻는 중", { why: why(p.reason) });
+  if (p.state === "checking") return t("{model}이(가) 확인하는 중", { model: name(p.model) });
+  if (p.state === "revising") return t("지적을 반영해 고치는 중");
   return t("{model} · {time}", { model: name(p.model), time: clock(now - (p.startedAt ?? now)) });
 }
 
@@ -188,11 +190,13 @@ export function howLine(r: AskResult): string {
     const n = r.parts?.length ?? 0;
     const skipped = r.parts?.filter((p) => p.skipped).length ?? 0;
     const failed = r.parts?.filter((p) => p.failed).length ?? 0;
+    const checked = r.parts?.filter((p) => p.check).length ?? 0;
     return [
       MODE_NAME,
       t("{n}개로 나눠 풂", { n }),
       skipped ? t("{n}개 건너뜀", { n: skipped }) : "",
       failed ? t("{n}개 실패", { n: failed }) : "",
+      checked ? t("{n}개 검수", { n: checked }) : "",
     ]
       .filter(Boolean)
       .join(" · ");
@@ -214,17 +218,33 @@ export function howLine(r: AskResult): string {
 /** Who did which part, kept with the answer. Nothing for an answer one model gave directly. */
 export function trailOf(r: AskResult): TrailStep[] | undefined {
   if (r.mode === "split" && r.parts?.length)
-    return r.parts.map((p) => ({
-      label: p.title,
-      model: p.model,
-      note: p.skipped
-        ? t("건너뜀")
-        : p.failed
-          ? t("실패")
-          : p.incomplete
-            ? t("답이 잘림")
-            : undefined,
-    }));
+    return r.parts.flatMap((p) => [
+      {
+        label: p.title,
+        model: p.model,
+        note: p.skipped
+          ? t("건너뜀")
+          : p.failed
+            ? t("실패")
+            : p.incomplete
+              ? t("답이 잘림")
+              : undefined,
+      },
+      // The check on a part shows as its own step, under the part.
+      ...(p.check
+        ? [
+            {
+              label: `${p.title} ${t("검수")}`,
+              model: p.check.model,
+              note: p.check.revised
+                ? t("지적을 반영해 고침")
+                : p.check.verdict === "right"
+                  ? t("맞다고 봄")
+                  : t("확신하지 못함"),
+            },
+          ]
+        : []),
+    ]);
   if (r.mode === "roles" && r.check)
     return [
       { label: t("풀이"), model: r.model },

@@ -31,8 +31,14 @@ const SYSTEMS = {
 3. One piece of work: then one model answers. If a wrong answer is plausible (reasoning, math, logic, code, analysis, anything with several steps), "mode" is "roles": one model answers and a different model checks it. If it is easy and a check would be wasted (greetings, simple facts, rewording, translation, short opinions), "mode" is "direct".
 "effort" = how much reasoning the hardest part needs: "low" = recall, rewrite, short answer; "mid" = some steps; "high" = long multi-step reasoning, proofs, puzzles, sizeable code.
 For "split": "parts" lists each part as a line range of the ORIGINAL text, in order, not overlapping. "shared" lists line ranges every part needs (common instructions, the answer format). "note" says in at most 15 words, in the user's language, what that part must deliver. Never rewrite or summarize the request.
-Reply with only compact JSON: {"mode":"direct|split|roles","effort":"low|mid|high","shared":[[1,2]],"parts":[{"title":"short","lines":[3,9],"note":"..."}]}`,
-  check: `You check another model's answer to a request. Work the request out yourself as far as needed to judge the final answer. Do not rewrite the answer. "wrong" only when you can say exactly what is wrong; "unsure" when you cannot tell. Reply with only compact JSON: {"verdict":"right|wrong|unsure","problem":"what exactly is wrong, short, in the user's language; empty unless wrong"}`,
+For each part, "check" is true when that part is reasoning, math, logic, code or calculation where a wrong answer is plausible, false when it is recall, rewriting or a short easy answer.
+Reply with only compact JSON: {"mode":"direct|split|roles","effort":"low|mid|high","shared":[[1,2]],"parts":[{"title":"short","lines":[3,9],"note":"...","check":true}]}`,
+  check: `You check another model's answer to a request. Do NOT solve the request again from the start; do these mechanical checks, which need care, not brilliance:
+1. List every condition, constraint and requirement the request states.
+2. Put the answer's final result into each one and say whether it holds.
+3. Redo every calculation the answer relies on, step by step, and compare the numbers.
+4. Check that the answer gives what was asked, in the form asked.
+"wrong" only when a check fails: name the condition or step and give the value you got. "right" when every check holds. "unsure" when the result cannot be checked this way. Reply with only compact JSON: {"verdict":"right|wrong|unsure","problem":"which check failed and the value you got, short, in the user's language; empty unless wrong"}`,
   agent: `You are a coding agent working in the user's project folder, like a careful senior engineer. You act through these actions, each on its own line:
 <<<LIST path>>>      list a folder ("." is the project root)
 <<<READ path>>>      read a file (comes back with line numbers)

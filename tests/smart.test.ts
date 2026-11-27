@@ -66,14 +66,17 @@ test("a routing reply becomes line ranges of the original; anything malformed me
   assert.equal(readTriage(JSON.stringify({ mode: "roles", effort: "low" }), text).mode, "direct");
 });
 
-test("split: each part goes out word for word, at once, with no routing, review or merge call", async () => {
+test("split: each part goes out word for word, at once, with no routing, review or merge call; numbered problems are checked", async () => {
   const text = "답은 `정답 N: X`로.\n\n## 문제 1\n" + long("사과 수를 구하라") + "\n\n## 문제 2\n" + long("배 수를 구하라");
   const w = world((_k, user) => (user.includes("사과") ? "풀이…\n정답 1: 3" : "풀이…\n정답 2: 5"));
   const events: any[] = [];
   const r = await run({ text, context: [], model: "nvidia/nemotron-3.5-super-vl-120b-a12b" }, { ...w.io, onProgress: (e: any) => events.push(e) });
   assert.equal(r.mode, "split");
   assert.equal(r.routedBy, "rules");
-  assert.deepEqual(w.calls.map((c) => c.kind), ["answer", "answer"]);
+  // Two answers and one check for each: numbered problems are worth a second look.
+  assert.deepEqual(w.calls.map((c) => c.kind).sort(), ["answer", "answer", "check", "check"]);
+  const checks = w.calls.filter((c) => c.kind === "check");
+  assert.ok(checks.every((c) => c.model !== "nvidia/nemotron-3.5-super-vl-120b-a12b"));
   // The model reads the shared line and its own problem exactly as written, and nothing of the other.
   const first = w.calls.find((c) => c.user.includes("사과"))!;
   assert.ok(first.user.startsWith("답은 `정답 N: X`로.\n\n## 문제 1\n사과 수를 구하라"));
@@ -84,6 +87,43 @@ test("split: each part goes out word for word, at once, with no routing, review 
   assert.equal(events.filter((e) => e.stage === "part" && e.state === "done" && e.text).length, 2);
   assert.deepEqual(r.usage.route, { in: 0, out: 0 });
   assert.deepEqual(r.usage.work, { in: 10, out: 14 });
+});
+
+test("split and roles together: only a deep part is checked, and only a failed check redoes it", async () => {
+  const text = [long("아래 두 가지를 해 주세요."), "", long("가: 이 문장을 영어로 옮겨 주세요."), "", long("나: 17 곱하기 23을 구하세요.")].join("\n");
+  const lines = text.split("\n").length;
+  let redo = 0;
+  const w = world((kind, user) => {
+    if (kind === "triage")
+      return JSON.stringify({
+        mode: "split",
+        effort: "mid",
+        parts: [
+          { title: "번역", lines: [3, 3], check: false },
+          { title: "곱셈", lines: [5, lines], check: true },
+        ],
+      });
+    if (kind === "check")
+      return JSON.stringify({ verdict: "wrong", problem: "17×23을 다시 계산하면 391입니다." });
+    if (user.includes("다른 모델의 지적")) {
+      redo++;
+      return "391";
+    }
+    return user.includes("곱하기") ? "381" : "Please translate.";
+  });
+  const events: any[] = [];
+  const r = await run({ text, context: [], model: "nvidia/nemotron-3.5-super-vl-120b-a12b" }, { ...w.io, onProgress: (e: any) => events.push(e) });
+  assert.equal(r.mode, "split");
+  // The translation is not checked; the multiplication is, by a different model, and is redone once.
+  const checks = w.calls.filter((c) => c.kind === "check");
+  assert.equal(checks.length, 1);
+  assert.ok(checks[0].user.includes("곱하기") && !checks[0].user.includes("영어로"));
+  assert.equal(redo, 1);
+  assert.match(r.text, /### 곱셈\n\n391/);
+  assert.equal(r.parts[0].check, null);
+  assert.deepEqual({ ...r.parts[1].check, problem: undefined }, { model: checks[0].model, verdict: "wrong", revised: true, problem: undefined });
+  assert.ok(events.some((e) => e.stage === "part" && e.id === "p2" && e.state === "checking"));
+  assert.ok(events.some((e) => e.stage === "part" && e.id === "p2" && e.state === "revising"));
 });
 
 test("a short question is answered directly with no routing call, and streams", async () => {
