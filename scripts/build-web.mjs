@@ -9,8 +9,8 @@ const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
 const translations = {
   "ko": {
-    "title": "품앗이 에이전트 Pumasi Agent — 무료 AI가 팀으로 일하는 데스크톱 앱",
-    "description": "품앗이 에이전트(Pumasi Agent)는 리더 모델이 일을 나누고 무료 모델이 처리하는 macOS·Windows 데스크톱 앱입니다. 손이 더 필요하면 다른 사용자가 자기 무료 키로 작업을 거들어 줍니다.",
+    "title": "품앗이 에이전트 Pumasi Agent — 무료 AI가 팀으로 일하는 앱",
+    "description": "품앗이 에이전트(Pumasi Agent)는 리더 모델이 일을 나누고 무료 모델이 처리하는 앱입니다. 웹에서 바로 쓰거나 macOS·Windows에 설치합니다. 손이 더 필요하면 다른 사용자가 자기 무료 키로 작업을 거들어 줍니다.",
     "heading": "무료 AI가 팀으로 일합니다.",
     "intro": "품앗이 에이전트(Pumasi Agent)는 요청을 작업 여러 개로 나눕니다. 리더 모델이 계획하고 승인하며 작업은 무료 모델이 합니다. 품앗이를 켜면 다른 사용자가 자기 무료 키로 작업 하나를 대신 처리해 주고, 작업 글과 결과는 암호화되어 서버도 돕는 사람도 읽을 수 없습니다. 무료 한도에 걸리면 다음 제공자로 넘어갑니다. 이 페이지의 웹에서도 바로 쓸 수 있고, 키는 그 브라우저에만 저장됩니다.",
     "demo": "웹에서 쓰기",
@@ -71,7 +71,7 @@ const translations = {
   },
   "en": {
     "title": "Pumasi Agent: free AI models, working as a team",
-    "description": "Pumasi Agent is a macOS and Windows app where a lead model splits the job and free models do the work. When you need more hands, other users can take a task with their own free keys. A free model you can run here outscored ChatGPT's free tier on three program-graded exams.",
+    "description": "Pumasi Agent is an app, on the web or installed on macOS and Windows, where a lead model splits the job and free models do the work. When you need more hands, other users can take a task with their own free keys. A free model you can run here outscored ChatGPT's free tier on three program-graded exams.",
     "heading": "Free AI models, working as a team.",
     "intro": "Pumasi Agent splits a request into tasks. A lead model plans and signs off, free models do the work, and with Pumasi other users can take a task off your hands with their own free keys, sealed so that neither the relay nor the helper can read it. When a free tier runs dry, the request moves to the next provider. You can use it on the web too; your keys stay in that browser.",
     "demo": "Use on the web",
