@@ -66,7 +66,7 @@ Today's app has the first piece: another user's app runs one of your team's task
 
 Built and shipped one at a time, in this order.
 
-1. **A team that doesn't waste tokens.** On six hard problems the team now gets 3 right where Nemotron Super alone gets 0, but it uses about 50 times the tokens. Next: answer directly when splitting won't help, cut review rounds that change nothing, and cap how long workers think. It goes to the stable channel only if it beats Super alone with the same or fewer tokens.
+1. **The app decides how to work, without wasting tokens.** In the 0.2.0 beta the app looks at a question first: a lot of separate work is split word for word and answered at the same time; one piece of work is answered by one model and checked by another; easy questions are just answered. On six hard problems, asking each problem as written got 5 right with 102k tokens, where the old lead-review-merge team got 4 to 5 with 470k to 490k. Next: measure the new router on more sets and on writing and code tasks before it goes to the stable channel.
 2. **Streaming answers.** Done for chat and code mode.
 3. **Code mode, closer to Claude Code and Codex.** Undo for saved changes, a git changes view and "save all" for one request are in. Next: native tool calls, kept only if they beat today's text protocol on the free models.
 4. **Pitch in with people.** A person takes a role the lead hands out and works on it until the answer is right. Also: report and block bad results, and open sign-up.
