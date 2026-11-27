@@ -68,10 +68,9 @@ const teamDefaults = {
 export const presets: Record<"openai" | "anthropic", RoutingSettings> = {
   openai: {
     analyzer: "gpt-6-luna",
-    executor: "gpt-6.1-sol",
+    executor: "auto-free",
     live: false,
     ...teamDefaults,
-    lead: "gpt-6-astra",
   },
   anthropic: {
     analyzer: "claude-haiku-5-5",
@@ -155,6 +154,8 @@ export type Completion = {
   inputTokens: number | null;
   outputTokens: number | null;
   incomplete: boolean;
+  /** With Auto: the model that actually answered. */
+  modelId?: string;
 };
 export type Analysis = Completion & {
   summary: string;

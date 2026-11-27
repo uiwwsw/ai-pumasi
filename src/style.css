@@ -514,7 +514,34 @@ button:hover {
   align-items: center;
   color: var(--muted);
   gap: 7px;
-  font-size: 10px;
+  font-size: 11px;
+  border: 0;
+  background: transparent;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.model-control:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.answer-working {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.routing-settings > summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 650;
+  padding: 14px 0;
+}
+.routing-settings > summary small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 4px;
 }
 .model-control select {
   appearance: none;
@@ -1129,51 +1156,6 @@ html[data-theme="dark"] .composer {
   margin: 10px 0 0;
 }
 
-.review-modal {
-  width: 570px;
-  max-height: 90vh;
-  overflow: auto;
-}
-.request-summary {
-  font-size: 12px;
-  line-height: 1.8;
-  max-height: 80px;
-  overflow: auto;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  background: var(--panel);
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  margin-bottom: 20px;
-}
-
-.review-model {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  margin: 18px 0;
-}
-.review-model select {
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  padding: 7px;
-}
-
-.review-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 22px;
-}
-.review-actions button {
-  border-radius: 6px;
-  padding: 10px 13px;
-  font-size: 11px;
-}
 .primary-action {
   background: var(--accent);
   color: var(--bg);
@@ -1184,57 +1166,6 @@ html[data-theme="dark"] .composer {
 }
 .primary-action:disabled {
   opacity: 0.4;
-}
-.organize-proposal {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 15px;
-  margin-bottom: 20px;
-}
-.proposal-label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 10px;
-  color: var(--accent);
-  margin-bottom: 13px;
-}
-.organize-proposal > strong {
-  font-size: 12px;
-  font-weight: 500;
-}
-.organize-proposal p {
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.8;
-}
-.organize-proposal > small {
-  display: block;
-  font-size: 9px;
-  line-height: 1.8;
-  color: var(--muted);
-  margin-top: 12px;
-}
-.decision-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 7px;
-}
-.decision-grid button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 6px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  font-size: 11px;
-}
-.decision-grid button[aria-pressed="true"] {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--track);
 }
 
 .welcome h1 {
@@ -1254,53 +1185,11 @@ html[data-theme="dark"] .composer {
   font-size: 13px;
   font-weight: 500;
 }
-.preset-buttons {
-  display: flex;
-  gap: 8px;
-}
-.preset-buttons button,
-.internal-model > button {
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  font-size: 10px;
-}
+
 .routing-settings .setting-row select {
   max-width: 180px;
   width: 180px;
   flex-shrink: 0;
-}
-.internal-model {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 14px;
-  margin: 17px 0;
-  background: var(--panel);
-}
-.internal-model > strong {
-  font-size: 12px;
-  font-weight: 500;
-}
-.internal-model p {
-  font-size: 10px;
-  line-height: 1.8;
-  color: var(--muted);
-}
-.internal-model small {
-  font-size: 9px;
-  display: block;
-  color: var(--muted);
-  margin-top: 9px;
-  line-height: 1.8;
-}
-.internal-model button:disabled {
-  opacity: 0.45;
-}
-.analysis-result {
-  margin-top: 14px;
-  border-top: 1px solid var(--line);
-  padding-top: 12px;
-  font-size: 11px;
 }
 
 .api-error {
@@ -1308,9 +1197,6 @@ html[data-theme="dark"] .composer {
   line-height: 1.8;
   color: #ad5146;
   overflow-wrap: anywhere;
-}
-.review-model select {
-  max-width: 260px;
 }
 
 @media (max-width: 680px) {

@@ -31,7 +31,6 @@ export type Workspace = {
   legacyChats: Chat[];
   save: boolean;
 };
-export type Proposal = { bundleId: string; reason: string };
 export const STORAGE_KEY = "aurora.workspace.v2";
 export const LEGACY_KEY = "aurora.workspace.v1";
 export function emptyWorkspace(): Workspace {
@@ -63,38 +62,6 @@ export function resetText(at: number | null, now: number): string {
         m: minutes % 60,
       })
     : t("{m}분 후 초기화", { m: minutes });
-}
-function topic(text: string): string | null {
-  const topics = [
-    ["code", /코드|개발|앱|버그|함수|설계|아키텍처|code|debug|software/i],
-    ["writing", /번역|요약|글|문장|이메일|translate|summari[sz]e|writing/i],
-    ["travel", /여행|항공|호텔|맛집|travel|hotel/i],
-  ] as const;
-  return topics.find(([, pattern]) => pattern.test(text))?.[0] ?? null;
-}
-export function propose(
-  bundles: Bundle[],
-  nextPrompt: string,
-): Proposal | null {
-  const current = bundles.findLast((b) => b.status === "active");
-  if (!current?.messages.some((m) => m.role === "user")) return null;
-  const last = current.messages.filter((m) => m.role === "user").at(-1)!.text;
-  const changed =
-    /다른 (일|주제|작업)|새로운 (일|주제|작업)|이제 .*대신|주제.*바꿔|다음 작업/.test(
-      nextPrompt,
-    ) ||
-    (topic(last) !== null &&
-      topic(nextPrompt) !== null &&
-      topic(last) !== topic(nextPrompt));
-  const finished = /여기까지|완료했|끝났|마무리|수고했|고마워/.test(nextPrompt);
-  return changed || finished
-    ? {
-        bundleId: current.id,
-        reason: changed
-          ? t("이전 작업과 다른 주제로 보여요.")
-          : t("지금 작업이 마무리된 것 같아요."),
-      }
-    : null;
 }
 export function organize(
   bundles: Bundle[],
@@ -169,9 +136,8 @@ export function restoreWorkspace(
     mode: old.length ? "legacy" : "auto",
   };
 }
-export function makePreview(tier: Tier): string {
+export function makePreview(): string {
   return t(
-    "선택한 모델 등급 · {tier}\n\n로컬 미리보기라 AI에 보내지 않았습니다. 답도 없고 토큰도 쓰지 않았습니다.",
-    { tier: tierNames[tier] },
+    "웹 데모라 AI에 보내지 않았습니다. 데스크톱 앱에 키를 넣으면 실제 모델이 답합니다.",
   );
 }

@@ -20,7 +20,7 @@ const json = (body: unknown) => ({ ok: true, json: async () => body });
 test("role defaults are independent, validated, and provider-specific", () => {
   assert.notEqual(presets.openai.analyzer, presets.openai.executor);
   assert.equal(presets.anthropic.analyzer, "claude-haiku-5-5");
-  assert.equal(readRouting("{bad").executor, "gpt-6.1-sol");
+  assert.equal(readRouting("{bad").executor, "auto-free");
   assert.equal(
     readRouting(
       JSON.stringify({ analyzer: "bad", executor: "gpt-6.1-sol", live: true }),
@@ -59,10 +59,26 @@ test("missing key blocks a call before any network traffic", async () => {
       gemini: false,
       ollama: false,
       compat: false,
-      auto: false,
+      // A paid key alone is enough for Auto on your own requests.
+      auto: true,
     },
   );
   assert.ok(Object.values(s.models).every((v) => v === false));
+});
+test("Auto uses a paid key only for your own requests, after free models", async () => {
+  const answer = async (url: string) => {
+    assert.equal(url, "https://api.anthropic.com/v1/messages");
+    return json({
+      content: [{ type: "text", text: "ok" }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+      stop_reason: "end_turn",
+    });
+  };
+  const env = { ANTHROPIC_API_KEY: "unit-test-key" };
+  const own = await request({ ...payload, model: "auto-free" }, { env, fetchImpl: answer, allowPaid: true });
+  assert.equal(own.modelId, "claude-sonnet-5-5");
+  // Helping others or leading a team never spends a paid key.
+  await assert.rejects(request({ ...payload, model: "auto-free" }, { env, fetchImpl: answer }));
 });
 test("OpenAI adapter uses fixed endpoint, selected model, no store, usage and cap", async () => {
   let seen: any;

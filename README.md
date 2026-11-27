@@ -35,7 +35,7 @@
 
 **Free models that hold their own.** Nemotron 3.5 Super, a free model you can run here, took three program-graded exams and scored 30/30, 28/30 and 23/25. ChatGPT's free tier scored 23, 24 and 13.4. Questions, answers and graders are in [bench/](bench/README.md).
 
-**Free tiers run out. The app keeps going.** Add free keys from NVIDIA, OpenRouter, Groq or Google. The Auto (free) model starts with the best-scoring model you can reach and moves to the next only when one hits its limit or stalls.
+**Add your keys, then just ask.** Put keys for NVIDIA, OpenRouter, Groq or Google (free) and OpenAI or Anthropic (paid) in Settings once. Press Enter and Auto answers: it starts with the best-scoring free model you can reach, moves to the next when one hits its limit or stalls, and uses a paid key only after every free one is out. There is no model to pick and no confirmation step; you can still choose a model under Settings → Advanced.
 
 **Your keys stay yours.** API keys are encrypted with the OS keychain, never shown again, and masked out of model answers and error messages.
 

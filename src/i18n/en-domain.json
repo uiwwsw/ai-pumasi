@@ -9,5 +9,5 @@
   "{m}분 후 초기화": "Resets in {m}m",
   "이전 작업과 다른 주제로 보여요.": "This looks like a different topic from the previous task.",
   "지금 작업이 마무리된 것 같아요.": "It looks like the current task is wrapping up.",
-  "선택한 모델 등급 · {tier}\n\n로컬 미리보기라 AI에 보내지 않았습니다. 답도 없고 토큰도 쓰지 않았습니다.": "Selected model tier · {tier}\n\nThis is a local preview, so nothing was sent to an AI. There is no answer and no tokens were used."
+  "웹 데모라 AI에 보내지 않았습니다. 데스크톱 앱에 키를 넣으면 실제 모델이 답합니다.": "This is the web demo, so nothing was sent to an AI. Add a key in the desktop app and a real model answers."
 }

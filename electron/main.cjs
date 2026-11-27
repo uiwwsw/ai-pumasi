@@ -265,6 +265,7 @@ else
                   env,
                   autoOrder: order,
                   timeoutMs: 300000,
+                  allowPaid: true,
                 }),
               emit: (e) => {
                 if (!event.sender.isDestroyed())
@@ -376,6 +377,7 @@ else
         return await guarded(env, () =>
           providers.request(payload, {
             env,
+            allowPaid: true,
           }),
         );
       } finally {
