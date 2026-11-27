@@ -782,7 +782,7 @@ function App() {
   );
   return (
     <div
-      className={`app ${sidebar ? "" : "sidebar-closed"} ${usageOpen ? "" : "usage-closed"}`}
+      className={`app ${sidebar ? "" : "sidebar-closed"} ${usageOpen ? "" : "usage-closed"} ${MAC_WINDOW ? "mac-window" : ""}`}
     >
       <aside className="sidebar" aria-label={t("사이드바")}>
         <div className="window-space" />
@@ -1626,6 +1626,8 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
     </article>
   );
 }
+// The macOS desktop window draws its close, minimise and zoom buttons over the top-left corner.
+const MAC_WINDOW = /Electron/.test(navigator.userAgent) && /Mac/.test(navigator.userAgent);
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
