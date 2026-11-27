@@ -77,18 +77,19 @@ try {
       anthropic: true,
       auto: true,
     }));
-    ipcMain.removeHandler("aurora:ai-request");
-    ipcMain.handle("aurora:ai-request", async (event, p) => {
+    ipcMain.removeHandler("aurora:ask");
+    ipcMain.handle("aurora:ask", async (event, p) => {
       globalThis.auroraTestCalls.push(p);
       // Stream part of the answer first, the way the real handler does.
+      event.sender.send("aurora:ask-progress", { stage: "plan", mode: "direct", effort: "mid" });
       event.sender.send("aurora:ai-delta", "모의 스트리밍 일부");
       await new Promise((r) => setTimeout(r, 1500));
       return {
-        model: p.model,
         text: "모의 API 답변",
-        inputTokens: 34,
-        outputTokens: 45,
-        incomplete: false,
+        mode: "direct",
+        effort: "mid",
+        model: p.model,
+        usage: { route: { in: 0, out: 0 }, work: { in: 34, out: 45 }, check: { in: 0, out: 0 } },
       };
     });
   });
@@ -131,14 +132,11 @@ try {
   await expect(page.locator(".composer .attach-chip")).toHaveCount(0);
   let calls = await app.evaluate(() => globalThis.auroraTestCalls);
   expect(calls[1].text).toContain('<file name="notes.txt">\n첨부 내용 한 줄\n</file>');
-  expect(calls.map((c) => [c.action, c.model, c.maxOutputTokens])).toEqual([
-    ["execute", "auto-free", 4096],
-    ["execute", "gpt-6.1-sol", 4096],
-  ]);
+  expect(calls.map((c) => c.model)).toEqual(["auto-free", "gpt-6.1-sol"]);
   // A failed call keeps the draft, shows the error and does not retry.
   await app.evaluate(({ ipcMain }) => {
-    ipcMain.removeHandler("aurora:ai-request");
-    ipcMain.handle("aurora:ai-request", (_event, p) => {
+    ipcMain.removeHandler("aurora:ask");
+    ipcMain.handle("aurora:ask", (_event, p) => {
       globalThis.auroraTestCalls.push(p);
       throw new Error("모의 API 오류");
     });
@@ -149,13 +147,56 @@ try {
   await expect(page.locator(".message")).toHaveCount(4);
   expect(await app.evaluate(() => globalThis.auroraTestCalls.length)).toBe(3);
   await app.evaluate(({ ipcMain }) => {
-    ipcMain.removeHandler("aurora:ai-request");
-    ipcMain.handle("aurora:ai-request", (_event, p) => ({
-      model: p.model,
+    // A request the app splits in two: the first part finishes, the second keeps running until the
+    // user finishes with what is done.
+    let finish;
+    ipcMain.removeHandler("aurora:ask-control");
+    ipcMain.handle("aurora:ask-control", (_event, action) => {
+      globalThis.auroraControls = [...(globalThis.auroraControls ?? []), action];
+      finish?.(action);
+    });
+    ipcMain.removeHandler("aurora:ask");
+    ipcMain.handle("aurora:ask", async (event, p) => {
+      const send = (e) => event.sender.send("aurora:ask-progress", e);
+      send({ stage: "plan", mode: "split", effort: "high", parts: ["문제 1", "문제 2"] });
+      send({ stage: "part", id: "p1", title: "문제 1", state: "running", model: "gpt-6.1-sol", startedAt: Date.now() });
+      send({ stage: "part", id: "p2", title: "문제 2", state: "running", model: "gpt-6.1-sol", startedAt: Date.now() });
+      send({ stage: "part", id: "p1", title: "문제 1", state: "done", model: "gpt-6.1-sol", text: "첫 문제의 답" });
+      const action = await new Promise((r) => (finish = r));
+      if (action === "stop") throw new Error("stopped");
+      return {
+        text: "### 문제 1\n\n첫 문제의 답\n\n### 문제 2\n\n(건너뜀)",
+        mode: "split",
+        effort: "high",
+        parts: [
+          { title: "문제 1", model: "gpt-6.1-sol", failed: false, skipped: false, incomplete: false },
+          { title: "문제 2", model: null, failed: false, skipped: true, incomplete: false },
+        ],
+        usage: { route: { in: 0, out: 0 }, work: { in: 1, out: 1 }, check: { in: 0, out: 0 } },
+      };
+    });
+  });
+  // The board says what is happening, shows the finished part at once, and can finish early.
+  await send("두 문제를 풀어 줘");
+  await expect(page.locator(".ask-progress")).toContainText("2개로 나눠 푸는 중 · 1개 끝남");
+  await expect(page.locator(".message.assistant").last()).toContainText("첫 문제의 답");
+  await page.screenshot({ path: "artifacts/aurora-split.png" });
+  await page.getByRole("button", { name: "지금까지로 마무리", exact: true }).click();
+  await expect(page.locator(".message-meta").last()).toContainText("2개로 나눠 풂 · 1개 건너뜀");
+  await expect(page.locator(".message")).toHaveCount(6);
+  // Stop ends the run, says so, and puts the question back.
+  await send("멈출 질문");
+  await page.getByRole("button", { name: "중지", exact: true }).click();
+  await expect(editor).toHaveValue("멈출 질문");
+  await expect(page.locator(".message")).toHaveCount(6);
+  await app.evaluate(({ ipcMain }) => {
+    ipcMain.removeHandler("aurora:ask");
+    ipcMain.handle("aurora:ask", (_event, p) => ({
       text: "모의 API 답변",
-      inputTokens: 1,
-      outputTokens: 1,
-      incomplete: false,
+      mode: "direct",
+      effort: "mid",
+      model: p.model,
+      usage: { route: { in: 0, out: 0 }, work: { in: 1, out: 1 }, check: { in: 0, out: 0 } },
     }));
   });
   // Saving, legacy sessions and search.
@@ -184,11 +225,11 @@ try {
   await page.getByLabel("대화 관리 모드").selectOption("auto");
   await page.getByLabel("화면 테마").selectOption("dark");
   await close();
-  await expect(page.locator(".message")).toHaveCount(4);
+  await expect(page.locator(".message")).toHaveCount(6);
   await page.screenshot({ path: "artifacts/aurora-dark.png" });
   // Saved conversations survive a reload.
   await page.reload();
-  await expect(page.locator(".message")).toHaveCount(4);
+  await expect(page.locator(".message")).toHaveCount(6);
   await settings();
   await page.getByLabel("대화 관리 모드").selectOption("legacy");
   await close();
@@ -233,6 +274,7 @@ try {
           "key-setup-before-chat",
           "enter-sends-without-dialog",
           "answer-streams",
+          "split-progress-finish-and-stop",
           "text-attachment",
           "auto-default-and-advanced-model",
           "real-usage-only",

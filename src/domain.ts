@@ -11,6 +11,8 @@ export type Message = {
   text: string;
   model?: string;
   live?: boolean;
+  /** How the answer was produced (split into parts, checked by another model), shown under it. */
+  how?: string;
   /** Text files attached to a question. The model reads them; the conversation shows their names. */
   files?: Attachment[];
 };

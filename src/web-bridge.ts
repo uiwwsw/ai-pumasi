@@ -3,11 +3,14 @@
 // no server of ours in between. Keys are kept in this browser's storage only.
 import providers from "../electron/providers.cjs";
 import team from "../electron/team.cjs";
+import smart from "../electron/smart.cjs";
 import i18n from "../electron/i18n.cjs";
 import stats from "../electron/worker-stats.cjs";
 import type {
   AIBridge,
   AIRequest,
+  AskProgress,
+  AskResult,
   Completion,
   SecretName,
   SecretsState,
@@ -109,6 +112,8 @@ export function installWebBridge() {
   if (window.auroraAI) return;
   const deltaListeners = new Set<(text: string) => void>();
   const teamListeners = new Set<(e: TeamProgress) => void>();
+  const askListeners = new Set<(e: AskProgress) => void>();
+  let askControl: any = null;
   const workerStats = stats.createStatsStore();
   // Finish a sign-in that just came back before anything reads the key state.
   const loginDone = finishOpenRouterLogin();
@@ -128,6 +133,34 @@ export function installWebBridge() {
       } catch (e) {
         throw tidy(e);
       }
+    },
+    ask: async (payload) => {
+      const control = (askControl = smart.createControl());
+      try {
+        return (await smart.run(payload, {
+          env: env(),
+          stats: workerStats,
+          allowPaid: true,
+          signal: control.signal,
+          signalFor: control.signalFor,
+          skipped: control.skipped,
+          onProgress: (e: AskProgress) => askListeners.forEach((fn) => fn(e)),
+          onDelta: (text: string) => deltaListeners.forEach((fn) => fn(text)),
+        })) as AskResult;
+      } catch (e) {
+        throw tidy(e);
+      } finally {
+        if (askControl === control) askControl = null;
+      }
+    },
+    askControl: async (action, partId) => {
+      if (action === "stop") askControl?.stop();
+      else if (action === "finish") askControl?.finish();
+      else if (action === "skip" && partId) askControl?.skip(partId);
+    },
+    onAskProgress: (fn) => {
+      askListeners.add(fn);
+      return () => askListeners.delete(fn);
     },
     team: async (payload) => {
       try {

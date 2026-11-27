@@ -252,6 +252,36 @@ export type PumasiProgress = {
   state: "claimed" | "working" | "done";
   tokens?: number;
 };
+export type AskResult = {
+  text: string;
+  mode: "direct" | "split" | "roles";
+  effort: "low" | "mid" | "high";
+  model?: string;
+  incomplete?: boolean;
+  parts?: { title: string; model: string | null; failed: boolean; skipped: boolean; incomplete: boolean }[];
+  check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean } | null;
+  usage: Record<"route" | "work" | "check", { in: number; out: number }>;
+};
+/** What is happening right now while a question is being answered. */
+export type AskProgress =
+  | { stage: "route" }
+  | { stage: "plan"; mode: AskResult["mode"]; effort: AskResult["effort"]; parts?: string[] }
+  | {
+      stage: "part";
+      id: string;
+      title: string;
+      state: "waiting" | "running" | "retry" | "switch" | "substituted" | "done" | "failed" | "skipped";
+      model?: string;
+      from?: string;
+      reason?: string;
+      startedAt?: number;
+      text?: string;
+      partial?: boolean;
+      message?: string;
+    }
+  | { stage: "check"; model: string }
+  | { stage: "revise"; model: string }
+  | { stage: "done" };
 export interface AIBridge {
   /** Code mode: files inside the one folder the user picked. */
   code?: {
@@ -297,6 +327,15 @@ export interface AIBridge {
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
   onAnswerDelta?(fn: (text: string) => void): () => void;
+  /** Ask a question; the app decides whether to answer directly, split it, or solve and check. */
+  ask?(payload: {
+    text: string;
+    context: AIRequest["context"];
+    model: string;
+    autoOrder?: string[];
+  }): Promise<AskResult>;
+  askControl?(action: "stop" | "finish" | "skip", partId?: string): Promise<void>;
+  onAskProgress?(fn: (e: AskProgress) => void): () => void;
 
   status(): Promise<ProviderStatus>;
   setLang?(lang: "ko" | "en"): Promise<void>;

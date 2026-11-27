@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
+  Square,
   Paperclip,
   FileText,
   ArrowUp,
@@ -51,6 +52,14 @@ import { SecretSettings } from "./secrets";
 import { PumasiPanel } from "./pumasi";
 import { CodeWorkspace } from "./code-view";
 import { KeySetup } from "./key-setup";
+import {
+  AskProgressView,
+  applyProgress,
+  emptyRun,
+  finishedText,
+  howLine,
+  type AskRun,
+} from "./ask-progress";
 import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import "./style.css";
 import { installWebBridge } from "./web-bridge";
@@ -273,6 +282,9 @@ function App() {
   const [storageError, setStorageError] = useState(false);
   const [notice, setNotice] = useState("");
   const [workers, setWorkers] = useState<Record<string, WorkerRow>>({});
+  // What the app is doing with the current question (deciding, parts, checking).
+  const [run, setRun] = useState<AskRun>(emptyRun());
+  const stoppedByUser = useRef(false);
   const [tick, setTick] = useState(0);
   useEffect(() => {
     if (busy && Object.values(workers).some((w) => w.state === "running")) {
@@ -440,7 +452,8 @@ function App() {
     const asked = withFiles(p);
     let completion: Completion | null = null;
     let team: TeamResult | null = null;
-    if (routing.live && routing.team && window.auroraAI?.team) {
+    let how = "";
+    if (routing.live && routing.team && routing.pumasi && window.auroraAI?.team) {
       busyRef.current = true;
       setBusy(true);
       setAIError("");
@@ -576,26 +589,53 @@ function App() {
       setBusy(true);
       setAIError("");
       setStreamed("");
+      setRun(emptyRun());
+      stoppedByUser.current = false;
       const off = window.auroraAI.onAnswerDelta?.(setStreamed);
+      const offProgress = window.auroraAI.onAskProgress?.((e) =>
+        setRun((r) => applyProgress(r, e)),
+      );
       try {
-        completion = await window.auroraAI.request({
-          action: "execute",
-          model: p.modelId,
-          text: asked,
-          context: context(),
-          maxOutputTokens: 4096,
-        });
+        if (window.auroraAI.ask) {
+          // The app decides how to work: answer directly, split into parts, or solve and check.
+          const r = await window.auroraAI.ask({
+            text: asked,
+            context: context(),
+            model: p.modelId,
+            autoOrder: routing.leadOrder.length ? routing.leadOrder : undefined,
+          });
+          how = howLine(r);
+          completion = {
+            text: r.text,
+            model: r.model ?? p.modelId,
+            modelId: r.model,
+            inputTokens: r.usage.route.in + r.usage.work.in + r.usage.check.in,
+            outputTokens: r.usage.route.out + r.usage.work.out + r.usage.check.out,
+            incomplete: !!r.incomplete,
+          };
+        } else
+          completion = await window.auroraAI.request({
+            action: "execute",
+            model: p.modelId,
+            text: asked,
+            context: context(),
+            maxOutputTokens: 4096,
+          });
       } catch (error) {
-        setAIError(
-          error instanceof Error ? error.message : t("API 실행에 실패했습니다."),
-        );
+        if (stoppedByUser.current) setNotice(t("중지했습니다."));
+        else
+          setAIError(
+            error instanceof Error ? error.message : t("API 실행에 실패했습니다."),
+          );
         setSending(null);
         setDraft(p.text);
         setFiles(p.files ?? []);
         return;
       } finally {
         off?.();
+        offProgress?.();
         setStreamed("");
+        setRun(emptyRun());
         busyRef.current = false;
         setBusy(false);
       }
@@ -634,6 +674,7 @@ function App() {
               : makePreview(),
         live: !!completion,
         model: completion?.modelId ?? p.modelId,
+        ...(how ? { how } : {}),
       },
     ];
     const newId = crypto.randomUUID();
@@ -991,19 +1032,23 @@ function App() {
                   <MessageView
                     message={{ id: "sending", role: "user", text: sending }}
                   />
-                  {streamed ? (
-                    <MessageView
-                      message={{
-                        id: "streaming",
-                        role: "assistant",
-                        text: streamed,
-                        live: true,
-                      }}
-                    />
+                  <AskProgressView
+                    run={run}
+                    onSkip={(id) => void window.auroraAI?.askControl?.("skip", id)}
+                    onFinish={() => void window.auroraAI?.askControl?.("finish")}
+                  />
+                  {streamed || finishedText(run) ? (
+                    // Finished parts show right away; a single answer shows as it is written.
+                    <article className="message assistant">
+                      <div className="message-text">{finishedText(run) || streamed}</div>
+                    </article>
                   ) : (
-                    <p className="answer-working" role="status">
-                      {t("답을 쓰는 중…")}
-                    </p>
+                    run.mode !== "split" &&
+                    run.stage !== "route" && (
+                      <p className="answer-working" role="status">
+                        {t("답을 쓰는 중…")}
+                      </p>
+                    )
                   )}
                 </>
               )}
@@ -1113,14 +1158,27 @@ function App() {
                 <Users size={14} />
                 {t("Pitch in")}
               </button>
-              <button
-                className="send-button"
-                aria-label={t("보내기")}
-                disabled={!draft.trim() || busy}
-                onClick={review}
-              >
-                <ArrowUp size={19} />
-              </button>
+              {busy && window.auroraAI?.askControl ? (
+                <button
+                  className="send-button"
+                  aria-label={t("중지")}
+                  onClick={() => {
+                    stoppedByUser.current = true;
+                    void window.auroraAI?.askControl?.("stop");
+                  }}
+                >
+                  <Square size={13} fill="currentColor" />
+                </button>
+              ) : (
+                <button
+                  className="send-button"
+                  aria-label={t("보내기")}
+                  disabled={!draft.trim() || busy}
+                  onClick={review}
+                >
+                  <ArrowUp size={19} />
+                </button>
+              )}
             </div>
           </div>
           <div className="composer-footnote">
@@ -1526,7 +1584,9 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
         // Which model answered, quietly under the answer.
         <div className="message-meta">
           {message.live
-            ? (message.model && modelById(message.model)?.name) || t("API 응답")
+            ? message.how ||
+              (message.model && modelById(message.model)?.name) ||
+              t("API 응답")
             : t("로컬 미리보기")}
         </div>
       )}
