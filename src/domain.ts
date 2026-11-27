@@ -13,9 +13,12 @@ export type Message = {
   live?: boolean;
   /** How the answer was produced (split into parts, checked by another model), shown under it. */
   how?: string;
+  /** The steps behind an answer several models worked on: who did which part. */
+  trail?: TrailStep[];
   /** Text files attached to a question. The model reads them; the conversation shows their names. */
   files?: Attachment[];
 };
+export type TrailStep = { label: string; model?: string | null; note?: string };
 export type Attachment = { name: string; text: string };
 /** Limits for one attached file and for all files on one question, in characters. */
 export const ATTACH_MAX = 200_000;

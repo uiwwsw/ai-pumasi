@@ -197,6 +197,7 @@ try {
   await expect(page.locator(".ask-progress")).toContainText("2개로 나눠 푸는 중 · 1개 끝남");
   await expect(page.locator(".ask-progress .mode-chip")).toHaveText("Pumasi mode");
   await expect(page.locator(".message.assistant").last()).toContainText("첫 문제의 답");
+  await page.waitForTimeout(400);
   await page.screenshot({ path: "artifacts/aurora-split.png" });
   await page.getByRole("button", { name: "지금까지로 마무리", exact: true }).click();
   await expect(page.locator(".message-meta").last()).toContainText("2개로 나눠 풂 · 1개 건너뜀");

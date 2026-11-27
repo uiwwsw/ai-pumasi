@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { t } from "./i18n";
 import { modelById, type AskProgress, type AskResult } from "./routing";
+import type { TrailStep } from "./domain";
+import { ModelToken } from "./crew";
 
 export type AskPart = {
   id: string;
@@ -135,6 +137,9 @@ export function AskProgressView({
       <div className="ask-headline">
         <span className="ask-headline-text">
           {together && <span className="mode-chip">{MODE_NAME}</span>}
+          {run.mode !== "split" && (run.stage === "check" ? run.checker : a?.model) && (
+            <ModelToken id={run.stage === "check" ? run.checker : a?.model} />
+          )}
           <span>{headline}</span>
           <span className="ask-elapsed">{clock(now - run.startedAt)}</span>
         </span>
@@ -149,6 +154,7 @@ export function AskProgressView({
         <ol>
           {run.parts.map((p) => (
             <li key={p.id} className={`is-${p.state}`}>
+              <ModelToken id={p.model} />
               <span className="ask-part-title">
                 {p.title}
                 {p.state === "running" && p.thinking && (
@@ -203,4 +209,36 @@ export function howLine(r: AskResult): string {
           : t("{model}이(가) 검수했지만 확신하지 못함", { model: name(r.check.model) }),
     ].join(" · ");
   return model;
+}
+
+/** Who did which part, kept with the answer. Nothing for an answer one model gave directly. */
+export function trailOf(r: AskResult): TrailStep[] | undefined {
+  if (r.mode === "split" && r.parts?.length)
+    return r.parts.map((p) => ({
+      label: p.title,
+      model: p.model,
+      note: p.skipped
+        ? t("건너뜀")
+        : p.failed
+          ? t("실패")
+          : p.incomplete
+            ? t("답이 잘림")
+            : undefined,
+    }));
+  if (r.mode === "roles" && r.check)
+    return [
+      { label: t("풀이"), model: r.model },
+      {
+        label: t("검수"),
+        model: r.check.model,
+        note:
+          r.check.verdict === "right"
+            ? t("맞다고 봄")
+            : r.check.verdict === "wrong"
+              ? t("틀린 곳을 지적함")
+              : t("확신하지 못함"),
+      },
+      ...(r.check.revised ? [{ label: t("지적을 반영해 다시 풀이"), model: r.model }] : []),
+    ];
+  return undefined;
 }

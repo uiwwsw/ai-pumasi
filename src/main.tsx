@@ -17,7 +17,6 @@ import {
   Plus,
   Search,
   Settings2,
-  Sparkles,
   Undo2,
   Users,
   X,
@@ -59,6 +58,7 @@ import {
   emptyRun,
   finishedText,
   howLine,
+  trailOf,
   clock,
   type AskRun,
 } from "./ask-progress";
@@ -66,6 +66,7 @@ import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import "./style.css";
 import { installWebBridge } from "./web-bridge";
 import { Markdown } from "./markdown";
+import { CrewRoster, ModelToken } from "./crew";
 import { CopyButton, ShareButton, conversationMarkdown } from "./message-actions";
 // In a browser there is no desktop main process: the web version provides the same bridge.
 installWebBridge();
@@ -361,6 +362,10 @@ function App() {
     if (box.scrollHeight - box.scrollTop - box.clientHeight < 160)
       end.current?.scrollIntoView({ block: "end" });
   }, [streamed]);
+  // When the work is laid out (how it is split, who checks), bring it into view.
+  useEffect(() => {
+    if (sending) end.current?.scrollIntoView({ block: "end" });
+  }, [sending, run.stage, run.parts.length]);
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
       if (busyRef.current) return;
@@ -458,6 +463,7 @@ function App() {
     let completion: Completion | null = null;
     let team: TeamResult | null = null;
     let how = "";
+    let trail: ReturnType<typeof trailOf>;
     if (routing.live && routing.team && routing.pumasi && window.auroraAI?.team) {
       busyRef.current = true;
       setBusy(true);
@@ -612,6 +618,7 @@ function App() {
           });
           // How it was produced and how long it took.
           how = `${howLine(r)} · ${clock(Date.now() - askedAt)}`;
+          trail = trailOf(r);
           completion = {
             text: r.text,
             model: r.model ?? p.modelId,
@@ -682,6 +689,7 @@ function App() {
         live: !!completion,
         model: completion?.modelId ?? p.modelId,
         ...(how ? { how } : {}),
+        ...(trail ? { trail } : {}),
       },
     ];
     const newId = crypto.randomUUID();
@@ -815,9 +823,8 @@ function App() {
                 input.current?.focus();
               }}
             >
-              <Sparkles size={17} />
+              <MessageSquare size={17} />
               <span>{t("하나의 대화")}</span>
-              <span className="sample-tag">AUTO</span>
             </button>
           ) : (
             <button
@@ -914,7 +921,6 @@ function App() {
             <span>{t("Pitch in")}</span>
           </button>
           <button className="account" onClick={() => setDialog("settings")}>
-            <span className="avatar">A</span>
             <span>
               <strong>{auto ? t("하나의 대화") : t("세션 모드")}</strong>
               <small>{t("모드 및 데이터 설정")}</small>
@@ -1012,6 +1018,16 @@ function App() {
                     ? `${t(filter === "archived" ? "보관한" : "휴지통의")} ${t("작업이 없습니다.")}`
                     : t("무엇을 도와드릴까요?")}
               </h1>
+              {filter === "current" && (
+                <>
+                  <p>
+                    {t(
+                      "질문을 보고 일하는 방식을 정합니다. 양이 많으면 나눠서 동시에 풀고, 틀리기 쉬운 문제는 한 모델이 풀고 다른 모델이 검수합니다.",
+                    )}
+                  </p>
+                  <CrewRoster status={providerStatus} order={routing.leadOrder} />
+                </>
+              )}
             </section>
           ) : (
             <section className="messages" aria-label={t("대화 내용")}>
@@ -1143,6 +1159,7 @@ function App() {
                 title={t("모델 바꾸기")}
                 onClick={() => setDialog("settings")}
               >
+                <ModelToken id={routing.executor} />
                 {modelById(routing.executor).name}
               </button>
               <button
@@ -1595,34 +1612,67 @@ function App() {
   );
 }
 function MessageView({ message }: { message: Chat["messages"][number] }) {
+  if (message.role === "user")
+    return (
+      <article className="message user">
+        <div className="message-text">{message.text}</div>
+        {message.files?.length ? (
+          <div className="attach-chips in-message">
+            {message.files.map((f, i) => (
+              <span className="attach-chip" key={`${f.name}-${i}`}>
+                <FileText size={12} />
+                {f.name}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </article>
+    );
+  // Above the answer: who worked on it. Several models: the steps open on a click.
+  const crew = [
+    ...new Set(
+      (message.trail?.map((s) => s.model) ?? [message.model]).filter((id): id is string => !!id),
+    ),
+  ];
+  const line = message.live
+    ? message.how || (message.model && modelById(message.model)?.name) || t("API 응답")
+    : t("로컬 미리보기");
+  const who = (
+    <>
+      <span className="token-stack">
+        {crew.map((id) => (
+          <ModelToken key={id} id={id} />
+        ))}
+      </span>
+      <span>{line}</span>
+    </>
+  );
   return (
-    <article className={`message ${message.role}`}>
-      <div className="message-text">
-        {message.role === "assistant" ? <Markdown text={message.text} /> : message.text}
-      </div>
-      {message.files?.length ? (
-        <div className="attach-chips in-message">
-          {message.files.map((f, i) => (
-            <span className="attach-chip" key={`${f.name}-${i}`}>
-              <FileText size={12} />
-              {f.name}
-            </span>
-          ))}
-        </div>
-      ) : null}
-      {message.role === "assistant" && (
-        // Which model answered, quietly under the answer.
-        <div className="message-meta">
-          <span>
-            {message.live
-              ? message.how ||
-                (message.model && modelById(message.model)?.name) ||
-                t("API 응답")
-              : t("로컬 미리보기")}
-          </span>
-          <CopyButton text={message.text} label={t("답 복사")} />
-        </div>
+    <article className="message assistant">
+      {message.trail?.length ? (
+        <details className="trail">
+          <summary className="message-meta">{who}</summary>
+          <ol>
+            {message.trail.map((s, i) => (
+              <li key={i}>
+                <ModelToken id={s.model} />
+                <span className="trail-label">{s.label}</span>
+                <span className="trail-note">
+                  {[s.model ? modelById(s.model)?.name : "", s.note].filter(Boolean).join(" · ")}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </details>
+      ) : (
+        <div className="message-meta">{who}</div>
       )}
+      <div className="message-text">
+        <Markdown text={message.text} />
+      </div>
+      <div className="message-actions">
+        <CopyButton text={message.text} label={t("답 복사")} />
+      </div>
     </article>
   );
 }
