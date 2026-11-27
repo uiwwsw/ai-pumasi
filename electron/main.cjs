@@ -374,12 +374,34 @@ else
       inFlight.add(id);
       try {
         const env = secrets.env();
-        return await guarded(env, () =>
-          providers.request(payload, {
-            env,
-            allowPaid: true,
-          }),
-        );
+        // Send the answer so far to the window as it streams, at most ~15 times a second.
+        // Keys are masked the same way as in the final answer.
+        let last = 0;
+        let timer = null;
+        let latest = "";
+        const push = () => {
+          timer = null;
+          last = Date.now();
+          if (!event.sender.isDestroyed())
+            event.sender.send("aurora:ai-delta", scrub(latest, env));
+        };
+        const onDelta = (text) => {
+          latest = text;
+          if (timer) return;
+          const wait = Math.max(0, 66 - (Date.now() - last));
+          timer = setTimeout(push, wait);
+        };
+        try {
+          return await guarded(env, () =>
+            providers.request(payload, {
+              env,
+              allowPaid: true,
+              onDelta,
+            }),
+          );
+        } finally {
+          if (timer) clearTimeout(timer);
+        }
       } finally {
         inFlight.delete(id);
       }

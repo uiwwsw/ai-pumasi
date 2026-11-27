@@ -68,7 +68,7 @@ Today's app has the first piece: another user's app runs one of your team's task
 Built and shipped one at a time, in this order.
 
 1. **A team that doesn't waste tokens.** On six hard problems the team now gets 3 right where Nemotron Super alone gets 0, but it uses about 50 times the tokens. Next: answer directly when splitting won't help, cut review rounds that change nothing, and cap how long workers think. It goes to the stable channel only if it beats Super alone with the same or fewer tokens.
-2. **Streaming answers** in chat and code mode.
+2. **Streaming answers.** Chat answers stream now; code mode is next.
 3. **Code mode, closer to Claude Code and Codex.** Native tool calls where the model supports them, undo for saved changes, a git view, and reviewing several files at once.
 4. **Pitch in with people.** A person takes a role the lead hands out and works on it until the answer is right. Also: report and block bad results, and open sign-up.
 5. **Pitch in for code mode, file attachments, and a decision on bundle vote.**

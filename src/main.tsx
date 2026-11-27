@@ -210,6 +210,8 @@ function App() {
   }, [routing]);
   // The question being answered right now, shown in the conversation until the answer lands.
   const [sending, setSending] = useState<string | null>(null);
+  // The answer so far while it streams in.
+  const [streamed, setStreamed] = useState("");
   // Tokens the provider reported for the last answer. Nothing is guessed before sending.
   const [lastUsage, setLastUsage] = useState<{
     model: string;
@@ -319,7 +321,14 @@ function App() {
   }, [workspace]);
   useEffect(() => {
     end.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, sending]);
+  // Follow a streaming answer only while the reader is already at the bottom.
+  useEffect(() => {
+    const box = end.current?.closest(".conversation");
+    if (!streamed || !box) return;
+    if (box.scrollHeight - box.scrollTop - box.clientHeight < 160)
+      end.current?.scrollIntoView({ block: "end" });
+  }, [streamed]);
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
       if (busyRef.current) return;
@@ -384,6 +393,8 @@ function App() {
   async function proceed(p: Pending) {
     if (busyRef.current) return;
     setSending(p.text);
+    // The question moves into the conversation right away; a failure puts it back.
+    setDraft("");
     let completion: Completion | null = null;
     let team: TeamResult | null = null;
     let bundle: ReturnType<typeof ensembleMessage> | null = null;
@@ -438,6 +449,7 @@ function App() {
             : t("묶음 투표 실행에 실패했습니다."),
         );
         setSending(null);
+        setDraft(p.text);
         return;
       } finally {
         off?.();
@@ -560,6 +572,7 @@ function App() {
             : t("팀 모드 실행에 실패했습니다."),
         );
         setSending(null);
+        setDraft(p.text);
         return;
       } finally {
         off?.();
@@ -570,11 +583,14 @@ function App() {
       if (!window.auroraAI) {
         setAIError(t("Electron 앱에서 실행해 주세요."));
         setSending(null);
+        setDraft(p.text);
         return;
       }
       busyRef.current = true;
       setBusy(true);
       setAIError("");
+      setStreamed("");
+      const off = window.auroraAI.onAnswerDelta?.(setStreamed);
       try {
         completion = await window.auroraAI.request({
           action: "execute",
@@ -588,8 +604,11 @@ function App() {
           error instanceof Error ? error.message : t("API 실행에 실패했습니다."),
         );
         setSending(null);
+        setDraft(p.text);
         return;
       } finally {
+        off?.();
+        setStreamed("");
         busyRef.current = false;
         setBusy(false);
       }
@@ -947,9 +966,20 @@ function App() {
                   <MessageView
                     message={{ id: "sending", role: "user", text: sending }}
                   />
-                  <p className="answer-working" role="status">
-                    {t("답을 쓰는 중…")}
-                  </p>
+                  {streamed ? (
+                    <MessageView
+                      message={{
+                        id: "streaming",
+                        role: "assistant",
+                        text: streamed,
+                        live: true,
+                      }}
+                    />
+                  ) : (
+                    <p className="answer-working" role="status">
+                      {t("답을 쓰는 중…")}
+                    </p>
+                  )}
                 </>
               )}
               {aiError && !sending && (

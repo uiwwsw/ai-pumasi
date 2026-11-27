@@ -185,6 +185,8 @@ async function request(
     onUsage = null,
     signal = null,
     autoOrder = null,
+    // Called with the answer so far while it streams in. Only plain answers stream.
+    onDelta = null,
     // Your own requests may fall back to a paid key you added once every free model is out.
     // Helping someone else (Pumasi) and team leads never do.
     allowPaid = false,
@@ -193,7 +195,7 @@ async function request(
   validate(p);
   const model = catalog.find((m) => m.id === p.model);
   const provider = model.provider;
-  const opts = { env, fetchImpl, timeoutMs, onUsage, signal };
+  const opts = { env, fetchImpl, timeoutMs, onUsage, signal, onDelta };
   if (provider === "auto") {
     // Strongest free model first; on a rate limit, failure or empty reply, the next one.
     const ids = [...autoCandidates(env, autoOrder), ...(allowPaid ? paidFallback(env) : [])];
@@ -241,10 +243,103 @@ async function request(
   }
   return call(p, model, opts, null);
 }
+/**
+ * Read a server-sent event stream and hand each JSON payload to onEvent.
+ * Works with fetch's ReadableStream body; "[DONE]" ends the stream.
+ */
+async function readEvents(response, onEvent) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  const flush = (block) => {
+    const data = block
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith("data:"))
+      .map((line) => line.slice(5).trimStart())
+      .join("\n");
+    if (!data || data === "[DONE]") return;
+    try {
+      onEvent(JSON.parse(data));
+    } catch {
+      // A keep-alive or a malformed line: skip it rather than drop the answer.
+    }
+  };
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let cut;
+    while ((cut = buffer.search(/\r?\n\r?\n/)) !== -1) {
+      flush(buffer.slice(0, cut));
+      buffer = buffer.slice(cut).replace(/^\r?\n\r?\n/, "");
+    }
+  }
+  if (buffer.trim()) flush(buffer);
+}
+/**
+ * Stream an answer and rebuild the provider's ordinary JSON shape from it, so the code that reads
+ * a finished response does not care whether it streamed.
+ */
+async function readStream(response, provider, onDelta) {
+  let text = "";
+  let model = null;
+  let usage = {};
+  let finish = null;
+  let status = null;
+  let stop = null;
+  const grow = (piece) => {
+    if (typeof piece !== "string" || !piece) return;
+    text += piece;
+    try {
+      onDelta(text);
+    } catch {}
+  };
+  await readEvents(response, (e) => {
+    if (provider === "openai") {
+      if (e.type === "response.output_text.delta") grow(e.delta);
+      if (e.response) {
+        model = e.response.model ?? model;
+        if (e.response.usage) usage = e.response.usage;
+        if (e.response.status) status = e.response.status;
+      }
+    } else if (provider === "anthropic") {
+      if (e.type === "message_start") {
+        model = e.message?.model ?? model;
+        usage = { ...usage, ...(e.message?.usage ?? {}) };
+      }
+      if (e.type === "content_block_delta" && e.delta?.type === "text_delta")
+        grow(e.delta.text);
+      if (e.type === "message_delta") {
+        stop = e.delta?.stop_reason ?? stop;
+        usage = { ...usage, ...(e.usage ?? {}) };
+      }
+    } else {
+      if (e.model) model = e.model;
+      if (e.usage) usage = e.usage;
+      const choice = e.choices?.[0];
+      if (choice?.delta?.content) grow(choice.delta.content);
+      if (choice?.finish_reason) finish = choice.finish_reason;
+    }
+  });
+  if (provider === "openai")
+    return {
+      model,
+      usage,
+      status,
+      output: [{ content: [{ type: "output_text", text }] }],
+    };
+  if (provider === "anthropic")
+    return { model, usage, stop_reason: stop, content: [{ type: "text", text }] };
+  return {
+    model,
+    usage,
+    choices: [{ message: { content: text }, finish_reason: finish }],
+  };
+}
 async function call(
   p,
   model,
-  { env, fetchImpl, timeoutMs, onUsage, signal },
+  { env, fetchImpl, timeoutMs, onUsage, signal, onDelta },
   route,
 ) {
   if (signal?.aborted) throw stoppedError();
@@ -306,6 +401,13 @@ async function call(
     headers["anthropic-version"] = "2023-06-01";
     body = { model: p.model, system, messages, max_tokens: p.maxOutputTokens };
   }
+  // Only a plain answer streams; plans, reviews and votes need the whole JSON at once.
+  const streaming = typeof onDelta === "function" && p.action === "execute";
+  if (streaming) {
+    body.stream = true;
+    if (provider !== "openai" && provider !== "anthropic")
+      body.stream_options = { include_usage: true };
+  }
   const fetchUrl = route ? route.url : endpoints[provider];
   let response;
   try {
@@ -351,7 +453,10 @@ async function call(
   }
   let data;
   try {
-    data = await response.json();
+    data =
+      streaming && response.body?.getReader
+        ? await readStream(response, provider, onDelta)
+        : await response.json();
   } catch {
     throw new Error(
       tr("API 응답을 읽지 못했습니다. 사용량이 발생했을 수 있습니다."),
