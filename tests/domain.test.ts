@@ -78,3 +78,18 @@ test("v1 multi-session data migrates to legacy without flattening or deleting it
   assert.deepEqual(restoreWorkspace(JSON.stringify(both), null), both);
   assert.deepEqual(restoreWorkspace("{broken", null), emptyWorkspace());
 });
+
+import { withFiles, readAttachment, ATTACH_MAX } from "../src/domain.ts";
+test("attached files go to the model after the question, by name", () => {
+  assert.equal(withFiles({ text: "요약해 줘" }), "요약해 줘");
+  assert.equal(
+    withFiles({ text: "요약해 줘", files: [{ name: 'a "b".txt', text: "내용" }] }),
+    '요약해 줘\n\n<file name="a \'b\'.txt">\n내용\n</file>',
+  );
+});
+test("only text files under the limit can be attached", async () => {
+  const file = (name: string, text: string) => ({ name, size: text.length, text: async () => text });
+  assert.deepEqual(await readAttachment(file("log.txt", "ok")), { name: "log.txt", text: "ok" });
+  await assert.rejects(readAttachment(file("a.png", "PNG\u0000\u0001")), /텍스트 파일만/);
+  await assert.rejects(readAttachment(file("big.txt", "x".repeat(ATTACH_MAX + 1))), /너무 큽니다/);
+});

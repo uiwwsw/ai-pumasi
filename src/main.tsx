@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
+  Paperclip,
+  FileText,
   ArrowUp,
   ChevronDown,
   ChevronRight,
@@ -27,6 +29,10 @@ import {
   Workspace,
   activeContext,
   makePreview,
+  readAttachment,
+  withFiles,
+  ATTACH_TOTAL,
+  type Attachment,
   restoreWorkspace,
 } from "./domain";
 import {
@@ -37,16 +43,9 @@ import {
   ROUTING_KEY,
   type RoutingSettings,
   type ProviderStatus,
-  modelReady,
   type TeamResult,
   type Completion,
 } from "./routing";
-import {
-  EnsembleDetails,
-  EnsembleSettings,
-  bundleReady,
-  ensembleMessage,
-} from "./ensemble";
 import { SecretSettings } from "./secrets";
 import { PumasiPanel } from "./pumasi";
 import { CodeWorkspace } from "./code-view";
@@ -72,6 +71,7 @@ type Pending = {
   text: string;
   modelId: string;
   selected: Tier;
+  files?: Attachment[];
 };
 type WorkerRow = {
   taskId: string;
@@ -210,6 +210,9 @@ function App() {
   }, [routing]);
   // The question being answered right now, shown in the conversation until the answer lands.
   const [sending, setSending] = useState<string | null>(null);
+  // Files waiting to go with the next question.
+  const [files, setFiles] = useState<Attachment[]>([]);
+  const fileInput = useRef<HTMLInputElement>(null);
   // The answer so far while it streams in.
   const [streamed, setStreamed] = useState("");
   // Tokens the provider reported for the last answer. Nothing is guessed before sending.
@@ -371,12 +374,35 @@ function App() {
       previous?.focus();
     };
   }, [dialog]);
+  // Attached files travel with their message, so later questions still see them.
   function context() {
-    return auto
-      ? activeContext(
-          workspace.bundles,
-        )
-      : (legacyChat?.messages ?? []);
+    return (auto ? activeContext(workspace.bundles) : (legacyChat?.messages ?? [])).map(
+      (m) => (m.files?.length ? { ...m, text: withFiles(m) } : m),
+    );
+  }
+  async function attach(list: FileList | File[] | null) {
+    if (!list) return;
+    setAIError("");
+    const added: Attachment[] = [];
+    for (const file of Array.from(list)) {
+      try {
+        added.push(await readAttachment(file));
+      } catch (error) {
+        setAIError(error instanceof Error ? error.message : String(error));
+      }
+    }
+    setFiles((now) => {
+      const next = [...now];
+      for (const f of added) {
+        const total = next.reduce((n, x) => n + x.text.length, 0) + f.text.length;
+        if (total > ATTACH_TOTAL) {
+          setAIError(t("첨부는 한 질문에 모두 합쳐 40만 자까지입니다."));
+          break;
+        }
+        next.push(f);
+      }
+      return next;
+    });
   }
   // Enter sends. No confirmation step: the model comes from settings (Auto by default).
   function review() {
@@ -388,6 +414,7 @@ function App() {
       text,
       modelId: model.id,
       selected: model.tier,
+      files: files.length ? files : undefined,
     });
   }
   async function proceed(p: Pending) {
@@ -395,68 +422,12 @@ function App() {
     setSending(p.text);
     // The question moves into the conversation right away; a failure puts it back.
     setDraft("");
+    setFiles([]);
+    // What the model reads: the question with any attached files.
+    const asked = withFiles(p);
     let completion: Completion | null = null;
     let team: TeamResult | null = null;
-    let bundle: ReturnType<typeof ensembleMessage> | null = null;
-    if (
-      routing.live &&
-      bundleReady(routing, providerStatus) &&
-      window.auroraAI?.ensemble
-    ) {
-      busyRef.current = true;
-      setBusy(true);
-      setAIError("");
-      setWorkers({});
-      const picked = routing.ensembleModels.filter((id) =>
-        modelReady(id, providerStatus),
-      );
-      setNotice(t("묶음 투표 · {count}개 모델에 동시에 묻는 중", { count: picked.length }));
-      const off = window.auroraAI.onTeamProgress?.((e) => {
-        if (e.stage === "worker")
-          setWorkers((prev) => ({
-            ...prev,
-            [e.taskId]: {
-              ...prev[e.taskId],
-              ...(e.state === "running"
-                ? { servedBy: undefined, reason: undefined, partial: undefined }
-                : {}),
-              ...e,
-            },
-          }));
-        else if (e.stage === "merge" && e.model)
-          setNotice(t("묶음 투표 · {model}가 답을 합치는 중", { model: modelById(e.model).name }));
-        else if (e.stage === "done") setNotice(t("묶음 투표 · 완료"));
-      });
-      try {
-        const r = await window.auroraAI.ensemble({
-          models: picked,
-          text: p.text,
-          context: context(),
-        });
-        bundle = ensembleMessage(r);
-        setNotice(t("묶음 투표 · 완료"));
-        completion = {
-          text: bundle.text,
-          model: r.writer,
-          inputTokens: r.usage.total.in,
-          outputTokens: r.usage.total.out,
-          incomplete: false,
-        };
-      } catch (error) {
-        setAIError(
-          error instanceof Error
-            ? error.message
-            : t("묶음 투표 실행에 실패했습니다."),
-        );
-        setSending(null);
-        setDraft(p.text);
-        return;
-      } finally {
-        off?.();
-        busyRef.current = false;
-        setBusy(false);
-      }
-    } else if (routing.live && routing.team && window.auroraAI?.team) {
+    if (routing.live && routing.team && window.auroraAI?.team) {
       busyRef.current = true;
       setBusy(true);
       setAIError("");
@@ -509,7 +480,7 @@ function App() {
         team = await window.auroraAI.team({
           lead: routing.lead,
           worker: routing.worker,
-          text: p.text,
+          text: asked,
           context: context(),
           pumasi: routing.pumasi ? { copies: routing.pumasiCopies } : undefined,
           leadOrder: routing.lead === "auto-free" ? routing.leadOrder : undefined,
@@ -573,6 +544,7 @@ function App() {
         );
         setSending(null);
         setDraft(p.text);
+        setFiles(p.files ?? []);
         return;
       } finally {
         off?.();
@@ -584,6 +556,7 @@ function App() {
         setAIError(t("Electron 앱에서 실행해 주세요."));
         setSending(null);
         setDraft(p.text);
+        setFiles(p.files ?? []);
         return;
       }
       busyRef.current = true;
@@ -595,7 +568,7 @@ function App() {
         completion = await window.auroraAI.request({
           action: "execute",
           model: p.modelId,
-          text: p.text,
+          text: asked,
           context: context(),
           maxOutputTokens: 4096,
         });
@@ -605,6 +578,7 @@ function App() {
         );
         setSending(null);
         setDraft(p.text);
+        setFiles(p.files ?? []);
         return;
       } finally {
         off?.();
@@ -619,20 +593,24 @@ function App() {
       typeof completion.outputTokens === "number"
     )
       setLastUsage({
-        model:
-          team || bundle
-            ? t("팀·묶음 합계")
-            : modelById(completion.modelId ?? p.modelId).name,
+        model: team
+          ? t("팀 합계")
+          : modelById(completion.modelId ?? p.modelId).name,
         input: completion.inputTokens,
         output: completion.outputTokens,
       });
     const next = [
-      { id: crypto.randomUUID(), role: "user" as const, text: p.text },
+      {
+        id: crypto.randomUUID(),
+        role: "user" as const,
+        text: p.text,
+        ...(p.files ? { files: p.files } : {}),
+      },
       {
         id: crypto.randomUUID(),
         role: "assistant" as const,
         text:
-          team || bundle
+          team
             ? completion!.text
             : completion
               ? completion.incomplete
@@ -642,8 +620,7 @@ function App() {
                 : completion.text
               : makePreview(),
         live: !!completion,
-        model: bundle?.model ?? completion?.modelId ?? p.modelId,
-        ...(bundle ? { ensemble: bundle.ensemble } : {}),
+        model: completion?.modelId ?? p.modelId,
       },
     ];
     const newId = crypto.randomUUID();
@@ -992,7 +969,17 @@ function App() {
           )}
         </div>
         <div className="composer-area">
-          <div className="composer">
+          <div
+            className="composer"
+            onDragOver={(e) => {
+              if (e.dataTransfer.types.includes("Files")) e.preventDefault();
+            }}
+            onDrop={(e) => {
+              if (!e.dataTransfer.files.length) return;
+              e.preventDefault();
+              void attach(e.dataTransfer.files);
+            }}
+          >
             <textarea
               ref={input}
               aria-label={t("메시지")}
@@ -1011,7 +998,43 @@ function App() {
                 }
               }}
             />
+            {files.length > 0 && (
+              <div className="attach-chips">
+                {files.map((f, i) => (
+                  <span className="attach-chip" key={`${f.name}-${i}`}>
+                    <FileText size={12} />
+                    {f.name}
+                    <button
+                      type="button"
+                      aria-label={t("{name} 빼기", { name: f.name })}
+                      onClick={() => setFiles((x) => x.filter((_, k) => k !== i))}
+                    >
+                      <X size={11} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="composer-toolbar">
+              <button
+                type="button"
+                className="icon-button attach-button"
+                aria-label={t("파일 붙이기")}
+                title={t("텍스트 파일을 붙입니다. 코드, 문서, 로그, CSV 등")}
+                onClick={() => fileInput.current?.click()}
+              >
+                <Paperclip size={15} />
+              </button>
+              <input
+                ref={fileInput}
+                type="file"
+                multiple
+                hidden
+                onChange={(e) => {
+                  void attach(e.target.files);
+                  e.target.value = "";
+                }}
+              />
               <button
                 type="button"
                 className="model-control"
@@ -1268,11 +1291,7 @@ function App() {
                       aria-label={t("팀 모드")}
                       checked={routing.team}
                       onChange={(e) =>
-                        setRouting((r) => ({
-                          ...r,
-                          team: e.target.checked,
-                          ensemble: e.target.checked ? false : r.ensemble,
-                        }))
+                        setRouting((r) => ({ ...r, team: e.target.checked }))
                       }
                     />
                   </label>
@@ -1410,11 +1429,6 @@ function App() {
                       </select>
                     </label>
                   )}
-                  <EnsembleSettings
-                    routing={routing}
-                    setRouting={setRouting}
-                    status={providerStatus}
-                  />
                   <p className="small-copy">
                     {t("OpenAI 키 {openai} · Claude 키 {anthropic} · Gemini 키 {gemini} · 무료 제공자 {compat}. 키는 아래 API 키에서 넣거나 환경 변수로 줄 수 있습니다. 모델 접근 권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과 별도로 이 기기에 유지됩니다.", {
                       openai: providerStatus.openai ? t("감지됨 (미검증)") : t("없음"),
@@ -1522,7 +1536,16 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
         )}
       </div>
       <div className="message-text">{message.text}</div>
-      {message.ensemble && <EnsembleDetails ensemble={message.ensemble} />}
+      {message.files?.length ? (
+        <div className="attach-chips in-message">
+          {message.files.map((f, i) => (
+            <span className="attach-chip" key={`${f.name}-${i}`}>
+              <FileText size={12} />
+              {f.name}
+            </span>
+          ))}
+        </div>
+      ) : null}
     </article>
   );
 }

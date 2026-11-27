@@ -35,7 +35,7 @@ The lead is called once to plan and once per review round, billed to the lead pr
 
 ## Measurements outside the app
 
-`bench/` holds the measurement records. Free models were called through each provider's free API; the bundle vote is in the app from 0.1.6.
+`bench/` holds the measurement records. Free models were called through each provider's free API; the bundle vote was in the app from 0.1.6 to 0.2.0-beta.2 and was then removed.
 
 | Measurement | Free-model bundle | ChatGPT free | Note |
 | --- | --- | --- | --- |

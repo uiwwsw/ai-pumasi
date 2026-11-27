@@ -1,4 +1,3 @@
-import type { EnsembleResult } from "./routing";
 import { t } from "./i18n";
 export type Tier = "light" | "standard" | "advanced";
 export const tierNames: Record<Tier, string> = {
@@ -12,9 +11,41 @@ export type Message = {
   text: string;
   model?: string;
   live?: boolean;
-  /** Bundle vote details shown folded under the answer. */
-  ensemble?: Omit<EnsembleResult, "text">;
+  /** Text files attached to a question. The model reads them; the conversation shows their names. */
+  files?: Attachment[];
 };
+export type Attachment = { name: string; text: string };
+/** Limits for one attached file and for all files on one question, in characters. */
+export const ATTACH_MAX = 200_000;
+export const ATTACH_TOTAL = 400_000;
+/** What the model reads for a message: its text, then each attached file. */
+export function withFiles(m: { text: string; files?: Attachment[] }): string {
+  if (!m.files?.length) return m.text;
+  const blocks = m.files.map(
+    (f) => `<file name="${f.name.replace(/"/g, "'")}">\n${f.text}\n</file>`,
+  );
+  return `${m.text}\n\n${blocks.join("\n\n")}`;
+}
+/**
+ * Read one attached file as text. Refuses files that are too big or look binary (images, PDFs,
+ * archives): the models here read text only.
+ */
+export async function readAttachment(file: {
+  name: string;
+  size: number;
+  text(): Promise<string>;
+}): Promise<Attachment> {
+  if (file.size > ATTACH_MAX * 4)
+    throw new Error(t("{name}: 파일이 너무 큽니다.", { name: file.name }));
+  const text = await file.text();
+  if (text.slice(0, 8000).includes("\u0000"))
+    throw new Error(
+      t("{name}: 텍스트 파일만 붙일 수 있습니다.", { name: file.name }),
+    );
+  if (text.length > ATTACH_MAX)
+    throw new Error(t("{name}: 파일이 너무 큽니다.", { name: file.name }));
+  return { name: file.name.slice(0, 200), text };
+}
 export type Chat = {
   id: string;
   title: string;

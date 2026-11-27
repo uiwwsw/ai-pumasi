@@ -7,7 +7,7 @@
   "{d}일 {h}시간 후 초기화": "Resets in {d}d {h}h",
   "{h}시간 {m}분 후 초기화": "Resets in {h}h {m}m",
   "{m}분 후 초기화": "Resets in {m}m",
-  "이전 작업과 다른 주제로 보여요.": "This looks like a different topic from the previous task.",
-  "지금 작업이 마무리된 것 같아요.": "It looks like the current task is wrapping up.",
-  "웹 데모라 AI에 보내지 않았습니다. 데스크톱 앱에 키를 넣으면 실제 모델이 답합니다.": "This is the web demo, so nothing was sent to an AI. Add a key in the desktop app and a real model answers."
+  "웹 데모라 AI에 보내지 않았습니다. 데스크톱 앱에 키를 넣으면 실제 모델이 답합니다.": "This is the web demo, so nothing was sent to an AI. Add a key in the desktop app and a real model answers.",
+  "{name}: 파일이 너무 큽니다.": "{name}: the file is too large.",
+  "{name}: 텍스트 파일만 붙일 수 있습니다.": "{name}: only text files can be attached."
 }

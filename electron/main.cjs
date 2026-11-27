@@ -497,25 +497,6 @@ else
         inFlight.delete(id);
       }
     });
-    ipcMain.handle("aurora:ensemble-run", async (event, payload) => {
-      if (!authorized(event)) throw forbiddenError();
-      const id = event.sender.id;
-      if (inFlight.has(id)) throw new Error(tr("이미 요청을 처리 중입니다."));
-      inFlight.add(id);
-      try {
-        const env = secrets.env();
-        return await guarded(env, () =>
-          require("./ensemble.cjs").runEnsemble(payload, {
-            env,
-            onProgress: (e) =>
-              event.sender.send("aurora:team-progress", scrub(e, env)),
-            stats: stats(),
-          }),
-        );
-      } finally {
-        inFlight.delete(id);
-      }
-    });
     const root = path.resolve(__dirname, "../dist");
     protocol.handle("aurora", (request) => {
       const url = new URL(request.url);

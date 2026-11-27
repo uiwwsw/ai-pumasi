@@ -61,7 +61,6 @@ Today's app has the first piece: another user's app runs one of your team's task
 - Code mode is a beta: one folder at a time, each command limited to two minutes, and Pitch in doesn't work there yet.
 - The lead ranking comes from one measurement today, the reasoning exam. Separate rankings for code and writing will come once those are measured.
 - Pitch in is invite-only while in preview.
-- Bundle vote (asking several models the same question) is experimental. It spends several times the tokens and has not scored higher than Nemotron Super alone, so it is off by default and not what the scorecard shows.
 
 ## Roadmap
 
@@ -71,7 +70,7 @@ Built and shipped one at a time, in this order.
 2. **Streaming answers.** Done for chat and code mode.
 3. **Code mode, closer to Claude Code and Codex.** Undo for saved changes, a git changes view and "save all" for one request are in. Next: native tool calls, kept only if they beat today's text protocol on the free models.
 4. **Pitch in with people.** A person takes a role the lead hands out and works on it until the answer is right. Also: report and block bad results, and open sign-up.
-5. **Pitch in for code mode, file attachments, and a decision on bundle vote.**
+5. **Pitch in for code mode.** Text file attachments are in. Bundle vote (several models answer, then vote) is gone: it never scored higher than Nemotron Super alone and cost several times the tokens.
 
 ## Install
 

@@ -36,9 +36,6 @@ The user approves each file change before it is saved.
 Work in steps: look around and read before you change anything; you may put several actions in one reply; their results come back in the next message. Paths are relative to the project root. Keep text outside actions short: say what you are doing and why. When the task is finished, reply with no actions and a short summary of what changed and anything left to do. Never claim you ran, tested or verified something unless a RUN result shows it. Match the user's language.`,
   merge:
     "You merge several junior results into one final answer for the user. Keep every substantive part, remove duplication, keep code blocks intact, add nothing new. Match the user language.",
-  vote: "You are one of several models answering the same request independently. Answer it well. You have no filesystem, shell, browser or external tools; never claim to have run or verified anything. Match the user language. If the request has one short definitive answer (a number, a choice, a word or a short phrase), work it out and end with one final line exactly in the form `정답: <answer>` with nothing after it. For open-ended requests (writing, explanation, code, advice) do not add that line.",
-  synthesize:
-    "Several models answered the same user request independently. Write the single best final answer to the request. Use their answers as material: keep what is correct and useful, drop mistakes, resolve disagreements by reasoning, keep code blocks intact. Do not mention the models, the other answers or this process. You have no filesystem, shell, browser or external tools. Match the user language.",
 };
 async function ollamaUp(fetchImpl) {
   try {
@@ -113,8 +110,6 @@ function validate(p) {
       "review",
       "merge",
       "agent",
-      "vote",
-      "synthesize",
     ].includes(p.action) ||
     !catalog.some((m) => m.id === p.model) ||
     typeof p.text !== "string" ||
