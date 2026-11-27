@@ -2,6 +2,9 @@ import { cp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
+
+// The site names the app version, so a release cannot leave an old number on the page.
+const { version: VERSION } = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 export const origin = "https://pumasi-agent.vercel.app";
 // One download link for everyone: yatko.app picks the installer for the visitor's platform from the
 // latest GitHub release (public/download.js narrows it to this computer). All versions: GitHub.
@@ -127,7 +130,7 @@ const translations = {
     "featureTitle": "Why it's different",
     "faq": "Frequently asked questions",
     "limitations": "Developer preview limitations",
-    "limitation": "The public 0.2.0 preview has code mode as a beta: it reads files in a folder you open and edits them or runs commands only after you approve. Pitch in is invite-only during the preview. Built by one person; the measurements cover the published exams only.",
+    "limitation": `The public ${VERSION} preview has code mode as a beta: it reads files in a folder you open and edits them or runs commands only after you approve. Pitch in is invite-only during the preview. Built by one person; the measurements cover the published exams only.`,
     "browser": "Use it on the web · keys stay in this browser",
     "open": "Use it on the web",
     "source": "Source and documentation",
