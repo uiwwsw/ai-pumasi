@@ -24,8 +24,8 @@ const translations = {
         "팀 모드는 요청 하나를 작업 최대 6개로 나눕니다. 리더가 계획하고 승인하며 작업과 합치기는 무료 모델이 합니다. 리더도 무료로 둘 수 있고, 유료 리더는 계획과 승인에만 토큰을 씁니다."
       ],
       [
-        "키는 그대로, 손만 빌립니다",
-        "품앗이를 켜면 다른 사용자가 빌려주기로 한 무료 키로 내 작업 하나를 처리합니다. 작업과 답은 두 기기 사이에서만 풀리고, 서버는 암호문만 나르며 돕는 사람에게는 토큰 수만 보입니다."
+        "문제를 나눕니다",
+        "토큰을 한곳에 모아 나눠 주는 대신 문제를 공유합니다. 돕는 사람이 자기 키로 풀어 결과만 돌려주니, 가운데에서 오남용될 곳이 없습니다. 지금은 작업 하나를 다른 사용자의 앱이 맡는 첫 단계이고, 사람이 역할을 맡는 부분은 함께 만들 기여자를 모으고 있습니다."
       ],
       [
         "무료 모델도 충분히 셉니다",
@@ -43,7 +43,7 @@ const translations = {
       ],
       [
         "정말 무료 모델로 충분한가요?",
-        "질문에 따라 다릅니다. 직접 만든 추론 시험과 AIME 2026에서 Nemotron 3.5 Super 혼자서 ChatGPT 무료보다 높았습니다. 같은 질문을 여러 모델에 묻는 방식은 Super 혼자보다 점수가 높지 않고 토큰이 여러 배 들어 기본으로 꺼 두었습니다. 측정 방법과 원자료는 저장소의 측정 기록에 있습니다."
+        "질문에 따라 다릅니다. 직접 만든 추론 시험과 AIME 2026에서 Nemotron 3.5 Super 혼자서 ChatGPT 무료보다 높았습니다. 같은 질문을 여러 모델에 묻고 투표하는 방식은 Super 혼자보다 점수가 높지 않고 토큰이 여러 배 들어 없앴습니다. 측정 방법과 원자료는 저장소의 측정 기록에 있습니다."
       ],
       [
         "키는 어디에 저장되나요?",
@@ -85,8 +85,8 @@ const translations = {
         "Team mode turns one request into up to six tasks. A lead plans and signs off, free models do the tasks and merge them. The lead can be free, or a paid model that spends tokens only on planning and approval."
       ],
       [
-        "Borrow hands, not keys",
-        "Pumasi lets other users run one of your tasks on a free key they chose to lend. The task and the answer are sealed between two devices. The relay moves ciphertext; the helper sees a token count."
+        "Share the problem",
+        "Instead of pooling tokens in one place, you share the problem. A helper solves it with their own key and sends back the result, so there is no central pool to abuse. Today another user's app can take one task; the part where people take roles is still an idea, and we're looking for contributors."
       ],
       [
         "Free models that hold their own",
@@ -104,7 +104,7 @@ const translations = {
       ],
       [
         "Are free models really enough?",
-        "For a lot of questions, yes. On our reasoning exam and AIME 2026, Nemotron 3.5 Super alone beat ChatGPT free. Asking several models the same question did not score higher than Super alone and costs several times the tokens, so it is off by default. Methods and raw data are in the repository."
+        "For a lot of questions, yes. On our reasoning exam and AIME 2026, Nemotron 3.5 Super alone beat ChatGPT free. Asking several models the same question and voting did not score higher than Super alone and cost several times the tokens, so it was removed. Methods and raw data are in the repository."
       ],
       [
         "Who can read a task I hand to Pumasi?",

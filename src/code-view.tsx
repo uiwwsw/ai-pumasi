@@ -8,6 +8,7 @@ import {
   FileText,
   Folder,
   FolderOpen,
+  GitCompare,
   PanelRight,
   Search,
   Square,
@@ -30,7 +31,7 @@ type Item =
       path: string;
       before: string;
       after: string;
-      state: "ask" | "saved" | "declined";
+      state: "ask" | "saved" | "declined" | "undone";
     }
   | {
       kind: "run";
@@ -109,6 +110,13 @@ export function CodeWorkspace() {
   const [previewError, setPreviewError] = useState("");
   const end = useRef<HTMLDivElement>(null);
   const said = useRef<string[]>([]);
+  // The agent's reply while it is being written; replaced by the finished text.
+  const [draftReply, setDraftReply] = useState("");
+  const [undoError, setUndoError] = useState("");
+  // Panel view: the file tree, or what git sees as changed.
+  const [panelView, setPanelView] = useState<"files" | "changes">("files");
+  const [changes, setChanges] = useState<{ state: string; path: string }[] | null>(null);
+  const [diffText, setDiffText] = useState<{ path: string; text: string } | null>(null);
 
   useEffect(() => {
     void code?.current().then(setFolder);
@@ -119,8 +127,12 @@ export function CodeWorkspace() {
   useEffect(() => {
     if (!code) return;
     return code.onEvent((e: AgentEvent) => {
-      if (e.type === "thinking") setStep(e.step);
+      if (e.type === "thinking") {
+        setStep(e.step);
+        setDraftReply("");
+      } else if (e.type === "draft") setDraftReply(e.text);
       else if (e.type === "say") {
+        setDraftReply("");
         said.current.push(e.text);
         setItems((x) => [...x, { kind: "say", text: e.text }]);
       } else if (e.type === "tool") {
@@ -168,7 +180,8 @@ export function CodeWorkspace() {
         ]);
       else if (e.type === "stopped")
         setItems((x) => [...x, { kind: "note", text: t("중지했습니다.") }]);
-      else if (e.type === "done")
+      else if (e.type === "done") {
+        setDraftReply("");
         setItems((x) => [
           ...x,
           {
@@ -180,6 +193,7 @@ export function CodeWorkspace() {
             }),
           },
         ]);
+      }
     });
   }, []);
 
@@ -221,6 +235,7 @@ export function CodeWorkspace() {
     }
   };
   const togglePanel = () => {
+    setPanelView("files");
     setPanel((v) => !v);
     if (!tree[""]) void load("");
   };
@@ -248,10 +263,37 @@ export function CodeWorkspace() {
       setBusy(false);
     }
   };
-  const answer = (id: number, allow: boolean, kind: "edit" | "run") => {
+  const answer = (id: number, allow: boolean, kind: "edit" | "run", all = false) => {
     if (kind === "run" && allow)
       setItems((x) => x.map((i) => (i.kind === "run" && i.id === id ? { ...i, state: "running" } : i)));
-    void code.answer(id, allow);
+    void code.answer(id, allow, all);
+  };
+  const undo = async (id: number) => {
+    setUndoError("");
+    try {
+      await code.undo(id);
+      setItems((x) => x.map((i) => (i.kind === "edit" && i.id === id ? { ...i, state: "undone" } : i)));
+      if (panelView === "changes") void loadChanges();
+    } catch (error) {
+      setUndoError(
+        (error instanceof Error ? error.message : String(error)).replace(
+          /^Error invoking remote method '[^']+': (Error: )?/,
+          "",
+        ),
+      );
+    }
+  };
+  const loadChanges = async () => {
+    setChanges(await code.gitStatus());
+  };
+  const showChanges = () => {
+    setPanel(true);
+    setPanelView("changes");
+    setPreview(null);
+    void loadChanges();
+  };
+  const showDiff = async (rel: string) => {
+    setDiffText({ path: rel, text: await code.gitDiff(rel) });
   };
 
   const renderTree = (rel: string, depth: number): React.ReactNode =>
@@ -291,6 +333,12 @@ export function CodeWorkspace() {
             <FolderOpen size={14} />
             {folder ? folder.name : t("폴더 열기")}
           </button>
+          {folder && (
+            <button className="ghost-button code-changes-button" onClick={showChanges}>
+              <GitCompare size={14} />
+              {t("변경 사항")}
+            </button>
+          )}
           {folder && (
             <button
               className="icon-button"
@@ -373,9 +421,23 @@ export function CodeWorkspace() {
                           <button className="ghost-button" onClick={() => answer(i.id, false, "edit")}>
                             {t("거절")}
                           </button>
+                          <button
+                            className="ghost-button"
+                            title={t("이번 요청에서 나오는 파일 변경을 묻지 않고 저장합니다. 명령은 계속 묻습니다.")}
+                            onClick={() => answer(i.id, true, "edit", true)}
+                          >
+                            {t("이번 요청 모두 저장")}
+                          </button>
+                        </>
+                      ) : i.state === "saved" ? (
+                        <>
+                          <span>{t("저장했습니다")}</span>
+                          <button className="ghost-button" onClick={() => void undo(i.id)}>
+                            {t("되돌리기")}
+                          </button>
                         </>
                       ) : (
-                        <span>{i.state === "saved" ? t("저장했습니다") : t("거절했습니다")}</span>
+                        <span>{i.state === "undone" ? t("되돌렸습니다") : t("거절했습니다")}</span>
                       )}
                     </div>
                   </div>
@@ -409,6 +471,8 @@ export function CodeWorkspace() {
                   </div>
                 ),
               )}
+              {undoError && <div className="code-error">{undoError}</div>}
+              {draftReply && <div className="code-say streaming">{draftReply}</div>}
               {busy && (
                 <div className="code-working">
                   <span className="code-dot" />
@@ -437,7 +501,7 @@ export function CodeWorkspace() {
               />
               <div className="composer-toolbar">
                 <div className="model-control">
-                  <span>{t("자동 (무료)")}</span>
+                  <span>{t("자동")}</span>
                 </div>
                 <button
                   type="button"
@@ -469,6 +533,64 @@ export function CodeWorkspace() {
       </div>
       {panel && folder && (
         <aside className="code-panel" aria-label={t("파일")}>
+          <div className="code-panel-tabs" role="tablist">
+            <button
+              role="tab"
+              aria-selected={panelView === "files"}
+              onClick={() => {
+                setPanelView("files");
+                if (!tree[""]) void load("");
+              }}
+            >
+              {t("파일")}
+            </button>
+            <button role="tab" aria-selected={panelView === "changes"} onClick={showChanges}>
+              {t("변경 사항")}
+            </button>
+          </div>
+          {panelView === "changes" ? (
+            <div className="code-changes">
+              {changes === null ? (
+                <p className="code-note">{t("git 저장소가 아니거나 git을 찾지 못했습니다.")}</p>
+              ) : !changes.length ? (
+                <p className="code-note">{t("바뀐 파일이 없습니다.")}</p>
+              ) : (
+                changes.map((c) => (
+                  <button
+                    key={c.path}
+                    className={`tree-row ${diffText?.path === c.path ? "active" : ""}`}
+                    onClick={() => void showDiff(c.path)}
+                  >
+                    <span className="git-state">{c.state.trim() || "·"}</span>
+                    <span>{c.path}</span>
+                  </button>
+                ))
+              )}
+              {diffText && (
+                <pre className="code-diff-text">
+                  {diffText.text
+                    ? diffText.text.split("\n").map((l, k) => (
+                        <div
+                          key={k}
+                          className={
+                            l.startsWith("+") && !l.startsWith("+++")
+                              ? "add"
+                              : l.startsWith("-") && !l.startsWith("---")
+                                ? "del"
+                                : l.startsWith("@@")
+                                  ? "hunk"
+                                  : undefined
+                          }
+                        >
+                          {l || " "}
+                        </div>
+                      ))
+                    : t("이 파일은 git이 아직 추적하지 않아 비교할 이전 내용이 없습니다.")}
+                </pre>
+              )}
+            </div>
+          ) : (
+          <>
           <div className="code-tree">{renderTree("", 0)}</div>
           <div className="code-preview">
             {preview ? (
@@ -492,6 +614,8 @@ export function CodeWorkspace() {
               <p className="code-error">{previewError}</p>
             ) : null}
           </div>
+          </>
+          )}
         </aside>
       )}
     </div>

@@ -22,8 +22,17 @@ npm run test:desktop
 - 동작을 변경하면 관련 테스트를 확인하고, 검증하지 않은 플랫폼은 명시합니다.
 - 비밀값, 개인 대화, 계정 토큰과 로컬 프로필은 포함하지 않습니다.
 
-추정치와 실제 측정값을 구분합니다. 토큰 예산을 기능 완성의 보장으로 표현하지 않습니다.
-기본 추천·정리는 로컬 규칙입니다. API 모드의 내부 분석·텍스트 실행 어댑터는 구현되어 있지만 실제 키를 사용하는 라이브 호출은 아직 검증하지 않았습니다. 테스트에서는 키를 비우고 API 응답을 모의 처리합니다.
+화면에는 측정한 값만 보여 줍니다. 토큰 사용량은 제공자가 알려 준 숫자만 쓰고, 보내기 전에 짐작해서 보여 주지 않습니다. 테스트에서는 키를 비우고 API 응답을 모의 처리합니다.
+
+## 함께하기를 같이 만들 분
+
+함께하기는 토큰을 한곳에 모아 나눠 주는 대신, 문제를 공유하고 돕는 사람이 스스로 푼 결과를 돌려받는 구조입니다. 지금 앱에는 다른 사용자의 앱이 작업 하나를 자기 키로 처리하는 첫 조각만 있습니다. 사람이 리더가 나눈 역할을 맡아 답을 다듬고 넘기는 부분은 아직 없습니다.
+
+- 설계와 남은 문제: [docs/pitch-in.md](docs/pitch-in.md)
+- 중계 서버: `relay/`, 앱 쪽: `electron/pumasi.cjs`, 화면: `src/pumasi.tsx`
+- 시작 전에 이슈로 어떤 부분을 맡을지 알려 주세요. 역할 나누기, 결과 신고·차단, 공개 가입이 먼저 필요한 부분입니다.
+
+Pitch in shares the problem instead of pooling tokens: a helper solves it on their own and sends back the result. Only the first piece exists today. If you want to help build the rest, open an issue and say which part you'd like to take.
 
 ## 라이선스
 

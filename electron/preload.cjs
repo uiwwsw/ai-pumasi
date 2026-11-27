@@ -5,7 +5,6 @@ contextBridge.exposeInMainWorld("auroraAI", {
   setLang: (lang) => ipcRenderer.invoke("aurora:set-lang", lang),
   request: (payload) => ipcRenderer.invoke("aurora:ai-request", payload),
   team: (payload) => ipcRenderer.invoke("aurora:team-run", payload),
-  ensemble: (payload) => ipcRenderer.invoke("aurora:ensemble-run", payload),
   // Write-only: the window can save, replace or remove a key and see whether one is set.
   // There is deliberately no way to read a saved key back.
   secrets: {
@@ -14,11 +13,6 @@ contextBridge.exposeInMainWorld("auroraAI", {
     remove: (name) => ipcRenderer.invoke("aurora:secrets-remove", name),
     setCompatUrl: (url) => ipcRenderer.invoke("aurora:secrets-compat-url", url),
     openSignup: (host) => ipcRenderer.invoke("aurora:open-signup", host),
-  },
-  usage: {
-    get: () => ipcRenderer.invoke("aurora:usage-get"),
-    setEnabled: (enabled) => ipcRenderer.invoke("aurora:usage-set", enabled),
-    clear: () => ipcRenderer.invoke("aurora:usage-clear"),
   },
   // Pumasi: states and token counts only. Task and result text never comes to the window.
   pumasi: {
@@ -41,13 +35,23 @@ contextBridge.exposeInMainWorld("auroraAI", {
     read: (rel) => ipcRenderer.invoke("aurora:code-read", rel),
     // The window cannot write files itself: the agent saves a change only after the user approves it.
     run: (payload) => ipcRenderer.invoke("aurora:agent-run", payload),
-    answer: (id, allow) => ipcRenderer.invoke("aurora:agent-answer", id, allow),
+    answer: (id, allow, all) => ipcRenderer.invoke("aurora:agent-answer", id, allow, all),
+    // Undo a change the agent saved; the main process restores what it kept, the window sends only the id.
+    undo: (id) => ipcRenderer.invoke("aurora:code-undo", id),
+    gitStatus: () => ipcRenderer.invoke("aurora:code-git-status"),
+    gitDiff: (rel) => ipcRenderer.invoke("aurora:code-git-diff", rel),
     stop: () => ipcRenderer.invoke("aurora:agent-stop"),
     onEvent: (fn) => {
       const h = (_e, data) => fn(data);
       ipcRenderer.on("aurora:agent-event", h);
       return () => ipcRenderer.removeListener("aurora:agent-event", h);
     },
+  },
+  // The answer so far while it streams in (plain answers only).
+  onAnswerDelta: (fn) => {
+    const h = (_e, text) => fn(text);
+    ipcRenderer.on("aurora:ai-delta", h);
+    return () => ipcRenderer.removeListener("aurora:ai-delta", h);
   },
   onTeamProgress: (fn) => {
     const h = (_e, data) => fn(data);

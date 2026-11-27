@@ -1,7 +1,6 @@
 // UI language. Korean source strings are the keys; English comes from src/i18n/en-*.json.
 // Placeholders look like {name} and are filled from the second argument.
 import main from "./i18n/en-main.json";
-import ensemble from "./i18n/en-ensemble.json";
 import secrets from "./i18n/en-secrets.json";
 import domain from "./i18n/en-domain.json";
 import electron from "./i18n/en-electron.json";
@@ -16,7 +15,6 @@ const EN: Record<string, string> = {
   ...code,
   ...domain,
   ...secrets,
-  ...ensemble,
   ...main,
 };
 
@@ -54,7 +52,7 @@ export const appName = () => (lang === "en" ? "Pumasi Agent" : "품앗이 에이
 export function modelName(name: string) {
   if (lang !== "en") return name;
   return name
-    .replace("자동 (무료 모델 중 지금 되는 가장 강한 것)", "Auto (strongest free model available now)")
+    .replace(/^자동$/, "Auto")
     .replace("(무료 한도)", "(free tier)")
     .replace("Ollama 로컬", "Ollama local")
     .replace("(무료)", "(free)");

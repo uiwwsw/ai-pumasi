@@ -7,10 +7,7 @@
   "{d}일 {h}시간 후 초기화": "Resets in {d}d {h}h",
   "{h}시간 {m}분 후 초기화": "Resets in {h}h {m}m",
   "{m}분 후 초기화": "Resets in {m}m",
-  "짧은 변환·정리 작업이므로 경량 모델부터 권장합니다.": "A short rewrite or cleanup, so a light model is a good start.",
-  "일반적인 작성·문제 해결에 적합한 표준 모델을 권장합니다.": "A standard model suits general writing and problem solving.",
-  "복잡한 조건과 검토가 필요해 고성능 모델을 권장합니다.": "Complex conditions and review call for an advanced model.",
-  "이전 작업과 다른 주제로 보여요.": "This looks like a different topic from the previous task.",
-  "지금 작업이 마무리된 것 같아요.": "It looks like the current task is wrapping up.",
-  "선택한 모델 등급 · {tier}\n\n요청을 로컬 작업 흐름에 기록했습니다. 현재는 규칙 기반 추천과 정리 제안을 확인하는 미리보기입니다.\nAI 모델이 질문을 수행한 결과가 아니며, 실제 토큰이나 계정 한도는 차감되지 않습니다.": "Selected model tier · {tier}\n\nThe request was recorded in your local workflow. This preview only shows rule-based recommendations and cleanup suggestions.\nNo AI model answered it, and no tokens or account limits were used."
+  "웹 데모라 AI에 보내지 않았습니다. 데스크톱 앱에 키를 넣으면 실제 모델이 답합니다.": "This is the web demo, so nothing was sent to an AI. Add a key in the desktop app and a real model answers.",
+  "{name}: 파일이 너무 큽니다.": "{name}: the file is too large.",
+  "{name}: 텍스트 파일만 붙일 수 있습니다.": "{name}: only text files can be attached."
 }

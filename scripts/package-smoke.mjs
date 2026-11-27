@@ -51,13 +51,11 @@ try {
   // The usage panel starts closed.
   await page.getByRole("button", { name: "사용량 패널 전환", exact: true }).click();
   await page
-    .getByRole("button", { name: "모드 및 예산 설정", exact: true })
+    .getByRole("button", { name: "모드 설정", exact: true })
     .click();
-  await expect(page.getByLabel("내부 분석 모델", { exact: true })).toHaveValue(
-    "gpt-6-luna",
-  );
-  await expect(page.getByLabel("기본 실행 모델", { exact: true })).toHaveValue(
-    "gpt-6.1-sol",
+  await page.getByText("고급: 모델과 팀").click();
+  await expect(page.getByLabel("답할 모델", { exact: true })).toHaveValue(
+    "auto-free",
   );
   await page.screenshot({
     path: `artifacts/installed-${process.platform}-${process.arch}.png`,

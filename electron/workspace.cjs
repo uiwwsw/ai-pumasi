@@ -189,6 +189,18 @@ function createWorkspace() {
     return { path: rel, size: stat.size };
   }
 
+  /** Delete one file in the folder (used only to undo a file the agent created). */
+  function remove(rel) {
+    validateRel(rel);
+    const targetPath = path.join(allowedRoot, rel);
+    if (isSecretName(path.basename(targetPath)))
+      throw new Error(tr("비밀 정보가 들어 있을 수 있는 파일이라 열지 않습니다."));
+    if (isLink(targetPath)) throw new Error(tr("열어 둔 폴더 밖의 파일은 다룰 수 없습니다."));
+    checkPathSafety(targetPath);
+    if (!fs.statSync(targetPath).isFile()) throw new Error(tr("파일이 아닙니다."));
+    fs.unlinkSync(targetPath);
+  }
+
   /** Lines containing the text (case-insensitive) in readable files under the folder. */
   function search(query, { maxHits = 100, maxFiles = 5000 } = {}) {
     if (allowedRoot === null) throw new Error(tr("먼저 폴더를 열어 주세요."));
@@ -230,7 +242,7 @@ function createWorkspace() {
     return hits;
   }
 
-  return { allow, current, list, read, write, search };
+  return { allow, current, list, read, write, remove, search };
 }
 
 module.exports = { createWorkspace, isSecretName };

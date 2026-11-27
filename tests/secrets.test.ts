@@ -169,7 +169,7 @@ test("the window bridge can write keys but has no way to read one back", () => {
   );
   const block = preload.slice(
     preload.indexOf("secrets:"),
-    preload.indexOf("usage:"),
+    preload.indexOf("pumasi:"),
   );
   const methods = [...block.matchAll(/^\s+(\w+):/gm)].map((m) => m[1]);
   assert.deepEqual(methods.sort(), [

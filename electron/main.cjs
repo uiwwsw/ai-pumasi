@@ -195,6 +195,7 @@ else
         return fn(event, ...args);
       });
     codeCall("aurora:code-open", async (event) => {
+      savedEdits.clear();
       // Automated UI checks cannot click the system dialog; they name a folder instead.
       if (process.env.AURORA_QA_DATA && process.env.AURORA_QA_FOLDER)
         return workspace.allow(process.env.AURORA_QA_FOLDER);
@@ -208,9 +209,13 @@ else
     codeCall("aurora:code-list", (_e, rel) => workspace.list(String(rel ?? "")));
     codeCall("aurora:code-read", (_e, rel) => workspace.read(String(rel ?? "")));
     // The agent works in that folder. Saving and running commands wait for the user's answer.
-    const pendingAsks = new Map(); // id -> resolve(boolean)
+    const pendingAsks = new Map(); // id -> {kind, resolve(boolean)}
     let agentStop = false;
     let agentBusy = false;
+    // "Save all" for the rest of one request: later file changes in it are saved without asking.
+    let saveAllEdits = false;
+    // Saved changes the user may undo: id -> {path, before, after, existed}. Cleared with the folder.
+    const savedEdits = new Map();
     const runCommand = (command) =>
       new Promise((resolve) => {
         const root = workspace.current()?.root;
@@ -251,6 +256,7 @@ else
       const autoOrder = Array.isArray(payload?.autoOrder) ? payload.autoOrder : null;
       agentBusy = true;
       agentStop = false;
+      saveAllEdits = false;
       const env = secrets.env();
       try {
         return await guarded(env, () =>
@@ -260,40 +266,89 @@ else
               workspace,
               exec: runCommand,
               stopped: () => agentStop,
-              request: ({ autoOrder: order, ...req }) =>
+              request: ({ autoOrder: order, ...req }, extra = {}) =>
                 providers.request(req, {
                   env,
                   autoOrder: order,
                   timeoutMs: 300000,
-                  onUsage: (u) => usage().record(u),
+                  allowPaid: true,
+                  onDelta: extra.onDelta,
                 }),
+              saved: (e) => savedEdits.set(e.id, e),
               emit: (e) => {
                 if (!event.sender.isDestroyed())
                   event.sender.send("aurora:agent-event", scrub(e, env));
               },
-              ask: ({ id }) =>
+              ask: ({ id, kind }) =>
                 new Promise((resolve) => {
                   if (agentStop) return resolve(false);
-                  pendingAsks.set(id, resolve);
+                  if (kind === "edit" && saveAllEdits) return resolve(true);
+                  pendingAsks.set(id, { kind, resolve });
                 }),
             },
           ),
         );
       } finally {
         agentBusy = false;
-        for (const resolve of pendingAsks.values()) resolve(false);
+        saveAllEdits = false;
+        for (const a of pendingAsks.values()) a.resolve(false);
         pendingAsks.clear();
       }
     });
-    codeCall("aurora:agent-answer", (_e, id, allow) => {
-      const resolve = pendingAsks.get(id);
+    codeCall("aurora:agent-answer", (_e, id, allow, all) => {
+      const a = pendingAsks.get(id);
       pendingAsks.delete(id);
-      resolve?.(allow === true);
+      // "Save all" covers file changes only, never commands.
+      if (allow === true && all === true && a?.kind === "edit") saveAllEdits = true;
+      a?.resolve(allow === true);
     });
     codeCall("aurora:agent-stop", () => {
       agentStop = true;
-      for (const resolve of pendingAsks.values()) resolve(false);
+      for (const a of pendingAsks.values()) a.resolve(false);
       pendingAsks.clear();
+    });
+    // Undo one saved change, only if the file still holds exactly what was saved.
+    codeCall("aurora:code-undo", (_e, id) => {
+      const e = savedEdits.get(id);
+      if (!e) throw new Error(tr("되돌릴 변경을 찾지 못했습니다."));
+      let now = null;
+      try {
+        now = workspace.read(e.path).text;
+      } catch {}
+      if (now !== e.after)
+        throw new Error(tr("저장한 뒤 파일이 바뀌어 되돌리지 않았습니다."));
+      if (e.existed) workspace.write(e.path, e.before);
+      else workspace.remove(e.path);
+      savedEdits.delete(id);
+      return true;
+    });
+    // What git sees as changed in the folder. Read-only, fixed arguments, no shell.
+    const git = (args) =>
+      new Promise((resolve) => {
+        const root = workspace.current()?.root;
+        if (!root) return resolve({ ok: false, output: tr("먼저 폴더를 열어 주세요.") });
+        require("node:child_process").execFile(
+          "git",
+          ["-c", "core.quotepath=off", ...args],
+          { cwd: root, timeout: 15000, maxBuffer: 4_000_000, windowsHide: true },
+          (error, stdout) =>
+            resolve(error && !stdout ? { ok: false, output: "" } : { ok: true, output: stdout }),
+        );
+      });
+    codeCall("aurora:code-git-status", async () => {
+      const r = await git(["status", "--porcelain=v1", "--untracked-files=all"]);
+      if (!r.ok) return null; // not a git repository, or git is missing
+      return r.output
+        .split("\n")
+        .filter(Boolean)
+        .slice(0, 500)
+        .map((line) => ({ state: line.slice(0, 2), path: line.slice(3).replace(/^.* -> /, "") }));
+    });
+    codeCall("aurora:code-git-diff", async (_e, rel) => {
+      const file = String(rel ?? "");
+      if (!file || file.startsWith("-")) return "";
+      const r = await git(["diff", "--no-color", "HEAD", "--", file]);
+      return r.ok ? r.output.slice(0, 400000) : "";
     });
     ipcMain.handle("aurora:pumasi-state", (event) => {
       if (!authorized(event)) throw forbiddenError();
@@ -359,26 +414,6 @@ else
       (workerStats ??= require("./worker-stats.cjs").createStatsStore({
         file: path.join(app.getPath("userData"), "worker-stats.json"),
       }));
-    let usageLog;
-    // Real token counts per model and request kind, for the next estimate. No text, no keys.
-    const usage = () =>
-      (usageLog ??= require("./usage-log.cjs").createUsageLog({
-        file: path.join(app.getPath("userData"), "usage-log.json"),
-      }));
-    ipcMain.handle("aurora:usage-get", (event) => {
-      if (!authorized(event)) throw forbiddenError();
-      return usage().snapshot();
-    });
-    ipcMain.handle("aurora:usage-set", (event, enabled) => {
-      if (!authorized(event)) throw forbiddenError();
-      usage().setEnabled(enabled === true);
-      return usage().snapshot();
-    });
-    ipcMain.handle("aurora:usage-clear", (event) => {
-      if (!authorized(event)) throw forbiddenError();
-      usage().clear();
-      return usage().snapshot();
-    });
     ipcMain.handle("aurora:set-lang", (event, lang) => {
       if (!authorized(event)) throw forbiddenError();
       require("./i18n.cjs").setLang(lang);
@@ -394,12 +429,34 @@ else
       inFlight.add(id);
       try {
         const env = secrets.env();
-        return await guarded(env, () =>
-          providers.request(payload, {
-            env,
-            onUsage: (u) => usage().record(u),
-          }),
-        );
+        // Send the answer so far to the window as it streams, at most ~15 times a second.
+        // Keys are masked the same way as in the final answer.
+        let last = 0;
+        let timer = null;
+        let latest = "";
+        const push = () => {
+          timer = null;
+          last = Date.now();
+          if (!event.sender.isDestroyed())
+            event.sender.send("aurora:ai-delta", scrub(latest, env));
+        };
+        const onDelta = (text) => {
+          latest = text;
+          if (timer) return;
+          const wait = Math.max(0, 66 - (Date.now() - last));
+          timer = setTimeout(push, wait);
+        };
+        try {
+          return await guarded(env, () =>
+            providers.request(payload, {
+              env,
+              allowPaid: true,
+              onDelta,
+            }),
+          );
+        } finally {
+          if (timer) clearTimeout(timer);
+        }
       } finally {
         inFlight.delete(id);
       }
@@ -410,8 +467,6 @@ else
       if (inFlight.has(id)) throw new Error(tr("이미 요청을 처리 중입니다."));
       inFlight.add(id);
       try {
-        // Count calls per stage so the next team estimate knows how many of each to expect.
-        const calls = { plan: 0, work: 0, review: 0, merge: 0 };
         const env = secrets.env();
         const copies = [1, 2, 3].includes(payload?.pumasi?.copies)
           ? payload.pumasi.copies
@@ -435,38 +490,9 @@ else
             onProgress: (e) =>
               event.sender.send("aurora:team-progress", scrub(e, env)),
             stats: stats(),
-            onUsage: (u) => {
-              if (u.kind in calls) calls[u.kind] += 1;
-              usage().record(u);
-            },
           }),
         );
-        usage().recordRun({
-          lead: payload.lead,
-          worker: payload.worker,
-          ...calls,
-        });
         return result;
-      } finally {
-        inFlight.delete(id);
-      }
-    });
-    ipcMain.handle("aurora:ensemble-run", async (event, payload) => {
-      if (!authorized(event)) throw forbiddenError();
-      const id = event.sender.id;
-      if (inFlight.has(id)) throw new Error(tr("이미 요청을 처리 중입니다."));
-      inFlight.add(id);
-      try {
-        const env = secrets.env();
-        return await guarded(env, () =>
-          require("./ensemble.cjs").runEnsemble(payload, {
-            env,
-            onProgress: (e) =>
-              event.sender.send("aurora:team-progress", scrub(e, env)),
-            stats: stats(),
-            onUsage: (u) => usage().record(u),
-          }),
-        );
       } finally {
         inFlight.delete(id);
       }

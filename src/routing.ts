@@ -2,7 +2,6 @@ import catalog from "./catalog.json";
 import weights from "./ensemble-weights.json";
 import { modelName } from "./i18n";
 import type { Tier } from "./domain";
-import type { UsageHistory } from "./usage";
 export type Provider =
   "openai" | "anthropic" | "gemini" | "ollama" | "compat" | "auto";
 export type Model = {
@@ -32,14 +31,7 @@ export type RoutingSettings = {
   /** Team mode hands its tasks to other people's apps first (Pumasi). */
   pumasi: boolean;
   pumasiCopies: number;
-  /** Bundle vote: ask several free or light models at once and vote. Overrides team mode. */
-  ensemble: boolean;
-  ensembleModels: string[];
 };
-/** Models a bundle may hold: free ones and each provider's light tier. */
-export const bundleModels = models.filter(
-  (m) => m.provider !== "auto" && (m.free === true || m.tier === "light"),
-);
 const weightOf = (id: string) =>
   (weights.models as Record<string, number>)[id] ?? weights.default ?? 0;
 /** Free models that can lead with the automatic lead, in measured order (strongest first). */
@@ -53,11 +45,7 @@ export function leadRanking(order: string[]) {
     .map((id) => leadCandidates.find((m) => m.id === id))
     .filter((m): m is (typeof models)[number] => !!m);
 }
-export const BUNDLE_MIN = 2;
-export const BUNDLE_MAX = 5;
 const teamDefaults = {
-  ensemble: false,
-  ensembleModels: [] as string[],
   team: false,
   pumasi: false,
   pumasiCopies: 2,
@@ -69,10 +57,9 @@ const teamDefaults = {
 export const presets: Record<"openai" | "anthropic", RoutingSettings> = {
   openai: {
     analyzer: "gpt-6-luna",
-    executor: "gpt-6.1-sol",
+    executor: "auto-free",
     live: false,
     ...teamDefaults,
-    lead: "gpt-6-astra",
   },
   anthropic: {
     analyzer: "claude-haiku-5-5",
@@ -106,16 +93,6 @@ export function readRouting(raw: string | null): RoutingSettings {
         worker: models.some((m) => m.id === d.worker)
           ? d.worker
           : teamDefaults.worker,
-        ensemble: d.ensemble === true,
-        ensembleModels: Array.isArray(d.ensembleModels)
-          ? [...new Set(d.ensembleModels as unknown[])]
-              .filter(
-                (id): id is string =>
-                  typeof id === "string" &&
-                  bundleModels.some((m) => m.id === id),
-              )
-              .slice(0, BUNDLE_MAX)
-          : [],
       };
   } catch {}
   return { ...presets.openai };
@@ -156,6 +133,8 @@ export type Completion = {
   inputTokens: number | null;
   outputTokens: number | null;
   incomplete: boolean;
+  /** With Auto: the model that actually answered. */
+  modelId?: string;
 };
 export type Analysis = Completion & {
   summary: string;
@@ -230,37 +209,6 @@ export type TeamResult = {
   worker: string;
   substitutions?: { requested: string; servedBy: string | null }[];
 };
-export type EnsembleModelResult = {
-  model: string;
-  weight: number;
-  ok: boolean;
-  /** Not waited for: the vote was already settled. */
-  stopped?: boolean;
-  answer: string;
-  agreed: boolean;
-  reason?: string;
-  text: string;
-  usage: { in: number; out: number };
-};
-export type EnsembleResult = {
-  kind: "vote" | "merge" | "single";
-  text: string;
-  writer: string;
-  answer: string;
-  agree: number;
-  voters: number;
-  asked: number;
-  /** The vote was settled before every model answered; the rest were not waited for. */
-  stoppedEarly?: boolean;
-  score: number;
-  models: EnsembleModelResult[];
-  usage: {
-    total: { in: number; out: number };
-    byModel: Record<string, { in: number; out: number }>;
-  };
-  warning: string;
-  substitutions: { requested: string; servedBy: string | null }[];
-};
 /** Free hosts whose key a helper may lend to Pumasi. Paid keys are never lent. */
 export type PumasiHost = "nvidia" | "groq" | "openrouter" | "google";
 export const PUMASI_HOSTS: PumasiHost[] = ["nvidia", "openrouter", "groq", "google"];
@@ -281,10 +229,11 @@ export type CodeFolder = { root: string; name: string };
 /** What the code agent did, step by step. File text and command output come from the user's folder. */
 export type AgentEvent =
   | { type: "thinking"; step: number }
+  | { type: "draft"; text: string }
   | { type: "say"; text: string; model?: string }
   | { type: "tool"; id: number; kind: "list" | "read" | "search"; path?: string; query?: string; count?: number; lines?: number }
   | { type: "tool-error"; id: number; kind: string; arg: string; error: string }
-  | { type: "edit"; id: number; path: string; before: string; after: string }
+  | { type: "edit"; id: number; path: string; before: string; after: string; existed?: boolean }
   | { type: "edit-done"; id: number; saved: boolean }
   | { type: "run"; id: number; command: string }
   | { type: "run-done"; id: number; code?: number | null; output?: string; declined?: boolean }
@@ -312,7 +261,10 @@ export interface AIBridge {
       model?: string;
       autoOrder?: string[];
     }): Promise<{ usage: { in: number; out: number }; steps: number }>;
-    answer(id: number, allow: boolean): Promise<void>;
+    answer(id: number, allow: boolean, all?: boolean): Promise<void>;
+    undo(id: number): Promise<boolean>;
+    gitStatus(): Promise<{ state: string; path: string }[] | null>;
+    gitDiff(rel: string): Promise<string>;
     stop(): Promise<void>;
     onEvent(fn: (e: AgentEvent) => void): () => void;
   };
@@ -328,11 +280,6 @@ export interface AIBridge {
     help(slotId: string): Promise<{ tokens: number }>;
     onProgress(fn: (e: PumasiProgress) => void): () => void;
   };
-  ensemble?(payload: {
-    models: string[];
-    text: string;
-    context: AIRequest["context"];
-  }): Promise<EnsembleResult>;
   team?(payload: {
     lead: string;
     worker: string;
@@ -345,11 +292,8 @@ export interface AIBridge {
     leadOrder?: string[];
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
-  usage?: {
-    get(): Promise<UsageHistory>;
-    setEnabled(enabled: boolean): Promise<UsageHistory>;
-    clear(): Promise<UsageHistory>;
-  };
+  onAnswerDelta?(fn: (text: string) => void): () => void;
+
   status(): Promise<ProviderStatus>;
   setLang?(lang: "ko" | "en"): Promise<void>;
   secrets?: {
