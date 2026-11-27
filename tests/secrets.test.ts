@@ -175,6 +175,8 @@ test("the window bridge can write keys but has no way to read one back", () => {
   assert.deepEqual(methods.sort(), [
     "add",
     "list",
+    "openRouterCancel",
+    "openRouterLogin",
     "openSignup",
     "remove",
     "set",

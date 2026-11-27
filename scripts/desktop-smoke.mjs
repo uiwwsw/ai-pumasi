@@ -43,6 +43,7 @@ try {
   // No keys: the app asks for one instead of offering a message box that cannot answer.
   await expect(page.getByRole("heading", { name: "API 키를 등록해 주세요" })).toBeVisible();
   await expect(editor).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "OpenRouter로 시작하기" })).toBeVisible();
   const status = await page.evaluate(() => window.auroraAI.status());
   expect(status).toMatchObject({
     openai: false,

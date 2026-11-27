@@ -74,14 +74,49 @@ function env(): Record<string, string> {
 }
 const tidy = (e: unknown) => (e instanceof Error ? e : new Error(String(e)));
 
+// "Start with OpenRouter" on the web: the sign-in page sends the browser back to /app/ with a
+// one-time code; this page trades it for the user's key. The verifier waits in sessionStorage.
+const PKCE_STORE = "pumasi.web.openrouter.v1";
+let loginResult: { saved: boolean; error?: string } | null = null;
+async function finishOpenRouterLogin(): Promise<void> {
+  const params = new URLSearchParams(location.search);
+  const code = params.get("code");
+  if (!code) return;
+  let saved: { verifier: string; state: string } | null = null;
+  try {
+    saved = JSON.parse(sessionStorage.getItem(PKCE_STORE) ?? "null");
+    sessionStorage.removeItem(PKCE_STORE);
+  } catch {}
+  // Drop the code from the address bar whatever happens next.
+  history.replaceState(null, "", location.pathname);
+  if (!saved || params.get("state") !== saved.state) {
+    loginResult = { saved: false, error: i18n.tr("OpenRouter 로그인을 마치지 못했습니다. 다시 시도해 주세요.") };
+    return;
+  }
+  try {
+    const key = await providers.openRouterExchange(code, saved.verifier);
+    const s = load();
+    s.keys.OPENROUTER_API_KEY = { value: key, savedAt: new Date().toISOString() };
+    save(s);
+    loginResult = { saved: true };
+  } catch (e) {
+    loginResult = { saved: false, error: tidy(e).message };
+  }
+}
+
 /** Install window.auroraAI for the browser. Does nothing inside the desktop app. */
 export function installWebBridge() {
   if (window.auroraAI) return;
   const deltaListeners = new Set<(text: string) => void>();
   const teamListeners = new Set<(e: TeamProgress) => void>();
   const workerStats = stats.createStatsStore();
+  // Finish a sign-in that just came back before anything reads the key state.
+  const loginDone = finishOpenRouterLogin();
   const bridge: AIBridge = {
-    status: () => providers.status(env(), fetch),
+    status: async () => {
+      await loginDone;
+      return providers.status(env(), fetch);
+    },
     setLang: async (lang) => i18n.setLang(lang),
     request: async (payload: AIRequest) => {
       try {
@@ -126,6 +161,25 @@ export function installWebBridge() {
         s.keys[name] = { value: v, savedAt: new Date().toISOString() };
         save(s);
         return state();
+      },
+      openRouterLogin: async () => {
+        const pkce = await providers.openRouterPkce();
+        sessionStorage.setItem(PKCE_STORE, JSON.stringify({ verifier: pkce.verifier, state: pkce.state }));
+        location.assign(
+          providers.openRouterAuthUrl({
+            callbackUrl: `${location.origin}/app/`,
+            challenge: pkce.challenge,
+            state: pkce.state,
+          }),
+        );
+        // The page is leaving; this never settles.
+        return new Promise<SecretsState>(() => {});
+      },
+      openRouterResult: async () => {
+        await loginDone;
+        const r = loginResult;
+        loginResult = null;
+        return r;
       },
       add: async (value) => {
         const r = await providers.addKey(value, {

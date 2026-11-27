@@ -103,5 +103,16 @@
   "https 주소여야 합니다.": "The address must start with https.",
   "어느 회사 키인지 알아보지 못했습니다. 키를 그대로 복사해 붙여 넣었는지 확인해 주세요.": "Couldn't tell which provider this key is from. Check that you pasted the whole key.",
   "{provider} 키는 여기서 쓸 수 없습니다. 같은 모델을 OpenRouter 키로 쓸 수 있습니다.": "{provider} keys can't be used here. The same models work with an OpenRouter key.",
-  "{provider}가 이 키를 받지 않았습니다. 키를 다시 확인해 주세요.": "{provider} didn't accept this key. Please check it."
+  "{provider}가 이 키를 받지 않았습니다. 키를 다시 확인해 주세요.": "{provider} didn't accept this key. Please check it.",
+  "OpenRouter에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.": "Couldn't reach OpenRouter. Check your connection and try again.",
+  "OpenRouter 로그인을 마치지 못했습니다. 다시 시도해 주세요. (HTTP {status})": "Couldn't finish signing in to OpenRouter. Please try again. (HTTP {status})",
+  "OpenRouter가 키를 돌려주지 않았습니다. 다시 시도해 주세요.": "OpenRouter didn't return a key. Please try again.",
+  "OpenRouter 로그인을 기다리다 시간이 지났습니다. 다시 시도해 주세요.": "Signing in to OpenRouter took too long. Please try again.",
+  "로그인을 마치지 못했습니다": "Sign-in didn't finish",
+  "Pumasi Agent로 돌아가 다시 시도해 주세요.": "Go back to Pumasi Agent and try again.",
+  "OpenRouter 로그인이 취소되었습니다.": "OpenRouter sign-in was cancelled.",
+  "로그인했습니다": "You're signed in",
+  "이 창을 닫고 Pumasi Agent로 돌아가세요.": "Close this tab and go back to Pumasi Agent.",
+  "OpenRouter 로그인을 취소했습니다.": "Cancelled signing in to OpenRouter.",
+  "OpenRouter 로그인을 마치지 못했습니다. 다시 시도해 주세요.": "Couldn't finish signing in to OpenRouter. Please try again."
 }

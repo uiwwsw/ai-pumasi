@@ -1,12 +1,11 @@
 // First run: there is nothing to answer with until a key is in. One box takes any provider's key;
 // the app works out whose it is and checks it with that provider before saving.
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowRight, KeyRound } from "lucide-react";
 import { t } from "./i18n";
 
-const SOURCES: { host: "openrouter" | "groq" | "gemini" | "nvidia"; label: string; note: string }[] =
+const SOURCES: { host: "groq" | "gemini" | "nvidia"; label: string; note: string }[] =
   [
-    { host: "openrouter", label: "OpenRouter", note: "Nemotron Super" },
     { host: "groq", label: "Groq", note: "GPT-OSS 120B" },
     { host: "gemini", label: "Google AI Studio", note: "Gemini Flash" },
     { host: "nvidia", label: "NVIDIA", note: "Nemotron Super" },
@@ -18,6 +17,30 @@ export function KeySetup({ onAdded }: { onAdded: (message: string) => void }) {
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
+  const clean = (e: unknown) =>
+    String((e as Error)?.message ?? e).replace(/^Error invoking remote method '[^']+': (Error: )?/, "");
+  // Web: a sign-in that just came back to this page.
+  useEffect(() => {
+    void bridge?.openRouterResult?.().then((r) => {
+      if (!r) return;
+      if (r.saved) onAdded(t("OpenRouter에 로그인해 키를 받았습니다."));
+      else setError(r.error ?? "");
+    });
+  }, []);
+  const signIn = async () => {
+    if (!bridge?.openRouterLogin || signingIn) return;
+    setError("");
+    setSigningIn(true);
+    try {
+      await bridge.openRouterLogin();
+      onAdded(t("OpenRouter에 로그인해 키를 받았습니다."));
+    } catch (e) {
+      setError(clean(e));
+    } finally {
+      setSigningIn(false);
+    }
+  };
   const add = async () => {
     if (!bridge?.add || !value.trim() || busy) return;
     setBusy(true);
@@ -50,6 +73,29 @@ export function KeySetup({ onAdded }: { onAdded: (message: string) => void }) {
       <p>
         {t("질문에 답할 AI를 부르려면 키가 하나 필요합니다. 무료 키로 충분합니다.")}
       </p>
+      {bridge?.openRouterLogin && (
+        <div className="key-signin">
+          {signingIn ? (
+            <div className="key-waiting" role="status">
+              <span>{t("브라우저에서 OpenRouter 로그인을 마쳐 주세요.")}</span>
+              <button type="button" onClick={() => void bridge.openRouterCancel?.()}>
+                {t("취소")}
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="key-signin-button" onClick={() => void signIn()}>
+              {t("OpenRouter로 시작하기")}
+              <ArrowRight size={16} />
+            </button>
+          )}
+          <small>
+            {t("로그인하고 허락하면 키가 자동으로 들어옵니다. 무료 Nemotron Super를 바로 씁니다.")}
+          </small>
+          <div className="key-or">
+            <span>{t("또는 다른 회사 키 붙여 넣기")}</span>
+          </div>
+        </div>
+      )}
       <form
         className="key-paste"
         onSubmit={(e) => {
@@ -63,7 +109,6 @@ export function KeySetup({ onAdded }: { onAdded: (message: string) => void }) {
           placeholder={t("키를 붙여 넣으세요")}
           autoComplete="off"
           spellCheck={false}
-          autoFocus
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />

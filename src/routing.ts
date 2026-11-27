@@ -303,6 +303,11 @@ export interface AIBridge {
   secrets?: {
     list(): Promise<SecretsState>;
     set(name: SecretName, value: string): Promise<SecretsState>;
+    /** Sign in on openrouter.ai and keep the key it gives back (desktop: resolves when done). */
+    openRouterLogin?(): Promise<SecretsState>;
+    openRouterCancel?(): Promise<void>;
+    /** Web: the outcome of a sign-in that just returned to this page, once. */
+    openRouterResult?(): Promise<{ saved: boolean; error?: string } | null>;
     /** Paste any key: the provider is worked out from its shape and the key is checked first. */
     add?(value: string): Promise<{
       name: SecretName;
