@@ -22,6 +22,8 @@ const MAX_PARTS = 6;
 // A one-line question this short goes straight to one model with no routing call: deciding would
 // cost about as much as answering. Anything longer is looked at first.
 const DIRECT_BELOW_CHARS = 200;
+// How much of a model's reasoning is passed on while it works.
+const THINK_TAIL = 600;
 // The routing decision is small; fast models first, the strong ones only if those are missing.
 const TRIAGE_ORDER = [
   "nvidia/nemotron-3.5-lightning-30b-a3b",
@@ -169,6 +171,14 @@ async function run(p, io = {}) {
   /** One piece of work with retries and the next model on failure. Returns the reply or throws. */
   const solve = async (id, title, prompt, { ctx = [], onDelta } = {}) => {
     const report = (state, extra = {}) => onProgress({ stage: "part", id, title, state, ...extra });
+    // The model's own reasoning while it works: the last stretch only, a few times a second.
+    let thoughtAt = 0;
+    const onThinking = (text) => {
+      const t = now();
+      if (t - thoughtAt < 300) return;
+      thoughtAt = t;
+      onProgress({ stage: "think", id, text: String(text).slice(-THINK_TAIL) });
+    };
     let last;
     let best = null;
     for (const [m, model] of chain.entries()) {
@@ -182,6 +192,7 @@ async function run(p, io = {}) {
               timeoutMs,
               autoOrder: p.autoOrder,
               onDelta: m === 0 ? onDelta : undefined,
+              onThinking,
               // Skipping one part stops only that part's request.
               signal: io.signalFor?.(id) ?? io.signal,
             },

@@ -81,11 +81,15 @@ try {
     ipcMain.handle("aurora:ask", async (event, p) => {
       globalThis.auroraTestCalls.push(p);
       // Stream part of the answer first, the way the real handler does.
-      event.sender.send("aurora:ask-progress", { stage: "plan", mode: "direct", effort: "mid" });
+      const progress = (e) => event.sender.send("aurora:ask-progress", e);
+      progress({ stage: "plan", mode: "direct", effort: "mid" });
+      progress({ stage: "part", id: "answer", title: "", state: "running", model: "gpt-6.1-sol" });
+      progress({ stage: "think", id: "answer", text: "모의 생각: 먼저 조건을 정리한다" });
+      await new Promise((r) => setTimeout(r, 1200));
       event.sender.send("aurora:ai-delta", "모의 스트리밍 일부");
       await new Promise((r) => setTimeout(r, 1500));
       return {
-        text: "모의 API 답변",
+        text: "모의 API 답변\n\n**굵은 글씨** 첫 줄<br>둘째 줄\n\n| 항목 | 값 |\n| --- | --- |\n| 가 | 1<br>2 |",
         mode: "direct",
         effort: "mid",
         model: p.model,
@@ -101,11 +105,22 @@ try {
   await editor.fill("요약해 줘");
   await editor.press("Enter");
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  // While waiting: which model is thinking, for how long, and about what.
+  await expect(page.locator(".ask-progress")).toContainText("생각하는 중");
+  await expect(page.locator(".ask-thought")).toContainText("모의 생각");
+  await page.screenshot({ path: "artifacts/aurora-thinking.png" });
   // The answer shows while it streams, before the call finishes.
   await expect(page.locator(".message.assistant")).toContainText("모의 스트리밍 일부");
   await page.screenshot({ path: "artifacts/aurora-streaming.png" });
   await expect(page.getByLabel("대화 내용")).toContainText("모의 API 답변");
   await expect(page.locator(".message.assistant")).toContainText("자동");
+  // Markdown is drawn, and <br> is a line break instead of text.
+  await expect(page.locator(".message.assistant strong")).toHaveText("굵은 글씨");
+  await expect(page.locator(".message.assistant td br")).toHaveCount(1);
+  await expect(page.locator(".message.assistant").first()).not.toContainText("<br>");
+  await expect(page.getByRole("button", { name: "답 복사", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "대화 공유", exact: true })).toBeVisible();
+  await page.screenshot({ path: "artifacts/aurora-markdown.png" });
   await expect(editor).toHaveValue("");
   // Only reported numbers: nothing estimated before sending, real usage after.
   await expect(page.locator(".draft-estimate")).toHaveCount(0);
@@ -179,6 +194,7 @@ try {
   // The board says what is happening, shows the finished part at once, and can finish early.
   await send("두 문제를 풀어 줘");
   await expect(page.locator(".ask-progress")).toContainText("2개로 나눠 푸는 중 · 1개 끝남");
+  await expect(page.locator(".ask-progress .mode-chip")).toHaveText("Pumasi mode");
   await expect(page.locator(".message.assistant").last()).toContainText("첫 문제의 답");
   await page.screenshot({ path: "artifacts/aurora-split.png" });
   await page.getByRole("button", { name: "지금까지로 마무리", exact: true }).click();

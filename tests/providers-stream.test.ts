@@ -241,3 +241,23 @@ test("asking to stream without onDelta still gives the whole answer (team calls)
   assert.equal(body.stream, true);
   assert.equal(r.text, '{"goal":"g"}');
 });
+
+test("a model's reasoning is passed on while it works and never becomes the answer", async () => {
+  const chunks = [
+    'data: {"choices":[{"delta":{"reasoning_content":"먼저 "}}]}\n\n',
+    'data: {"choices":[{"delta":{"reasoning":"식을 세운다"}}]}\n\n',
+    'data: {"choices":[{"delta":{"content":"42"}}]}\n\n',
+    'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n',
+  ];
+  const thoughts: string[] = [];
+  const result = await request(
+    { ...basePayload, model: "gemini-flash-latest" },
+    {
+      env: { GEMINI_API_KEY: "k", AURORA_OLLAMA: "0" },
+      fetchImpl: async () => createStreamResponse(chunks),
+      onThinking: (text: string) => thoughts.push(text),
+    },
+  );
+  assert.deepEqual(thoughts, ["먼저 ", "먼저 식을 세운다"]);
+  assert.equal(result.text, "42");
+});

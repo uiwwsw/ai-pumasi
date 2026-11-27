@@ -279,6 +279,8 @@ export type AskProgress =
       partial?: boolean;
       message?: string;
     }
+  /** The model's own reasoning so far for one part ("answer" when there is a single answer). */
+  | { stage: "think"; id: string; text: string }
   | { stage: "check"; model: string }
   | { stage: "revise"; model: string }
   | { stage: "done" };

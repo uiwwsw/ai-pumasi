@@ -62,7 +62,11 @@ function createWindow() {
       sandbox: true,
     },
   });
-  win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  // Links in an answer open in the user's browser, never inside the app window.
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) void shell.openExternal(url);
+    return { action: "deny" };
+  });
   win.webContents.on("will-navigate", (event) => event.preventDefault());
   win.loadURL("aurora://app/index.html");
 }
