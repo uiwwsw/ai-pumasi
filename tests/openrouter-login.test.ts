@@ -17,13 +17,17 @@ test("sign-in: the browser comes back with the code and the app keeps the key", 
     open: async (url: string) => {
       auth = url;
       const u = new URL(url);
-      const back = new URL(u.searchParams.get("callback_url")!);
-      assert.equal(back.hostname, "localhost");
+      // The approval screen names the app after this address, so it is our site, not localhost.
+      assert.equal(u.searchParams.get("callback_url"), "https://pumasi-agent.vercel.app/desktop-login/");
+      // The return page sends the browser on to the port carried at the end of state.
+      const state = u.searchParams.get("state")!;
+      const back = { port: state.slice(state.lastIndexOf(".") + 1) };
+      assert.match(back.port, /^\d+$/);
       // A callback that does not carry our state is refused and does not end the sign-in.
       const wrong = await fetch(`http://127.0.0.1:${back.port}/callback?code=c&state=nope`);
       assert.equal(wrong.status, 400);
       const ok = await fetch(
-        `http://127.0.0.1:${back.port}/callback?code=one-time&state=${u.searchParams.get("state")}`,
+        `http://127.0.0.1:${back.port}/callback?code=one-time&state=${state}`,
       );
       assert.match(await ok.text(), /Pumasi Agent/);
     },
