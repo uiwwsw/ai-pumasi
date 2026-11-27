@@ -1,11 +1,17 @@
 // "Start with OpenRouter" on the desktop: listen once on localhost, open the sign-in page in the
-// browser, and turn the returned code into the user's key. Nothing leaves this computer except the
-// sign-in itself and the exchange with openrouter.ai.
+// browser, and turn the returned code into the user's key.
+//
+// OpenRouter names the app on its approval screen after the callback address, so a localhost
+// callback reads "localhost:51423" to the user. The callback is therefore a page on our site,
+// which does nothing but send the browser on to this computer (public/desktop-login.js). The port
+// rides in `state`. The code that passes through that page is useless without the verifier, which
+// never leaves this app.
 const http = require("node:http");
 const providers = require("./providers.cjs");
 const { tr } = require("./i18n.cjs");
 
 const WAIT_MS = 10 * 60 * 1000; // the code itself expires after 10 minutes
+const RETURN_PAGE = "https://pumasi-agent.vercel.app/desktop-login/";
 
 const page = (title, body) =>
   `<!doctype html><html><head><meta charset="utf-8"><title>Pumasi Agent</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#faf9f6;color:#34342f;display:grid;place-items:center;height:100vh;margin:0}main{max-width:420px;padding:24px;text-align:center}h1{font-size:20px;margin:0 0 8px}p{color:#65665c;font-size:14px;line-height:1.6;margin:0}</style></head><body><main><h1>${title}</h1><p>${body}</p></main></body></html>`;
@@ -38,6 +44,7 @@ function startLogin({ open, fetchImpl = fetch, waitMs = WAIT_MS }) {
     );
     (async () => {
       const pkce = await providers.openRouterPkce();
+      let state = pkce.state;
       const handler = async (req, res) => {
         const url = new URL(req.url, "http://localhost");
         if (url.pathname !== "/callback") {
@@ -46,7 +53,7 @@ function startLogin({ open, fetchImpl = fetch, waitMs = WAIT_MS }) {
         }
         const code = url.searchParams.get("code");
         // A callback that does not carry our state was not started by this sign-in.
-        if (!code || url.searchParams.get("state") !== pkce.state) {
+        if (!code || url.searchParams.get("state") !== state) {
           res.writeHead(400, { "Content-Type": "text/html; charset=utf-8" });
           res.end(page(tr("로그인을 마치지 못했습니다"), tr("Pumasi Agent로 돌아가 다시 시도해 주세요.")));
           if (!code) finish(new Error(tr("OpenRouter 로그인이 취소되었습니다.")));
@@ -74,11 +81,12 @@ function startLogin({ open, fetchImpl = fetch, waitMs = WAIT_MS }) {
       v6.listen(port, "::1");
       // Cancelled or timed out while the servers were starting: shut them again.
       if (done) return close();
+      state = `${pkce.state}.${port}`;
       await open(
         providers.openRouterAuthUrl({
-          callbackUrl: `http://localhost:${port}/callback`,
+          callbackUrl: RETURN_PAGE,
           challenge: pkce.challenge,
-          state: pkce.state,
+          state,
         }),
       );
     })().catch((error) => finish(error));

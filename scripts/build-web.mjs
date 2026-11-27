@@ -214,6 +214,13 @@ export async function buildWeb({
     path.join(outputDir, "app", "index.html"),
     `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="${appCsp}"><title>Pumasi Agent</title><meta name="description" content="Pumasi Agent on the web: free AI models working as a team, with your own keys."><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="theme-color" content="#607b64">${assets.join("")}</head><body><div id="root"></div><noscript>${translations.en.nojs}</noscript></body></html>`,
   );
+  // Where the desktop app's OpenRouter sign-in returns. It forwards to the app on this computer
+  // and holds nothing itself (see public/desktop-login.js).
+  await mkdir(path.join(outputDir, "desktop-login"), { recursive: true });
+  await writeFile(
+    path.join(outputDir, "desktop-login", "index.html"),
+    `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self'"><title>Pumasi Agent</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#faf9f6;color:#34342f;display:grid;place-items:center;min-height:100vh;margin:0}main{max-width:420px;padding:24px;text-align:center}h1{font-size:20px;margin:0 0 8px}p{color:#65665c;font-size:14px;line-height:1.6;margin:0}a{color:#3c4538}</style><script src="/desktop-login.js" defer></script></head><body><main><div data-step="going"><h1>Returning to Pumasi Agent</h1><p>Pumasi Agent로 돌아가는 중입니다.</p><p><a data-continue href="#">Continue · 계속</a></p></div><div data-step="failed" hidden><h1>Sign-in could not be finished</h1><p>로그인을 마치지 못했습니다. Pumasi Agent로 돌아가 다시 시도해 주세요.</p></div></main></body></html>`,
+  );
   const alternate = `<xhtml:link rel="alternate" hreflang="ko" href="${origin}/ko/"/><xhtml:link rel="alternate" hreflang="en" href="${origin}/"/><xhtml:link rel="alternate" hreflang="x-default" href="${origin}/"/>`;
   await writeFile(
     path.join(outputDir, "sitemap.xml"),

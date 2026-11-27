@@ -164,3 +164,23 @@ test("Vercel upload retains build dependencies while excluding desktop and priva
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("the desktop sign-in return page only ever forwards to this computer", async () => {
+  const js = await readFile(new URL("../public/desktop-login.js", import.meta.url), "utf8");
+  const run = (search: string) => {
+    let went = "";
+    const els = [{ hidden: false, dataset: { step: "going" } }, { hidden: true, dataset: { step: "failed" } }];
+    new Function("location", "document", js)(
+      { search, replace: (u: string) => (went = u) },
+      { querySelectorAll: () => els, querySelector: () => ({}) },
+    );
+    return { went, failed: !els[1].hidden };
+  };
+  assert.equal(run("?code=abc&state=xY_-z.51423").went, "http://127.0.0.1:51423/callback?state=xY_-z.51423&code=abc");
+  // No port, a port outside the range, or a host smuggled into state: nothing is opened.
+  for (const bad of ["?code=abc&state=nostate", "?code=a&state=s.80", "?code=a&state=s.evil.com:8080", "?code=a&state=s.99999"]) {
+    const r = run(bad);
+    assert.equal(r.went, "");
+    assert.equal(r.failed, true);
+  }
+});
