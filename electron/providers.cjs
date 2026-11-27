@@ -646,7 +646,59 @@ async function addKey(value, { save, fetchImpl = fetch, blocked = [] }) {
   return { name, provider, check, state };
 }
 
+// "Start with OpenRouter": the user signs in on openrouter.ai and the app gets a key of their own
+// (OAuth PKCE). No client registration; the key belongs to the user's OpenRouter account.
+const b64url = (bytes) =>
+  btoa(String.fromCharCode(...new Uint8Array(bytes)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+/** A fresh verifier, its S256 challenge, and a state value to match the callback. */
+async function openRouterPkce() {
+  const verifier = b64url(globalThis.crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = b64url(
+    await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)),
+  );
+  const state = b64url(globalThis.crypto.getRandomValues(new Uint8Array(16)));
+  return { verifier, challenge, state };
+}
+function openRouterAuthUrl({ callbackUrl, challenge, state }) {
+  const u = new URL("https://openrouter.ai/auth");
+  u.searchParams.set("callback_url", callbackUrl);
+  u.searchParams.set("code_challenge", challenge);
+  u.searchParams.set("code_challenge_method", "S256");
+  u.searchParams.set("state", state);
+  u.searchParams.set("key_label", "Pumasi Agent");
+  return u.href;
+}
+/** Trade the one-time code (valid for 10 minutes) for the user's key. */
+async function openRouterExchange(code, verifier, fetchImpl = fetch) {
+  let r;
+  try {
+    r = await fetchImpl("https://openrouter.ai/api/v1/auth/keys", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, code_verifier: verifier, code_challenge_method: "S256" }),
+      redirect: "error",
+      signal: AbortSignal.timeout(20000),
+    });
+  } catch {
+    throw new Error(tr("OpenRouter에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요."));
+  }
+  if (!r.ok)
+    throw new Error(
+      tr("OpenRouter 로그인을 마치지 못했습니다. 다시 시도해 주세요. (HTTP {status})", { status: r.status }),
+    );
+  const data = await r.json().catch(() => ({}));
+  if (typeof data.key !== "string" || !data.key.trim())
+    throw new Error(tr("OpenRouter가 키를 돌려주지 않았습니다. 다시 시도해 주세요."));
+  return data.key.trim();
+}
+
 module.exports = {
+  openRouterPkce,
+  openRouterAuthUrl,
+  openRouterExchange,
   addKey,
   request,
   status,
