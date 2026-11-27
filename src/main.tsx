@@ -452,7 +452,7 @@ function App() {
         }
         if (e.stage === "pumasi") {
           setNotice(
-            t("팀 모드 · 품앗이 {done}/{total} 완료 · 돕는 중 {working} · 기다리는 자리 {open}", e),
+            t("팀 모드 · Pitch in {done}/{total} 완료 · 돕는 중 {working} · 기다리는 자리 {open}", e),
           );
           return;
         }
@@ -506,7 +506,7 @@ function App() {
               taskCount: team.tasks.length,
               rounds: team.rounds,
               pumasi: team.pumasiTasks
-                ? t(" · 품앗이로 받은 작업 {count}개", { count: team.pumasiTasks })
+                ? t(" · Pitch in으로 받은 작업 {count}개", { count: team.pumasiTasks })
                 : "",
               approved:
                 (team.approved ? t(" · 총괄 모델 승인") : "") +
@@ -718,9 +718,16 @@ function App() {
       <aside className="sidebar" aria-label={t("사이드바")}>
         <div className="window-space" />
         <div className="brand">
-          <span className="brand-mark">
-            품<span>✦</span>
-          </span>
+          {/* The app icon: three overlapping circles and a spark. */}
+          <svg className="brand-mark" viewBox="0 0 1024 1024" aria-hidden="true">
+            <rect x="18" y="18" width="988" height="988" rx="222" fill="currentColor" />
+            <g fill="none" stroke="#fffdf6" strokeWidth="58">
+              <circle cx="404" cy="604" r="168" />
+              <circle cx="620" cy="604" r="168" />
+              <circle cx="512" cy="418" r="168" />
+            </g>
+            <path d="M776 178l25 70 70 25-70 25-25 70-25-70-70-25 70-25z" fill="#e2ebcf" />
+          </svg>
           <strong>{appName()}</strong>
           <button
             className="icon-button"
@@ -766,11 +773,11 @@ function App() {
           </button>
           <button
             className="nav-item"
-            aria-label={t("함께하기")}
+            aria-label={t("Pitch in")}
             onClick={() => setDialog("pumasi")}
           >
             <Users size={17} />
-            <span>{t("함께하기")}</span>
+            <span>{t("Pitch in")}</span>
           </button>
         </nav>
         {appMode === "chat" && (
@@ -1055,7 +1062,7 @@ function App() {
                 title={
                   window.auroraAI?.pumasi
                     ? t("켜면 팀 모드로 실행하고, 리더가 나눈 작업을 다른 사람 앱이 먼저 맡습니다.")
-                    : t("함께하기는 설치 앱에서 쓸 수 있습니다.")
+                    : t("Pitch in은 설치 앱에서 쓸 수 있습니다.")
                 }
                 onClick={() =>
                   setRouting((r) =>
@@ -1066,7 +1073,7 @@ function App() {
                 }
               >
                 <Users size={14} />
-                {t("함께하기")}
+                {t("Pitch in")}
               </button>
               <button
                 className="send-button"
@@ -1197,7 +1204,7 @@ function App() {
                 {dialog === "search"
                     ? t("대화 검색")
                     : dialog === "pumasi"
-                      ? t("함께하기")
+                      ? t("Pitch in")
                       : t("워크스페이스 설정")}
               </h2>
               <button
@@ -1400,14 +1407,14 @@ function App() {
                   </label>
                   <label className="setting-row">
                     <span>
-                      <strong>{t("품앗이에 맡기기")}</strong>
+                      <strong>{t("Pitch in에 맡기기")}</strong>
                       <small>
                         {t("팀 모드의 작업을 다른 사람의 앱이 그 사람의 키로 처리합니다. 5분 안에 아무도 돕지 않은 작업은 내 작업 모델이 합니다. 작업 글은 모르는 사람의 AI가 읽으니 개인 정보는 넣지 마세요.")}
                       </small>
                     </span>
                     <input
                       type="checkbox"
-                      aria-label={t("품앗이에 맡기기")}
+                      aria-label={t("Pitch in에 맡기기")}
                       checked={routing.pumasi}
                       disabled={!routing.team}
                       onChange={(e) =>

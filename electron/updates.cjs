@@ -31,7 +31,7 @@ function setupUpdates({
   const tell = (message, detail = "") =>
     dialog.showMessageBox({
       type: "info",
-      title: tr("품앗이 에이전트 업데이트"),
+      title: tr("Pumasi Agent 업데이트"),
       message,
       detail,
     });
@@ -49,7 +49,7 @@ function setupUpdates({
   const restart = async () => {
     const { response } = await dialog.showMessageBox({
       type: "info",
-      title: tr("품앗이 에이전트 업데이트"),
+      title: tr("Pumasi Agent 업데이트"),
       message: tr("새 버전이 준비되었습니다."),
       detail: tr(
         "재시작하면 업데이트가 적용됩니다. 저장하지 않은 대화는 사라질 수 있습니다. 나중에를 선택하면 정상 종료 시 설치합니다.",
@@ -165,7 +165,7 @@ function setupUpdates({
           })),
         },
         {
-          label: tr("품앗이 에이전트 {version}", { version: app.getVersion() }),
+          label: tr("Pumasi Agent {version}", { version: app.getVersion() }),
           enabled: false,
         },
       ],

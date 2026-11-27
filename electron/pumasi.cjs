@@ -81,7 +81,7 @@ function open(sealed, keys, label) {
  */
 function loadIdentity(file, safeStorage) {
   if (!safeStorage.isEncryptionAvailable())
-    throw new Error(tr("이 기기에서는 운영체제 암호화를 쓸 수 없어 품앗이를 켤 수 없습니다."));
+    throw new Error(tr("이 기기에서는 운영체제 암호화를 쓸 수 없어 Pitch in을 켤 수 없습니다."));
   if (fs.existsSync(file)) {
     const saved = JSON.parse(fs.readFileSync(file, "utf8"));
     const der = Buffer.from(safeStorage.decryptString(Buffer.from(saved.key, "base64")), "base64");
@@ -126,7 +126,7 @@ function createSettings(file, now = () => Date.now()) {
         const url = new URL(String(patch.server));
         const local = ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname);
         if (url.protocol !== "https:" && !(url.protocol === "http:" && local))
-          throw new Error(tr("품앗이 서버 주소는 https여야 합니다."));
+          throw new Error(tr("Pitch in 서버 주소는 https여야 합니다."));
         if (url.origin !== new URL(s.server).origin) s.joined = false;
         s.server = url.origin;
       }
@@ -170,7 +170,7 @@ function createClient({ server, identity, fetchImpl = fetch, now = () => Date.no
         signal: AbortSignal.timeout(20000),
       });
     } catch {
-      throw Object.assign(new Error(tr("품앗이 서버에 연결하지 못했습니다.")), { transient: true });
+      throw Object.assign(new Error(tr("Pitch in 서버에 연결하지 못했습니다.")), { transient: true });
     }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw Object.assign(new Error(relayMessage(data.error, res.status)), { status: res.status, code: data.error });
@@ -181,14 +181,14 @@ function createClient({ server, identity, fetchImpl = fetch, now = () => Date.no
 function relayMessage(code, status) {
   const known = {
     invite: tr("초대 코드가 맞지 않습니다."),
-    "join first": tr("먼저 품앗이에 가입하세요."),
+    "join first": tr("먼저 Pitch in에 가입하세요."),
     "no points": tr("점수가 없습니다. 다른 사람을 도와 점수를 모으세요."),
     taken: tr("다른 사람이 먼저 맡았습니다."),
     "one at a time": tr("한 번에 하나씩만 도울 수 있습니다."),
     "too many jobs": tr("동시에 올릴 수 있는 일은 3개까지입니다."),
     clock: tr("기기 시계가 맞지 않습니다. 시간을 자동으로 맞추세요."),
   };
-  return known[code] ?? tr("품앗이 서버 오류 ({status})", { status });
+  return known[code] ?? tr("Pitch in 서버 오류 ({status})", { status });
 }
 
 // ---------- posting: what the poster must not send ----------
@@ -276,7 +276,7 @@ async function help(slotId, { api, env, settings, request, onProgress = () => {}
 async function runRemote(prompts, { api, copies = 2, onProgress = () => {}, sleep, now = () => Date.now(), waitMs = 300_000, signal }) {
   for (const p of prompts) {
     const why = privateReason(p);
-    if (why) throw new Error(tr("작업에 {what}이(가) 있어 품앗이에 올리지 않았습니다. 지우고 다시 하세요.", { what: why }));
+    if (why) throw new Error(tr("작업에 {what}이(가) 있어 Pitch in에 올리지 않았습니다. 지우고 다시 하세요.", { what: why }));
   }
   const keys = boxKeys();
   const job = await api("POST", "/v1/jobs", { copies, tasks: prompts.map((p) => Math.max(1, p.length)), jobKey: keys.publicRaw });
