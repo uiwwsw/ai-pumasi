@@ -494,6 +494,66 @@ else
         inFlight.delete(id);
       }
     });
+    // Ask: the app decides how to work on the question (direct, split, or solve and check).
+    let askControl = null;
+    ipcMain.handle("aurora:ask", async (event, payload) => {
+      if (!authorized(event)) throw forbiddenError();
+      const id = event.sender.id;
+      if (inFlight.has(id)) throw new Error(tr("이미 요청을 처리 중입니다."));
+      inFlight.add(id);
+      const smart = require("./smart.cjs");
+      const control = (askControl = smart.createControl());
+      const env = secrets.env();
+      // The answer so far goes to the window at most ~15 times a second, keys masked.
+      let last = 0;
+      let timer = null;
+      let latest = "";
+      const push = () => {
+        timer = null;
+        last = Date.now();
+        if (!event.sender.isDestroyed())
+          event.sender.send("aurora:ai-delta", scrub(latest, env));
+      };
+      try {
+        return await guarded(env, () =>
+          smart.run(
+            {
+              text: String(payload?.text ?? ""),
+              context: Array.isArray(payload?.context) ? payload.context : [],
+              model: typeof payload?.model === "string" ? payload.model : "auto-free",
+              autoOrder: Array.isArray(payload?.autoOrder) ? payload.autoOrder : undefined,
+            },
+            {
+              env,
+              stats: stats(),
+              allowPaid: true,
+              signal: control.signal,
+              signalFor: control.signalFor,
+              skipped: control.skipped,
+              onProgress: (e) => {
+                if (!event.sender.isDestroyed())
+                  event.sender.send("aurora:ask-progress", scrub(e, env));
+              },
+              onDelta: (text) => {
+                latest = text;
+                if (timer) return;
+                timer = setTimeout(push, Math.max(0, 66 - (Date.now() - last)));
+              },
+            },
+          ),
+        );
+      } finally {
+        if (timer) clearTimeout(timer);
+        if (askControl === control) askControl = null;
+        inFlight.delete(id);
+      }
+    });
+    ipcMain.handle("aurora:ask-control", (event, action, partId) => {
+      if (!authorized(event)) throw forbiddenError();
+      if (action === "stop") askControl?.stop();
+      else if (action === "finish") askControl?.finish();
+      else if (action === "skip" && typeof partId === "string") askControl?.skip(partId);
+    });
     ipcMain.handle("aurora:team-run", async (event, payload) => {
       if (!authorized(event)) throw forbiddenError();
       const id = event.sender.id;

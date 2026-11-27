@@ -16,6 +16,7 @@ build
 electron/*
 !electron/providers.cjs
 !electron/team.cjs
+!electron/smart.cjs
 !electron/router.cjs
 !electron/i18n.cjs
 !electron/worker-stats.cjs

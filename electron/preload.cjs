@@ -51,6 +51,14 @@ contextBridge.exposeInMainWorld("auroraAI", {
     },
   },
   // The answer so far while it streams in (plain answers only).
+  // The app decides how to work on a question; progress says what is actually happening.
+  ask: (payload) => ipcRenderer.invoke("aurora:ask", payload),
+  askControl: (action, partId) => ipcRenderer.invoke("aurora:ask-control", action, partId),
+  onAskProgress: (fn) => {
+    const h = (_e, data) => fn(data);
+    ipcRenderer.on("aurora:ask-progress", h);
+    return () => ipcRenderer.removeListener("aurora:ask-progress", h);
+  },
   onAnswerDelta: (fn) => {
     const h = (_e, text) => fn(text);
     ipcRenderer.on("aurora:ai-delta", h);

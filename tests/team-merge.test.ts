@@ -64,7 +64,7 @@ test("a reasoning model that spends its budget thinking gets more room, and its 
       return reply(JSON.stringify({ approved: true, sure: true, redo: [] }));
     budgets.push(body.max_tokens);
     // Thinking used the whole budget: no visible text, cut at the limit.
-    if (body.max_tokens < 16000)
+    if (body.max_tokens < 32000)
       return {
         ok: true,
         status: 200,
@@ -79,7 +79,30 @@ test("a reasoning model that spends its budget thinking gets more room, and its 
     { lead: "auto-free", worker: SUPER, text: "풀어 주세요", context: [] },
     { env: { NVIDIA_API_KEY: "k", AURORA_OLLAMA: "0" }, fetchImpl, stats: createStatsStore(), sleep: async () => {} },
   );
-  assert.deepEqual(budgets.slice(0, 2), [4096, 8192]);
+  // Starts with room to think; a cut-off try grows once to the ceiling.
+  assert.deepEqual(budgets.slice(0, 2), [16000, 32000]);
   assert.match(result.text, /정답 1: 11/);
   assert.doesNotMatch(result.text, /보이는 답변이 생성되지/);
+});
+
+test("an unsure rejection keeps the results instead of solving the tasks again", async () => {
+  let work = 0;
+  const fetchImpl = async (_url: string, init: any) => {
+    const body = JSON.parse(init.body);
+    const system = String(body.messages?.[0]?.content ?? "");
+    if (system.includes("Split the user request"))
+      return reply(JSON.stringify({ goal: "g", tasks: [tasks[0]] }));
+    if (system.includes("reviewing junior results"))
+      return reply(JSON.stringify({ approved: false, sure: false, redo: [{ id: "t1", feedback: "다시" }] }));
+    work++;
+    return reply("문제 1 풀이입니다. ".repeat(10) + "\n정답 1: 11");
+  };
+  const result = await orchestrate(
+    { lead: SUPER, worker: SUPER, text: "풀어 주세요", context: [] },
+    { env: { NVIDIA_API_KEY: "k", AURORA_OLLAMA: "0" }, fetchImpl, stats: createStatsStore(), sleep: async () => {} },
+  );
+  assert.equal(work, 1);
+  assert.equal(result.rounds, 1);
+  assert.match(result.text, /정답 1: 11/);
+  assert.match(result.warning, /확신하지 못했지만/);
 });

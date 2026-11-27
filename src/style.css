@@ -2170,3 +2170,66 @@ html[data-theme="dark"] .code-error {
   height: 1px;
   background: var(--line);
 }
+
+/* What the app is doing while it answers. */
+.ask-progress {
+  margin: 0 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  font-size: 13px;
+}
+.ask-headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  font-weight: 600;
+}
+.ask-progress button {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+.ask-progress ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.ask-progress li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 10px 4px 14px;
+}
+.ask-progress li + li {
+  border-top: 1px solid var(--line);
+}
+.ask-part-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ask-part-state {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ask-progress li.is-switch .ask-part-state,
+.ask-progress li.is-retry .ask-part-state,
+.ask-progress li.is-failed .ask-part-state {
+  color: var(--text);
+}
+.ask-progress li.is-done .ask-part-title,
+.ask-progress li.is-skipped .ask-part-title {
+  color: var(--muted);
+}
