@@ -166,6 +166,10 @@ function substituted(requested, servedBy) {
   );
 }
 const DEFAULT_TIMEOUT_MS = 120000;
+// A streamed call that sends nothing at all for this long is treated as stalled: give up on it
+// and let the caller move on, instead of waiting out the whole time limit. Reasoning models keep
+// sending their thinking as they go, so a working model is never silent this long.
+const DEFAULT_IDLE_MS = 60000;
 function stoppedError() {
   const error = new Error(tr("결과가 이미 정해져 이 요청은 멈췄습니다."));
   error.stopped = true;
@@ -182,6 +186,9 @@ async function request(
     autoOrder = null,
     // Called with the answer so far while it streams in. Only plain answers stream.
     onDelta = null,
+    // Stream even without onDelta, only to notice a stalled model early.
+    stream = false,
+    idleMs = DEFAULT_IDLE_MS,
     // Your own requests may fall back to a paid key you added once every free model is out.
     // Helping someone else (Pumasi) and team leads never do.
     allowPaid = false,
@@ -190,10 +197,22 @@ async function request(
   validate(p);
   const model = catalog.find((m) => m.id === p.model);
   const provider = model.provider;
-  const opts = { env, fetchImpl, timeoutMs, onUsage, signal, onDelta };
+  const opts = {
+    env,
+    fetchImpl,
+    timeoutMs,
+    onUsage,
+    signal,
+    onDelta,
+    stream,
+    idleMs,
+  };
   if (provider === "auto") {
     // Strongest free model first; on a rate limit, failure or empty reply, the next one.
-    const ids = [...autoCandidates(env, autoOrder), ...(allowPaid ? paidFallback(env) : [])];
+    const ids = [
+      ...autoCandidates(env, autoOrder),
+      ...(allowPaid ? paidFallback(env) : []),
+    ];
     if (!ids.length)
       throw new Error(
         tr(
@@ -242,8 +261,12 @@ async function request(
  * Read a server-sent event stream and hand each JSON payload to onEvent.
  * Works with fetch's ReadableStream body; "[DONE]" ends the stream.
  */
-async function readEvents(response, onEvent) {
+async function readEvents(response, onEvent, kick = () => {}, abort = null) {
   const reader = response.body.getReader();
+  // Stop reading when the call is aborted (stalled or stopped), even if the body ignores the signal.
+  const onAbort = () => reader.cancel().catch(() => {});
+  if (abort?.aborted) onAbort();
+  abort?.addEventListener("abort", onAbort, { once: true });
   const decoder = new TextDecoder();
   let buffer = "";
   const flush = (block) => {
@@ -262,6 +285,7 @@ async function readEvents(response, onEvent) {
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
+    kick();
     buffer += decoder.decode(value, { stream: true });
     let cut;
     while ((cut = buffer.search(/\r?\n\r?\n/)) !== -1) {
@@ -275,7 +299,7 @@ async function readEvents(response, onEvent) {
  * Stream an answer and rebuild the provider's ordinary JSON shape from it, so the code that reads
  * a finished response does not care whether it streamed.
  */
-async function readStream(response, provider, onDelta) {
+async function readStream(response, provider, onDelta, kick, abort) {
   let text = "";
   let model = null;
   let usage = {};
@@ -286,36 +310,41 @@ async function readStream(response, provider, onDelta) {
     if (typeof piece !== "string" || !piece) return;
     text += piece;
     try {
-      onDelta(text);
+      onDelta?.(text);
     } catch {}
   };
-  await readEvents(response, (e) => {
-    if (provider === "openai") {
-      if (e.type === "response.output_text.delta") grow(e.delta);
-      if (e.response) {
-        model = e.response.model ?? model;
-        if (e.response.usage) usage = e.response.usage;
-        if (e.response.status) status = e.response.status;
+  await readEvents(
+    response,
+    (e) => {
+      if (provider === "openai") {
+        if (e.type === "response.output_text.delta") grow(e.delta);
+        if (e.response) {
+          model = e.response.model ?? model;
+          if (e.response.usage) usage = e.response.usage;
+          if (e.response.status) status = e.response.status;
+        }
+      } else if (provider === "anthropic") {
+        if (e.type === "message_start") {
+          model = e.message?.model ?? model;
+          usage = { ...usage, ...(e.message?.usage ?? {}) };
+        }
+        if (e.type === "content_block_delta" && e.delta?.type === "text_delta")
+          grow(e.delta.text);
+        if (e.type === "message_delta") {
+          stop = e.delta?.stop_reason ?? stop;
+          usage = { ...usage, ...(e.usage ?? {}) };
+        }
+      } else {
+        if (e.model) model = e.model;
+        if (e.usage) usage = e.usage;
+        const choice = e.choices?.[0];
+        if (choice?.delta?.content) grow(choice.delta.content);
+        if (choice?.finish_reason) finish = choice.finish_reason;
       }
-    } else if (provider === "anthropic") {
-      if (e.type === "message_start") {
-        model = e.message?.model ?? model;
-        usage = { ...usage, ...(e.message?.usage ?? {}) };
-      }
-      if (e.type === "content_block_delta" && e.delta?.type === "text_delta")
-        grow(e.delta.text);
-      if (e.type === "message_delta") {
-        stop = e.delta?.stop_reason ?? stop;
-        usage = { ...usage, ...(e.usage ?? {}) };
-      }
-    } else {
-      if (e.model) model = e.model;
-      if (e.usage) usage = e.usage;
-      const choice = e.choices?.[0];
-      if (choice?.delta?.content) grow(choice.delta.content);
-      if (choice?.finish_reason) finish = choice.finish_reason;
-    }
-  });
+    },
+    kick,
+    abort,
+  );
   if (provider === "openai")
     return {
       model,
@@ -324,7 +353,12 @@ async function readStream(response, provider, onDelta) {
       output: [{ content: [{ type: "output_text", text }] }],
     };
   if (provider === "anthropic")
-    return { model, usage, stop_reason: stop, content: [{ type: "text", text }] };
+    return {
+      model,
+      usage,
+      stop_reason: stop,
+      content: [{ type: "text", text }],
+    };
   return {
     model,
     usage,
@@ -334,7 +368,16 @@ async function readStream(response, provider, onDelta) {
 async function call(
   p,
   model,
-  { env, fetchImpl, timeoutMs, onUsage, signal, onDelta },
+  {
+    env,
+    fetchImpl,
+    timeoutMs,
+    onUsage,
+    signal,
+    onDelta,
+    stream,
+    idleMs = DEFAULT_IDLE_MS,
+  },
   route,
 ) {
   if (signal?.aborted) throw stoppedError();
@@ -397,8 +440,12 @@ async function call(
     body = { model: p.model, system, messages, max_tokens: p.maxOutputTokens };
   }
   // Only a plain answer streams; plans, reviews and votes need the whole JSON at once.
+  // Plain answers stream so the window can show them; team calls ask to stream only so a stalled
+  // model is noticed early. The analysis call is small and stays a single response.
   const streaming =
-    typeof onDelta === "function" && (p.action === "execute" || p.action === "agent");
+    (typeof onDelta === "function" &&
+      (p.action === "execute" || p.action === "agent")) ||
+    (stream === true && p.action !== "analyze");
   if (streaming) {
     body.stream = true;
     if (provider !== "openai" && provider !== "anthropic")
@@ -406,19 +453,45 @@ async function call(
   }
   const fetchUrl = route ? route.url : endpoints[provider];
   let response;
+  // Stall watchdog for streamed calls: restarts on every chunk, fires after idleMs of silence.
+  const idle = new AbortController();
+  let idleTimer = null;
+  const kick = () => {
+    if (!streaming) return;
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => idle.abort(), idleMs);
+  };
+  const stalledError = () => {
+    const error = new Error(
+      tr(
+        "모델이 {seconds}초 동안 아무것도 보내지 않아 멈춘 것으로 보고 넘겼습니다.",
+        {
+          seconds: Math.round(idleMs / 1000),
+        },
+      ),
+    );
+    error.transient = true;
+    error.timeout = true;
+    error.stalled = true;
+    return error;
+  };
+  kick();
+  const callSignal = AbortSignal.any(
+    [AbortSignal.timeout(timeoutMs), signal, idle.signal].filter(Boolean),
+  );
   try {
     response = await fetchImpl(fetchUrl, {
       method: "POST",
       headers,
       body: JSON.stringify(body),
-      signal: signal
-        ? AbortSignal.any([AbortSignal.timeout(timeoutMs), signal])
-        : AbortSignal.timeout(timeoutMs),
+      signal: callSignal,
       redirect: "error",
     });
   } catch (cause) {
-    // Stopped on purpose (the vote was already decided): not a failure, never retried.
+    clearTimeout(idleTimer);
+    // Stopped on purpose: not a failure, never retried.
     if (signal?.aborted) throw stoppedError();
+    if (idle.signal.aborted) throw stalledError();
     const timedOut =
       cause?.name === "TimeoutError" || cause?.name === "AbortError";
     const error = new Error(
@@ -451,12 +524,18 @@ async function call(
   try {
     data =
       streaming && response.body?.getReader
-        ? await readStream(response, provider, onDelta)
+        ? await readStream(response, provider, onDelta, kick, callSignal)
         : await response.json();
+    // A stream cut short by the watchdog or a stop is not an answer.
+    if (callSignal.aborted) throw new Error("aborted");
   } catch {
+    if (signal?.aborted) throw stoppedError();
+    if (idle.signal.aborted) throw stalledError();
     throw new Error(
       tr("API 응답을 읽지 못했습니다. 사용량이 발생했을 수 있습니다."),
     );
+  } finally {
+    clearTimeout(idleTimer);
   }
   const chat =
     model.provider === "gemini" ||

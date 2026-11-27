@@ -180,3 +180,64 @@ test("Malformed event line is skipped", async () => {
   assert.equal(result.inputTokens, 3);
   assert.equal(result.outputTokens, 2);
 });
+test("a stream that goes silent is dropped as stalled, and Auto moves to the next model", async () => {
+  const silentAfterOne = () => ({
+    ok: true,
+    status: 200,
+    headers: { get: () => null },
+    body: new ReadableStream({
+      start(c) {
+        c.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"생각 중"}}]}\n\n'));
+        // ...and then nothing, never closing.
+      },
+    }),
+  });
+  await assert.rejects(
+    request(
+      { ...basePayload, model: "gemini-flash-latest" },
+      { env: { GEMINI_API_KEY: "k", AURORA_OLLAMA: "0" }, fetchImpl: async () => silentAfterOne(), stream: true, idleMs: 50 },
+    ),
+    (e: any) => e.stalled === true && e.transient === true,
+  );
+  // Auto: the first free model stalls, the next one answers.
+  const seen: string[] = [];
+  const r = await request(
+    { ...basePayload, model: "auto-free" },
+    {
+      env: { NVIDIA_API_KEY: "k", AURORA_OLLAMA: "0" },
+      idleMs: 50,
+      onDelta: () => {},
+      fetchImpl: async (_url: string, init: any) => {
+        const model = JSON.parse(init.body).model;
+        seen.push(model);
+        if (seen.length === 1) return silentAfterOne();
+        return createStreamResponse([
+          'data: {"choices":[{"delta":{"content":"답"},"finish_reason":"stop"}],"usage":{"prompt_tokens":1,"completion_tokens":1}}\n\n',
+        ]);
+      },
+    },
+  );
+  assert.equal(r.text, "답");
+  assert.equal(seen.length, 2);
+  assert.notEqual(seen[0], seen[1]);
+});
+
+test("asking to stream without onDelta still gives the whole answer (team calls)", async () => {
+  let body: any;
+  const r = await request(
+    { ...basePayload, action: "plan", model: "gemini-flash-latest" },
+    {
+      env: { GEMINI_API_KEY: "k", AURORA_OLLAMA: "0" },
+      stream: true,
+      fetchImpl: async (_u: string, init: any) => {
+        body = JSON.parse(init.body);
+        return createStreamResponse([
+          'data: {"choices":[{"delta":{"content":"{\\"goal\\":"}}]}\n\n',
+          'data: {"choices":[{"delta":{"content":"\\"g\\"}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":2,"completion_tokens":3}}\n\n',
+        ]);
+      },
+    },
+  );
+  assert.equal(body.stream, true);
+  assert.equal(r.text, '{"goal":"g"}');
+});

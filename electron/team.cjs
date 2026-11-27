@@ -18,6 +18,23 @@ const MAX_OUTPUT = 32000;
 const LEAD_MAX_OUTPUT = 16000;
 const REVIEW_MAX_OUTPUT = 12000;
 const LEAD_TIMEOUT_MS = 300000;
+// Tasks are independent, so several run at once. Free tiers allow a few requests in parallel;
+// a rate-limited one is retried or handed to the next model as before.
+const WORKER_CONCURRENCY = 3;
+
+/** Run fn over items with at most `limit` running at once, keeping the item order for results. */
+async function pool(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  const lane = async () => {
+    while (next < items.length) {
+      const i = next++;
+      out[i] = await fn(items[i], i);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, lane));
+  return out;
+}
 
 /** Time budget for one worker call: room to stream the allowed output plus reading the prompt. */
 function workerTimeout(promptChars, maxOutputTokens) {
@@ -278,7 +295,8 @@ async function orchestrate(p, opts = {}) {
   const call = (action, model, text, context, maxOutputTokens, timeoutMs, autoOrder) =>
     providers.request(
       { action, model, text, context, maxOutputTokens },
-      { env, fetchImpl: opts.fetchImpl, timeoutMs, onUsage: opts.onUsage, autoOrder },
+      // Streamed only so a model that goes silent is dropped early instead of after the time limit.
+      { env, fetchImpl: opts.fetchImpl, timeoutMs, onUsage: opts.onUsage, autoOrder, stream: true },
     );
   // Automatic lead: the free model ranked first leads; if it is rate-limited or answers empty,
   // the next in the ranking takes over. The user can reorder the ranking in settings.
@@ -405,11 +423,11 @@ async function orchestrate(p, opts = {}) {
       }
       helped += remote.size;
     }
-    for (const [i, t] of todo.entries()) {
+    await pool(todo, WORKER_CONCURRENCY, async (t, i) => {
       if (remote.has(t.id)) {
         results.set(t.id, { text: remote.get(t.id) });
         onProgress({ stage: "worker", taskId: t.id, title: t.title, round, state: "done", model: "pumasi" });
-        continue;
+        return;
       }
       onProgress({
         stage: "work",
@@ -436,7 +454,7 @@ async function orchestrate(p, opts = {}) {
             error: error instanceof Error ? error.message : tr("실행 실패"),
           });
       }
-    }
+    });
 
     onProgress({ stage: "review", round, model: p.lead });
     let verdict = null;

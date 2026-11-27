@@ -100,5 +100,6 @@
   "답할 모델이 없습니다. 설정 → API 키에서 키를 하나 넣으세요. NVIDIA·OpenRouter·Groq·Gemini 키는 무료입니다.": "No model to answer with. Add a key in Settings → API keys. NVIDIA, OpenRouter, Groq and Gemini keys are free.",
   "되돌릴 변경을 찾지 못했습니다.": "Couldn't find that change to undo.",
   "저장한 뒤 파일이 바뀌어 되돌리지 않았습니다.": "The file changed after it was saved, so it wasn't undone.",
-  "총괄 모델이 결과를 확신하지 못했지만 다시 풀지는 않았습니다. 확인해 주세요.": "The lead wasn't sure about the results but didn't have them solved again. Please check them."
+  "총괄 모델이 결과를 확신하지 못했지만 다시 풀지는 않았습니다. 확인해 주세요.": "The lead wasn't sure about the results but didn't have them solved again. Please check them.",
+  "모델이 {seconds}초 동안 아무것도 보내지 않아 멈춘 것으로 보고 넘겼습니다.": "The model sent nothing for {seconds} seconds, so it was treated as stalled and skipped."
 }
