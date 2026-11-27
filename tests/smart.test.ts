@@ -105,7 +105,9 @@ test("split and roles together: only a deep part is checked, and only a failed c
       });
     if (kind === "check")
       return JSON.stringify({ verdict: "wrong", problem: "17×23을 다시 계산하면 391입니다." });
-    if (user.includes("다른 모델의 지적")) {
+    if (user.includes("다른 모델이 짚은 단계")) {
+      // The fix gets the earlier answer with its work log, and is told to continue, not restart.
+      assert.ok(user.includes("381") && user.includes("Do not start over"));
       redo++;
       return "391";
     }
@@ -118,6 +120,10 @@ test("split and roles together: only a deep part is checked, and only a failed c
   const checks = w.calls.filter((c) => c.kind === "check");
   assert.equal(checks.length, 1);
   assert.ok(checks[0].user.includes("곱하기") && !checks[0].user.includes("영어로"));
+  // Only the checked part is asked for a work log.
+  const answers = w.calls.filter((c) => c.kind === "answer");
+  assert.ok(answers.some((c) => c.user.includes("곱하기") && c.user.includes("work log")));
+  assert.ok(answers.some((c) => c.user.includes("영어로") && !c.user.includes("work log")));
   assert.equal(redo, 1);
   assert.match(r.text, /### 곱셈\n\n391/);
   assert.equal(r.parts[0].check, null);

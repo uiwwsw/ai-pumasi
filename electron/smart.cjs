@@ -99,6 +99,13 @@ function readTriage(reply, text) {
 }
 
 /** What one part's model reads: the shared lines, the part as written, and at most a one-line note. */
+// Asked of work that will be checked: the checker verifies these steps instead of solving again,
+// and a fix continues from the step that failed instead of starting over.
+const WORK_LOG =
+  "Before the final answer, write a short work log under its own heading: the intermediate values your answer rests on (tables, running totals, each deduction and what it rules out), one step per line, so that someone else can verify each step from the ones before it. Keep it compact: values, not prose.";
+const FIX =
+  "First decide whether the objection is right by redoing only that step. If it is not, say so in one line and repeat the earlier final answer unchanged. If it is, keep every step of the work log before it as it stands, redo the work from that step on, and write the corrected work log and final answer. Do not start over.";
+const withLog = (prompt) => `${prompt}\n\n${WORK_LOG}`;
 const partPrompt = (shared, part) =>
   [shared, part.text, part.note ? `(${part.note})` : ""].filter(Boolean).join("\n\n");
 
@@ -235,7 +242,7 @@ async function run(p, io = {}) {
         {
           action: "check",
           model: checker,
-          text: `${tr("요청:")}\n${request_.slice(0, 12000)}\n\n${tr("답:")}\n${answered.text.slice(0, 7000)}`,
+          text: `${tr("요청:")}\n${request_.slice(0, 12000)}\n\n${tr("답:")}\n${answered.text.slice(0, 14000)}`,
           context: [],
           maxOutputTokens: CHECK_OUTPUT,
         },
@@ -257,7 +264,7 @@ async function run(p, io = {}) {
     const fixed = await solve(
       id,
       title,
-      `${request_}\n\n${tr("이전 답:")}\n${answered.text.slice(0, 7000)}\n\n${tr("다른 모델의 지적(맞는지 따져 보고, 맞으면 고쳐서 전체 답을 다시 쓰세요):")}\n${problem}`,
+      `${request_}\n\n${tr("이전 답과 풀이 기록:")}\n${answered.text.slice(0, 14000)}\n\n${tr("다른 모델이 짚은 단계:")}\n${problem}\n\n${FIX}`,
       { ctx: context, onDelta },
     );
     if (fixed.incomplete) return { text: answered.text, check };
@@ -277,7 +284,7 @@ async function run(p, io = {}) {
       }
       try {
         const prompt = partPrompt(plan.shared, part);
-        let done = await solve(id, part.title, prompt, { ctx: context });
+        let done = await solve(id, part.title, part.check ? withLog(prompt) : prompt, { ctx: context });
         // A deep part is checked by a different model before it counts as done.
         if (part.check && !io.skipped?.(id)) {
           const report = (state, model) => onProgress({ stage: "part", id, title: part.title, state: state === "check" ? "checking" : "revising", model });
@@ -338,7 +345,10 @@ async function run(p, io = {}) {
   }
 
   // 2b. One answer; with roles, a different model checks it.
-  const answered = await solve("answer", "", p.text, { ctx: context, onDelta: io.onDelta });
+  const answered = await solve("answer", "", plan.mode === "roles" ? withLog(p.text) : p.text, {
+    ctx: context,
+    onDelta: io.onDelta,
+  });
   let text = answered.text;
   let check = null;
   if (plan.mode === "roles") {
