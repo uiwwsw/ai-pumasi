@@ -11,21 +11,27 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  color: #34342f;
-  background: #faf9f6;
+  color: #16191a;
+  background: #fcfcfb;
   font-synthesis: none;
   font-weight: 400;
-  --bg: #fdfcf9;
-  --sidebar: #f3f2ee;
-  --panel: #f8f7f3;
-  --text: #34342f;
-  --muted: #8b8a81;
-  --line: #e8e6df;
-  --hover: #eae9e3;
-  --card: #fffefa;
-  --accent: #607b64;
-  --track: #e9ede5;
-  --shadow: 0 5px 24px #34342f08;
+  --bg: #fcfcfb;
+  --sidebar: #f1f3f0;
+  --panel: #f5f6f4;
+  --text: #16191a;
+  --muted: #5f6668;
+  --line: #dfe3de;
+  --line-strong: #c9cfc8;
+  --hover: #e6e9e4;
+  --card: #ffffff;
+  /* Rice-paddy green: pumasi began as neighbours planting each other's fields. */
+  --accent: #1d6b49;
+  --accent-strong: #165539;
+  --on-accent: #ffffff;
+  --track: #e1efe6;
+  --button: #16191a;
+  --button-hover: #2e3436;
+  --shadow: 0 1px 2px #16191a0f;
 }
 * {
   box-sizing: border-box;
@@ -172,7 +178,7 @@ button:hover {
   -webkit-app-region: no-drag;
 }
 .side-search:focus-within {
-  border-color: #b7c4b2;
+  border-color: var(--accent);
 }
 .side-search input {
   flex: 1;
@@ -192,14 +198,14 @@ button:hover {
 .side-search kbd {
   font-family: inherit;
   font-size: 11px;
-  color: #a6a59c;
+  color: var(--muted);
 }
 .nav-item.selected {
   background: var(--hover);
 }
 .nav-item kbd {
   margin-left: auto;
-  color: #a6a59c;
+  color: var(--muted);
   font-size: 10px;
   font-family: inherit;
 }
@@ -518,14 +524,14 @@ button:hover {
   align-self: center;
 }
 .composer {
-  border: 1px solid #dbdcd2;
+  border: 1px solid var(--line-strong);
   border-radius: 14px;
   background: var(--card);
   box-shadow: var(--shadow);
   padding: 16px 14px 11px;
 }
 .composer:focus-within {
-  border-color: #9cae97;
+  border-color: var(--accent);
 }
 .composer textarea {
   display: block;
@@ -542,7 +548,7 @@ button:hover {
   outline: none;
 }
 .composer textarea::placeholder {
-  color: #a3a299;
+  color: var(--muted);
 }
 .composer textarea:focus-visible {
   outline: none;
@@ -609,13 +615,13 @@ button:hover {
   border-radius: 8px;
   width: 30px;
   height: 30px;
-  background: #3c4538;
+  background: var(--button);
   color: #fff;
   display: grid;
   place-items: center;
 }
 .send-button:hover {
-  background: #586450;
+  background: var(--button-hover);
 }
 .send-button:disabled {
   background: #e9eae3;
@@ -625,7 +631,7 @@ button:hover {
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
-  color: #9c9b91;
+  color: var(--muted);
   font-size: 11px;
   gap: 8px;
 }
@@ -1117,17 +1123,22 @@ button:hover {
   z-index: 20;
 }
 html[data-theme="dark"] {
-  --bg: #232420;
-  --sidebar: #1e1f1b;
-  --panel: #20211d;
-  --text: #dedfd6;
-  --muted: #96998c;
-  --line: #37392f;
-  --hover: #30322b;
-  --card: #282a24;
-  --accent: #a5b897;
-  --track: #393d32;
-  --shadow: 0 5px 24px #0001;
+  --bg: #191b1b;
+  --sidebar: #141616;
+  --panel: #1f2222;
+  --text: #e8ebe8;
+  --muted: #9aa19e;
+  --line: #2f3433;
+  --line-strong: #414846;
+  --hover: #2a2e2d;
+  --card: #222626;
+  --accent: #62c08f;
+  --accent-strong: #7bd0a3;
+  --on-accent: #0f1a14;
+  --track: #1f3529;
+  --button: #e8ebe8;
+  --button-hover: #ffffff;
+  --shadow: 0 1px 2px #0006;
   background: var(--bg);
   color: var(--text);
 }
@@ -1135,18 +1146,8 @@ html[data-theme="dark"] .avatar {
   background: #414936;
   color: #d5ddce;
 }
-html[data-theme="dark"] .send-button {
-  background: #75886b;
-}
-html[data-theme="dark"] .send-button:disabled {
-  background: #353a2e;
-  color: #727968;
-}
 html[data-theme="dark"] .next-icon {
   background: #353c2c;
-}
-html[data-theme="dark"] .composer {
-  border-color: #45493c;
 }
 @media (max-width: 1180px) {
   .app {
@@ -1945,11 +1946,11 @@ html[data-theme="dark"] .composer {
   font-size: 13px;
 }
 .primary-button {
-  background: #3c4538;
+  background: var(--button);
   color: #fff;
 }
 .primary-button:hover {
-  background: #586450;
+  background: var(--button-hover);
 }
 .ghost-button {
   border: 1px solid var(--line);
@@ -2070,9 +2071,6 @@ html[data-theme="dark"] .diff-row.del,
 html[data-theme="dark"] .code-diff-text .del {
   background: #3d2420;
 }
-html[data-theme="dark"] .primary-button {
-  background: #75886b;
-}
 html[data-theme="dark"] .code-error {
   color: #e08a7e;
 }
@@ -2168,7 +2166,7 @@ html[data-theme="dark"] .code-error {
   min-width: 0;
   height: 42px;
   padding: 0 14px;
-  border: 1px solid #dbdcd2;
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--card);
   color: var(--text);
@@ -2176,7 +2174,7 @@ html[data-theme="dark"] .code-error {
 }
 .key-paste input:focus-visible {
   outline: none;
-  border-color: #9cae97;
+  border-color: var(--accent);
 }
 .key-paste button {
   display: inline-flex;
@@ -2406,4 +2404,305 @@ html[data-theme="dark"] .code-error {
 .ask-progress li.is-done .ask-part-title,
 .ask-progress li.is-skipped .ask-part-title {
   color: var(--muted);
+}
+
+/* ── Work board ─────────────────────────────────────────────────────────────
+   The screen is a board of work, not a chat: a request, who worked on it, the answer.
+   The one loud thing is the crew mark; everything around it stays quiet. */
+.model-token {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+}
+.model-token.hue-0 { background: #1d6b49; }
+.model-token.hue-1 { background: #2a5d9f; }
+.model-token.hue-2 { background: #94600f; }
+.model-token.hue-3 { background: #7b3f86; }
+.model-token.hue-4 { background: #a2463b; }
+.model-token.hue-5 { background: #12707a; }
+.model-token.hue-6 { background: #55606b; }
+.model-token.hue-auto {
+  background: var(--text);
+  color: var(--bg);
+}
+.token-stack {
+  display: inline-flex;
+}
+.token-stack .model-token + .model-token {
+  margin-left: -5px;
+  box-shadow: -1.5px 0 0 var(--bg);
+}
+
+/* Sidebar */
+.brand {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.brand strong {
+  font-weight: 700;
+}
+.nav-item {
+  height: 34px;
+  font-weight: 500;
+}
+.nav-item.selected {
+  background: var(--card);
+  box-shadow:
+    inset 2px 0 0 var(--accent),
+    0 0 0 1px var(--line);
+}
+.side-search {
+  height: 34px;
+}
+.chat-item {
+  padding: 8px 9px;
+  font-size: 13.5px;
+}
+.chat-item:hover,
+.nav-item:hover {
+  background: var(--hover);
+}
+.nav-item.selected:hover {
+  background: var(--card);
+}
+.account {
+  padding: 8px 9px;
+}
+.account strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.account small {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Empty board: what the app does and who is ready to work */
+.welcome {
+  max-width: 760px;
+  padding: 40px 32px;
+}
+.welcome h1 {
+  text-align: left;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  line-height: 1.35;
+  margin: 0 0 10px;
+}
+.welcome > p {
+  max-width: 34em;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.crew {
+  margin-top: 30px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.crew h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.crew ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 2px 20px;
+}
+.crew li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 30px;
+  font-size: 13.5px;
+}
+.crew li span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crew small {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* A request, then who worked on it, then the answer */
+.messages {
+  padding: 28px 32px 16px;
+}
+.message {
+  margin-bottom: 30px;
+}
+.message-text {
+  font-size: 15px;
+  line-height: 1.75;
+}
+.message.user {
+  margin-left: 0;
+  width: auto;
+  max-width: none;
+  padding: 12px 15px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  margin-bottom: 18px;
+}
+.message.user .message-text {
+  font-weight: 550;
+}
+.message.user .attach-chips {
+  justify-content: flex-start;
+}
+.message.assistant .message-meta {
+  margin: 0 0 10px;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text);
+}
+.trail {
+  margin: 0 0 12px;
+}
+.trail > summary {
+  list-style: none;
+  cursor: pointer;
+  margin: 0;
+  width: fit-content;
+  max-width: 100%;
+}
+.trail > summary::-webkit-details-marker {
+  display: none;
+}
+.trail > summary::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(-45deg);
+}
+.trail[open] > summary::after {
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+.trail ol,
+.ask-progress ol {
+  list-style: none;
+  margin: 10px 0 0 8px;
+  padding: 0 0 0 14px;
+  border-top: 0;
+  border-left: 2px solid var(--line);
+}
+.trail li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 30px;
+  font-size: 13px;
+}
+.trail-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trail-note {
+  margin-left: auto;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.message-actions {
+  display: flex;
+  gap: 2px;
+  margin-top: 6px;
+  margin-left: -6px;
+}
+
+/* Work in progress: a rail of steps, not a card */
+.ask-progress {
+  margin: 0 0 16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font-size: 13px;
+}
+.ask-headline {
+  padding: 0;
+  font-size: 13.5px;
+}
+.ask-progress li {
+  min-height: 34px;
+  padding: 3px 0;
+}
+.ask-progress li + li {
+  border-top: 0;
+}
+.ask-thought {
+  margin: 8px 0 0 8px;
+  padding: 0 0 0 14px;
+  border-left: 2px solid var(--line);
+}
+.mode-chip {
+  border-radius: 5px;
+  border: 0;
+  background: var(--track);
+  padding: 2px 7px;
+}
+
+/* Composer */
+.composer {
+  border-color: var(--line-strong);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 14px 12px 10px;
+}
+.composer:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--track);
+}
+.composer textarea {
+  font-size: 15px;
+}
+.model-control {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.together-toggle {
+  border-radius: 7px;
+  font-size: 12.5px;
+}
+.send-button {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.send-button:hover {
+  background: var(--accent-strong);
+}
+.send-button:disabled {
+  background: var(--hover);
+  color: var(--muted);
+}
+.composer-footnote {
+  font-size: 11.5px;
+}
+.primary-button {
+  color: var(--bg);
+}
+.account > span:first-child {
+  flex: 1;
+  min-width: 0;
 }

@@ -82,7 +82,7 @@
   "오류": "Error",
   "빈 답": "Empty response",
   "너무 짧은 답": "Response too short",
-  "답이 잘림": "Response truncated",
+  "답이 잘림": "cut off",
   "{model} · {elapsed}초째": "{model} · {elapsed}s elapsed",
   " · 재시도": " · retry",
   " · 느림": " · slow",
@@ -187,5 +187,14 @@
   "{model}이(가) 생각하는 중": "{model} is thinking",
   "답할 모델을 부르는 중": "Calling a model",
   "답을 쓰는 중": "Writing the answer",
-  "답 복사": "Copy answer"
+  "답 복사": "Copy answer",
+  "지금 일할 수 있는 모델 {n}개": "{n} models ready to work",
+  "무료": "free",
+  "풀이": "Solved",
+  "검수": "Checked",
+  "맞다고 봄": "judged right",
+  "틀린 곳을 지적함": "pointed out a mistake",
+  "확신하지 못함": "not sure",
+  "지적을 반영해 다시 풀이": "Solved again with the objection",
+  "질문을 보고 일하는 방식을 정합니다. 양이 많으면 나눠서 동시에 풀고, 틀리기 쉬운 문제는 한 모델이 풀고 다른 모델이 검수합니다.": "The app looks at the question and decides how to work. A lot of work is split and done at once; a problem that is easy to get wrong is solved by one model and checked by another."
 }
