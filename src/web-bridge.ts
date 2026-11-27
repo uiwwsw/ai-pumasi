@@ -127,6 +127,18 @@ export function installWebBridge() {
         save(s);
         return state();
       },
+      add: async (value) => {
+        const r = await providers.addKey(value, {
+          blocked: WEB_BLOCKED,
+          save: async (name: SecretName, v: string) => {
+            const s = load();
+            s.keys[name] = { value: v, savedAt: new Date().toISOString() };
+            save(s);
+            return state();
+          },
+        });
+        return r;
+      },
       remove: async (name) => {
         const s = load();
         delete s.keys[name];

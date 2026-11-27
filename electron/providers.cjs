@@ -556,11 +556,104 @@ async function call(
       ),
   };
 }
+/**
+ * Which provider a pasted key belongs to, from its shape. Order matters: "sk-ant-" and "sk-or-"
+ * are more specific than "sk-". Returns a key name, or null when the shape is unknown.
+ */
+function detectKey(value) {
+  const v = String(value ?? "").trim();
+  if (!v || /\s/.test(v) || v.length > 500) return null;
+  if (v.startsWith("sk-ant-")) return "ANTHROPIC_API_KEY";
+  if (v.startsWith("sk-or-")) return "OPENROUTER_API_KEY";
+  if (v.startsWith("gsk_")) return "GROQ_API_KEY";
+  if (v.startsWith("nvapi-")) return "NVIDIA_API_KEY";
+  if (v.startsWith("AIza")) return "GEMINI_API_KEY";
+  if (v.startsWith("sk-")) return "OPENAI_API_KEY";
+  return null;
+}
+// A cheap request that only succeeds with a valid key. Listing models costs no tokens.
+const VERIFY = {
+  OPENAI_API_KEY: (k) => ["https://api.openai.com/v1/models", { Authorization: `Bearer ${k}` }],
+  ANTHROPIC_API_KEY: (k) => [
+    "https://api.anthropic.com/v1/models",
+    {
+      "x-api-key": k,
+      "anthropic-version": "2023-06-01",
+      ...(typeof window !== "undefined"
+        ? { "anthropic-dangerous-direct-browser-access": "true" }
+        : {}),
+    },
+  ],
+  GEMINI_API_KEY: (k) => [
+    "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1",
+    { "x-goog-api-key": k },
+  ],
+  GROQ_API_KEY: (k) => ["https://api.groq.com/openai/v1/models", { Authorization: `Bearer ${k}` }],
+  OPENROUTER_API_KEY: (k) => ["https://openrouter.ai/api/v1/key", { Authorization: `Bearer ${k}` }],
+  // NVIDIA's model list answers without a key, so it cannot tell a good key from a bad one.
+};
+/**
+ * Check a key with the provider before saving it. Resolves to "ok", "rejected" (the provider said
+ * the key is wrong) or "unknown" (no answer: offline, blocked, or the provider does not check).
+ */
+async function verifyKey(name, value, fetchImpl = fetch) {
+  const make = VERIFY[name];
+  if (!make) return "unknown";
+  const [url, headers] = make(String(value).trim());
+  try {
+    const r = await fetchImpl(url, {
+      headers,
+      redirect: "error",
+      signal: AbortSignal.timeout(15000),
+    });
+    if (r.ok) return "ok";
+    if (r.status === 401 || r.status === 403) return "rejected";
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+const KEY_LABELS = {
+  OPENAI_API_KEY: "OpenAI",
+  ANTHROPIC_API_KEY: "Anthropic",
+  GEMINI_API_KEY: "Google Gemini",
+  GROQ_API_KEY: "Groq",
+  OPENROUTER_API_KEY: "OpenRouter",
+  NVIDIA_API_KEY: "NVIDIA",
+};
+/**
+ * One paste box for every provider: work out whose key it is, check it with that provider, then
+ * save it. `save(name, value)` stores it and returns the new key state. Keys in `blocked` cannot
+ * be used in this version (NVIDIA on the web). Never puts the key itself in an error.
+ */
+async function addKey(value, { save, fetchImpl = fetch, blocked = [] }) {
+  const v = String(value ?? "").trim();
+  const name = detectKey(v);
+  if (!name)
+    throw new Error(
+      tr("어느 회사 키인지 알아보지 못했습니다. 키를 그대로 복사해 붙여 넣었는지 확인해 주세요."),
+    );
+  const provider = KEY_LABELS[name];
+  if (blocked.includes(name))
+    throw new Error(
+      tr("{provider} 키는 여기서 쓸 수 없습니다. 같은 모델을 OpenRouter 키로 쓸 수 있습니다.", { provider }),
+    );
+  const check = await verifyKey(name, v, fetchImpl);
+  if (check === "rejected")
+    throw new Error(tr("{provider}가 이 키를 받지 않았습니다. 키를 다시 확인해 주세요.", { provider }));
+  const state = await save(name, v);
+  return { name, provider, check, state };
+}
+
 module.exports = {
+  addKey,
   request,
   status,
   validate,
   substituted,
   router,
   autoCandidates,
+  detectKey,
+  verifyKey,
 };
