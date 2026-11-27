@@ -1532,6 +1532,22 @@ html[data-theme="dark"] .composer {
   opacity: 0.55;
   cursor: not-allowed;
 }
+.desktop-only {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+  padding: 4px 0 8px;
+}
+.desktop-only p {
+  margin: 0;
+  line-height: 1.6;
+}
+.desktop-only a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
 
 /* Code mode */
 .code-workspace {
