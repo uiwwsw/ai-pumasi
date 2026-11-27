@@ -12,24 +12,27 @@ const exchange = (seen: any[]) => async (url: string, init: any) => {
 test("sign-in: the browser comes back with the code and the app keeps the key", async () => {
   const seen: any[] = [];
   let auth = "";
-  const login = startLogin({
+  let login: any;
+  login = startLogin({
     fetchImpl: exchange(seen),
     open: async (url: string) => {
       auth = url;
       const u = new URL(url);
       // The approval screen names the app after this address, so it is our site, not localhost.
       assert.equal(u.searchParams.get("callback_url"), "https://pumasi-agent.vercel.app/desktop-login/");
-      // The return page sends the browser on to the port carried at the end of state.
       const state = u.searchParams.get("state")!;
-      const back = { port: state.slice(state.lastIndexOf(".") + 1) };
-      assert.match(back.port, /^\d+$/);
-      // A callback that does not carry our state is refused and does not end the sign-in.
-      const wrong = await fetch(`http://127.0.0.1:${back.port}/callback?code=c&state=nope`);
-      assert.equal(wrong.status, 400);
-      const ok = await fetch(
-        `http://127.0.0.1:${back.port}/callback?code=one-time&state=${state}`,
-      );
-      assert.match(await ok.text(), /Pumasi Agent/);
+      // No port rides in state any more: the return page opens the app's own link.
+      assert.match(state, /^[\w-]+$/);
+      // Links that are not ours, or carry another state, are ignored and do not end the sign-in.
+      assert.equal(login.receive("https://evil.example/openrouter?code=c&state=" + state), false);
+      assert.equal(login.receive("pumasi-agent://other?code=c&state=" + state), false);
+      assert.equal(login.receive("pumasi-agent://openrouter?code=c&state=nope"), false);
+      assert.equal(login.receive("not a url"), false);
+      queueMicrotask(() => {
+        assert.equal(login.receive(`pumasi-agent://openrouter?code=one-time&state=${state}`), true);
+        // The same link arriving twice is not exchanged twice.
+        assert.equal(login.receive(`pumasi-agent://openrouter?code=one-time&state=${state}`), false);
+      });
     },
   });
   assert.equal(await login.promise, "sk-or-v1-from-login");
@@ -52,4 +55,15 @@ test("sign-in can be cancelled and times out", async () => {
   await assert.rejects(a.promise, /취소/);
   const b = startLogin({ open: async () => {}, waitMs: 30 });
   await assert.rejects(b.promise, /시간이 지났습니다/);
+});
+
+test("a link without a code ends the sign-in as cancelled", async () => {
+  let login: any;
+  login = startLogin({
+    open: async (url: string) => {
+      const state = new URL(url).searchParams.get("state");
+      queueMicrotask(() => login.receive(`pumasi-agent://openrouter?state=${state}`));
+    },
+  });
+  await assert.rejects(login.promise, /취소/);
 });

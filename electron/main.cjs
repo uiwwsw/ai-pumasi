@@ -70,13 +70,27 @@ function createWindow() {
   win.webContents.on("will-navigate", (event) => event.preventDefault());
   win.loadURL("aurora://app/index.html");
 }
+// pumasi-agent:// links open this app; the OpenRouter sign-in comes back through one.
+const LINK_SCHEME = require("./openrouter-login.cjs").SCHEME;
+if (app.isPackaged) app.setAsDefaultProtocolClient(LINK_SCHEME);
+else if (process.argv[1])
+  app.setAsDefaultProtocolClient(LINK_SCHEME, process.execPath, [path.resolve(process.argv[1])]);
+let orLogin = null;
+const takeLink = (link) => orLogin?.receive(link);
+// macOS hands the link to the running app; Windows starts a second copy with the link in argv.
+app.on("open-url", (event, link) => {
+  event.preventDefault();
+  takeLink(link);
+});
 const ownsInstance = app.requestSingleInstanceLock();
 if (!ownsInstance) app.quit();
 else
   app.whenReady().then(() => {
     // Dialogs before the window loads follow the system language; the window then sets its choice.
     require("./i18n.cjs").setLang(/^ko\b/i.test(app.getLocale()) ? "ko" : "en");
-    app.on("second-instance", () => {
+    app.on("second-instance", (_event, argv) => {
+      const link = argv.find((a) => a.startsWith(`${LINK_SCHEME}://`));
+      if (link) takeLink(link);
       const current = BrowserWindow.getAllWindows()[0];
       if (current) {
         if (current.isMinimized()) current.restore();
@@ -129,20 +143,22 @@ else
       }
     });
     // "Start with OpenRouter": sign in on openrouter.ai and keep the key it gives back.
-    let orLogin = null;
     ipcMain.handle("aurora:openrouter-login", async (event) => {
       if (!authorized(event)) throw forbiddenError();
       orLogin?.cancel();
-      orLogin = require("./openrouter-login.cjs").startLogin({
+      const login = require("./openrouter-login.cjs").startLogin({
         open: (url) => shell.openExternal(url),
       });
+      orLogin = login;
       try {
-        const key = await orLogin.promise;
+        const key = await login.promise;
+        BrowserWindow.fromWebContents(event.sender)?.focus();
         return secrets.set("OPENROUTER_API_KEY", key);
       } catch (error) {
         throw new Error(redact(error?.message ?? String(error), secrets.env()));
       } finally {
-        orLogin = null;
+        // A newer sign-in may have replaced this one; leave that one in place.
+        if (orLogin === login) orLogin = null;
       }
     });
     ipcMain.handle("aurora:openrouter-cancel", (event) => {

@@ -52,3 +52,7 @@ publish:
 # Always write latest*.yml, also for alpha and beta builds. The updater picks the release by tag
 # (see electron/updates.cjs) and reads latest*.yml from it.
 detectUpdateChannel: false
+# The OpenRouter sign-in comes back to the app through a pumasi-agent:// link.
+protocols:
+  - name: Pumasi Agent
+    schemes: [pumasi-agent]
