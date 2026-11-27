@@ -193,6 +193,11 @@ export function SecretSettings({
           <strong>{row.label}</strong>
           <small>{row.gives}</small>
           <small className={saved?.set ? "on" : ""}>{label}</small>
+          {state?.unusable?.includes(row.name) && (
+            <small className="secret-note">
+              {t("웹에서는 NVIDIA가 브라우저 호출을 막아 이 키를 쓸 수 없습니다. 같은 Nemotron 모델을 OpenRouter 키로 쓸 수 있습니다.")}
+            </small>
+          )}
         </div>
         {editing === row.name ? (
           <form
@@ -273,9 +278,13 @@ export function SecretSettings({
     <section className="secret-settings" aria-label={t("API 키")}>
       <h3>{t("API 키")}</h3>
       <p className="small-copy">
-        {t(
-          "키는 이 기기의 키체인으로 암호화해 저장하고, 모델을 부를 때만 앱 내부에서 꺼내 씁니다.",
-        )}{" "}
+        {state?.browser
+          ? t(
+              "웹에서는 키를 이 브라우저에만 저장합니다. 우리 서버로는 보내지 않고, 질문할 때 브라우저에서 각 회사로 바로 보냅니다. 운영체제 키체인으로 암호화하지는 않으니 공용 컴퓨터에서는 쓰지 마세요.",
+            )
+          : t(
+              "키는 이 기기의 키체인으로 암호화해 저장하고, 모델을 부를 때만 앱 내부에서 꺼내 씁니다.",
+            )}{" "}
         {t(
           "저장한 키는 화면에 다시 보이지 않고, 모델에게 보내는 글이나 기록에도 들어가지 않습니다.",
         )}

@@ -111,10 +111,10 @@
   "\n주의: {warning}": "\nNote: {warning}",
   "\n주의: {requested} 대신 {servedBy}가 답했습니다.": "\nNote: {requested} answered by {servedBy} instead",
   "{text}\n\n—\n팀 모드 · 총괄 {lead} 입력 {leadIn} / 출력 {leadOut} · 작업 {workers} 입력 {workerIn} / 출력 {workerOut} 토큰 · 작업 {taskCount}개 · {rounds}회차{pumasi}{approved}{failed}{incomplete}{warning}{substitutions}": "{text}\n\n—\nTeam mode · lead {lead} input {leadIn} / output {leadOut} · workers {workers} input {workerIn} / output {workerOut} tokens · {taskCount} tasks · {rounds} rounds{pumasi}{approved}{failed}{incomplete}{warning}{substitutions}",
-  "품앗이": "Pumasi",
-  "팀 모드 · 품앗이 {done}/{total} 완료 · 돕는 중 {working} · 기다리는 자리 {open}": "Team mode · Pumasi {done}/{total} done · {working} helping · {open} waiting for a helper",
-  " · 품앗이로 받은 작업 {count}개": " · {count} tasks from Pumasi",
-  "품앗이에 맡기기": "Hand tasks to Pumasi",
+  "Pitch in": "Pitch in",
+  "팀 모드 · Pitch in {done}/{total} 완료 · 돕는 중 {working} · 기다리는 자리 {open}": "Team mode · Pitch in {done}/{total} done · {working} helping · {open} waiting for a helper",
+  " · Pitch in으로 받은 작업 {count}개": " · {count} tasks from Pitch in",
+  "Pitch in에 맡기기": "Hand tasks to Pitch in",
   "팀 모드의 작업을 다른 사람의 앱이 그 사람의 키로 처리합니다. 5분 안에 아무도 돕지 않은 작업은 내 작업 모델이 합니다. 작업 글은 모르는 사람의 AI가 읽으니 개인 정보는 넣지 마세요.": "Other people's apps do team-mode tasks with their own keys. A task nobody takes within 5 minutes goes to your worker model. A stranger's AI reads the task, so leave out personal information.",
   "작업당 돕는 사람": "Helpers per task",
   "2명 이상이면 두 결과를 비교해 더 나은 쪽을 씁니다. 엉터리 결과를 거르는 데 필요합니다.": "With two or more, the results are compared and the better one is used. This filters out bad results.",
@@ -143,5 +143,6 @@
   "첨부는 한 질문에 모두 합쳐 40만 자까지입니다.": "Attachments on one question can total up to 400,000 characters.",
   "{name} 빼기": "Remove {name}",
   "파일 붙이기": "Attach files",
-  "텍스트 파일을 붙입니다. 코드, 문서, 로그, CSV 등": "Attach text files: code, documents, logs, CSV and so on"
+  "텍스트 파일을 붙입니다. 코드, 문서, 로그, CSV 등": "Attach text files: code, documents, logs, CSV and so on",
+  "Pitch in은 설치 앱에서 쓸 수 있습니다.": "Pitch in needs the desktop app."
 }

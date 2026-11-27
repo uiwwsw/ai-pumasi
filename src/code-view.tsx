@@ -507,10 +507,10 @@ export function CodeWorkspace() {
                   type="button"
                   className="together-toggle"
                   disabled
-                  title={t("코드 모드에서는 아직 함께하기를 쓸 수 없습니다.")}
+                  title={t("코드 모드에서는 아직 Pitch in을 쓸 수 없습니다.")}
                 >
                   <Users size={14} />
-                  {t("함께하기")}
+                  {t("Pitch in")}
                 </button>
                 {busy ? (
                   <button className="send-button" aria-label={t("중지")} onClick={() => void code.stop()}>

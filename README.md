@@ -72,13 +72,11 @@ Built and shipped one at a time, in this order.
 4. **Pitch in with people.** A person takes a role the lead hands out and works on it until the answer is right. Also: report and block bad results, and open sign-up.
 5. **Pitch in for code mode.** Text file attachments are in. Bundle vote (several models answer, then vote) is gone: it never scored higher than Nemotron Super alone and cost several times the tokens.
 
-## Install
+## Use it
 
-| Platform | Installer |
-| --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-windows-x64.exe) |
+**On the web:** [pumasi-agent.vercel.app/app](https://pumasi-agent.vercel.app/app/). Chat and team mode, with your own keys. Keys are stored in that browser only and your questions go from the browser straight to each provider, never through our server. NVIDIA blocks calls from web pages, so on the web the Nemotron models run through an OpenRouter key. Code mode and Pitch in need the desktop app.
+
+**Desktop (macOS, Windows):** [yatko.app/uiwwsw/pumasi-agent](https://yatko.app/uiwwsw/pumasi-agent) picks the installer for your computer from the latest release. Every version and file is on the [releases page](https://github.com/uiwwsw/pumasi-agent/releases).
 
 Beta builds, with new features first, are on the [releases page](https://github.com/uiwwsw/pumasi-agent/releases). An installed app can switch under Help → Update channel.
 

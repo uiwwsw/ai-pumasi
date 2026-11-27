@@ -114,18 +114,9 @@ button:hover {
   letter-spacing: -0.6px;
 }
 .brand-mark {
-  position: relative;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 28px;
-  width: 24px;
-  color: var(--accent);
-}
-.brand-mark span {
-  position: absolute;
-  font-size: 13px;
-  right: -6px;
-  top: 0;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
   color: var(--accent);
 }
 .brand > .icon-button {
@@ -1942,5 +1933,11 @@ html[data-theme="dark"] .code-error {
   color: var(--text);
 }
 .attach-button {
+  color: var(--muted);
+}
+.secret-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
   color: var(--muted);
 }

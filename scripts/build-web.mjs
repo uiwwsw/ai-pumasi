@@ -3,17 +3,21 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 export const origin = "https://pumasi-agent.vercel.app";
-const release = "https://github.com/uiwwsw/pumasi-agent/releases/tag/v0.1.10";
+// One download link for everyone: yatko.app picks the installer for the visitor's platform from the
+// latest GitHub release (public/download.js narrows it to this computer). All versions: GitHub.
+const download = "https://yatko.app/uiwwsw/pumasi-agent";
+const release = "https://github.com/uiwwsw/pumasi-agent/releases";
 const repo = "https://github.com/uiwwsw/pumasi-agent";
 const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
 const translations = {
   "ko": {
-    "title": "품앗이 에이전트 Pumasi Agent — 무료 AI가 팀으로 일하는 데스크톱 앱",
-    "description": "품앗이 에이전트(Pumasi Agent)는 리더 모델이 일을 나누고 무료 모델이 처리하는 macOS·Windows 데스크톱 앱입니다. 손이 더 필요하면 다른 사용자가 자기 무료 키로 작업을 거들어 줍니다.",
+    "title": "Pumasi Agent — 무료 AI가 팀으로 일하는 앱",
+    "description": "Pumasi Agent는 리더 모델이 일을 나누고 무료 모델이 처리하는 앱입니다. 웹에서 바로 쓰거나 macOS·Windows에 설치합니다. 손이 더 필요하면 다른 사용자가 자기 무료 키로 작업을 거들어 줍니다.",
     "heading": "무료 AI가 팀으로 일합니다.",
-    "intro": "품앗이 에이전트(Pumasi Agent)는 요청을 작업 여러 개로 나눕니다. 리더 모델이 계획하고 승인하며 작업은 무료 모델이 합니다. 품앗이를 켜면 다른 사용자가 자기 무료 키로 작업 하나를 대신 처리해 주고, 작업 글과 결과는 암호화되어 서버도 돕는 사람도 읽을 수 없습니다. 무료 한도에 걸리면 다음 제공자로 넘어갑니다. 이 페이지의 웹 데모는 외부 AI 호출 없이 로컬 미리보기로 동작합니다.",
-    "demo": "데모로 돌아가기",
+    "intro": "Pumasi Agent는 요청을 작업 여러 개로 나눕니다. 리더 모델이 계획하고 승인하며 작업은 무료 모델이 합니다. Pitch in을 켜면 다른 사용자가 자기 무료 키로 작업 하나를 대신 처리해 주고, 작업 글과 결과는 암호화되어 서버도 돕는 사람도 읽을 수 없습니다. 무료 한도에 걸리면 다음 제공자로 넘어갑니다. 이 페이지의 웹에서도 바로 쓸 수 있고, 키는 그 브라우저에만 저장됩니다.",
+    "demo": "웹에서 쓰기",
+    "allDownloads": "다른 버전·전체 목록 (GitHub)",
     "overview": "제품 소개",
     "download": "데스크톱 다운로드",
     "language": "English",
@@ -38,8 +42,8 @@ const translations = {
     ],
     "questions": [
       [
-        "웹 데모에서 실제 AI를 호출하나요?",
-        "아니요. 웹은 화면과 흐름을 체험하는 로컬 미리보기입니다. 실제 AI 연결은 설치 앱의 설정에서 키를 넣어 씁니다."
+        "웹과 설치 앱은 무엇이 다른가요?",
+        "웹에서도 채팅과 팀 모드를 그대로 씁니다. 설정에 넣은 키는 그 브라우저에만 저장되고, 질문은 브라우저에서 각 AI 회사로 바로 갑니다. 우리 서버는 거치지 않습니다. NVIDIA는 브라우저 호출을 막아서, 웹에서는 같은 Nemotron 모델을 OpenRouter 키로 씁니다. 코드 모드(폴더의 파일 읽고 고치기)와 Pitch in은 설치 앱에서만 됩니다."
       ],
       [
         "정말 무료 모델로 충분한가요?",
@@ -51,30 +55,31 @@ const translations = {
       ],
       [
         "대화는 어디에 저장되나요?",
-        "대화 저장은 기본 꺼짐입니다. 켜면 현재 기기에만 기록합니다. 웹 미리보기는 AI 제공자에게 대화를 보내지 않습니다."
+        "대화 저장은 기본 꺼짐입니다. 켜면 현재 기기에만 기록합니다. 웹에서는 그 브라우저에 저장합니다."
       ],
       [
         "설치 앱 업데이트와 보안 경고는 어떻게 되나요?",
         "macOS 설치 파일은 Developer ID 서명과 Apple 공증을 거쳤고 자동 업데이트를 지원합니다. Windows 설치 파일은 개발자 인증서로 서명하지 않아 처음 실행할 때 보안 확인이 나타날 수 있습니다. 0.1.8까지 Aurora라는 이름으로 쓰던 대화와 설정은 그대로 이어집니다."
       ]
     ],
-    "featureTitle": "품앗이 에이전트에서 할 수 있는 일",
+    "featureTitle": "Pumasi Agent에서 할 수 있는 일",
     "faq": "자주 묻는 질문",
     "limitations": "개발 프리뷰의 범위",
-    "limitation": "0.2.0 베타에는 코드 모드가 들어 있습니다. 연 폴더의 파일을 읽고, 승인한 뒤에만 고치거나 명령을 실행합니다. 안정 버전 0.1.10은 텍스트로만 답합니다. 함께하기는 미리보기 동안 초대제입니다. 개인이 만드는 개발 프리뷰이며, 측정 결과는 공개한 시험에 대한 것입니다.",
-    "browser": "브라우저 데모 · 외부 AI 호출 없음",
-    "open": "웹 데모 열기",
+    "limitation": "0.2.0 베타에는 코드 모드가 들어 있습니다. 연 폴더의 파일을 읽고, 승인한 뒤에만 고치거나 명령을 실행합니다. 안정 버전 0.1.10은 텍스트로만 답합니다. Pitch in은 미리보기 동안 초대제입니다. 개인이 만드는 개발 프리뷰이며, 측정 결과는 공개한 시험에 대한 것입니다.",
+    "browser": "웹에서 쓰기 · 키는 이 브라우저에만",
+    "open": "웹에서 바로 쓰기",
     "source": "소스와 문서",
     "guide": "영어 README",
     "links": "설치 파일 · 변경 기록 · MIT 라이선스",
-    "nojs": "JavaScript를 켜면 상단에서 대화형 데모를 사용할 수 있습니다. 아래 제품 소개와 다운로드 링크는 JavaScript 없이도 읽을 수 있습니다."
+    "nojs": "웹 버전은 JavaScript가 필요합니다. 설치 앱은 아래 다운로드 링크에서 받을 수 있습니다."
   },
   "en": {
     "title": "Pumasi Agent: free AI models, working as a team",
-    "description": "Pumasi Agent is a macOS and Windows app where a lead model splits the job and free models do the work. When you need more hands, other users can take a task with their own free keys. A free model you can run here outscored ChatGPT's free tier on three program-graded exams.",
+    "description": "Pumasi Agent is an app, on the web or installed on macOS and Windows, where a lead model splits the job and free models do the work. When you need more hands, other users can take a task with their own free keys. A free model you can run here outscored ChatGPT's free tier on three program-graded exams.",
     "heading": "Free AI models, working as a team.",
-    "intro": "Pumasi Agent splits a request into tasks. A lead model plans and signs off, free models do the work, and with Pumasi other users can take a task off your hands with their own free keys, sealed so that neither the relay nor the helper can read it. When a free tier runs dry, the request moves to the next provider. The browser demo on this page runs locally and calls no AI.",
-    "demo": "Open demo",
+    "intro": "Pumasi Agent splits a request into tasks. A lead model plans and signs off, free models do the work, and with Pumasi other users can take a task off your hands with their own free keys, sealed so that neither the relay nor the helper can read it. When a free tier runs dry, the request moves to the next provider. You can use it on the web too; your keys stay in that browser.",
+    "demo": "Use on the web",
+    "allDownloads": "Other versions (GitHub)",
     "overview": "Overview",
     "download": "Download desktop app",
     "language": "한국어",
@@ -99,8 +104,8 @@ const translations = {
     ],
     "questions": [
       [
-        "Does the browser demo call an AI provider?",
-        "No. It is a local preview of the interface. Real calls use keys you add in the desktop app."
+        "How is the web version different from the desktop app?",
+        "Chat and team mode work the same. Keys you add are stored in that browser only, and your questions go from the browser straight to each AI provider, never through our server. NVIDIA blocks calls from web pages, so on the web the same Nemotron models run through an OpenRouter key. Code mode (reading and editing files in a folder) and Pitch in need the desktop app."
       ],
       [
         "Are free models really enough?",
@@ -123,28 +128,28 @@ const translations = {
     "faq": "Frequently asked questions",
     "limitations": "Developer preview limitations",
     "limitation": "The 0.2.0 beta adds code mode: it reads files in a folder you open and edits them or runs commands only after you approve. Stable 0.1.10 answers in text only. Pitch in is invite-only during the preview. Built by one person; the measurements cover the published exams only.",
-    "browser": "Local browser demo · No external AI calls",
-    "open": "Open demo",
+    "browser": "Use it on the web · keys stay in this browser",
+    "open": "Use it on the web",
     "source": "Source and documentation",
     "guide": "English README",
     "links": "Installers · Changelog · MIT license",
-    "nojs": "Enable JavaScript to use the interactive demo. Product information and downloads remain accessible without it."
+    "nojs": "The web version needs JavaScript. The desktop app is in the downloads below."
   }
 };
-// English is the main page (with the live demo) at "/"; Korean lives at "/ko/".
+// English is the main page at "/"; Korean lives at "/ko/". The app itself is at "/app/".
 const MAIN = "en";
 const pathOf = (lang) => (lang === MAIN ? "/" : `/${lang}/`);
 const escape = (s) =>
   s.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 function landingHero(lang) {
   const en = lang === "en";
-  return `<section class="landing-hero" aria-label="${en ? "Meet Pumasi Agent" : "품앗이 에이전트 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> PUMASI AGENT · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Free AI models,<br>working as a team." : "무료 AI가<br>팀으로 일합니다."}</p><p class="hero-description">${en ? "A lead splits the job, free models do it.<br>Other users can lend a hand." : "리더가 일을 나누고 무료 모델이 처리합니다.<br>다른 사용자가 손을 보탤 수도 있습니다."}</p><div class="hero-actions"><a class="hero-primary" href="${release}"><span aria-hidden="true">↓</span> ${en ? "Download Pumasi Agent" : "품앗이 에이전트 다운로드"}</a><a class="hero-secondary" href="${lang === MAIN ? "#root" : "/#root"}">${en ? "Try the demo" : "웹 데모 체험하기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">macOS · Windows <span> / </span> ${en ? "Local web preview · no AI API calls" : "웹은 외부 AI 호출 없는 로컬 미리보기"}</p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Ask once" : "한 번 요청하면"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "The lead splits it into tasks" : "리더가 작업을 나누고"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Free models, or other users, do them" : "무료 모델이나 다른 사용자가 처리합니다"}</span></div><a class="hero-scroll" href="${lang === MAIN ? "#root" : "#overview"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
+  return `<section class="landing-hero" aria-label="${en ? "Meet Pumasi Agent" : "Pumasi Agent 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> PUMASI AGENT · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Free AI models,<br>working as a team." : "무료 AI가<br>팀으로 일합니다."}</p><p class="hero-description">${en ? "A lead splits the job, free models do it.<br>Other users can lend a hand." : "리더가 일을 나누고 무료 모델이 처리합니다.<br>다른 사용자가 손을 보탤 수도 있습니다."}</p><div class="hero-actions"><a class="hero-primary" data-download href="${download}"><span aria-hidden="true">↓</span> ${en ? "Download Pumasi Agent" : "Pumasi Agent 다운로드"}</a><a class="hero-secondary" href="/app/">${en ? "Use it on the web" : "웹에서 바로 쓰기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">${en ? "Web" : "웹"} · macOS · Windows <span> / </span> ${en ? "Your keys, straight from your browser to each provider" : "키는 내 브라우저에서 각 회사로 바로 갑니다"} <span> / </span> <a href="${release}">${en ? "Other versions" : "다른 버전"}</a></p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Ask once" : "한 번 요청하면"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "The lead splits it into tasks" : "리더가 작업을 나누고"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Free models, or other users, do them" : "무료 모델이나 다른 사용자가 처리합니다"}</span></div><a class="hero-scroll" href="${lang === MAIN ? "#root" : "#overview"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
 }
 const styles = `@font-face{font-family:SUITE;src:url('/fonts/SUITE-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}html{scroll-behavior:smooth}body{margin:0;color:#34342f;background:#faf9f6;font-family:SUITE,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}button,input,select,textarea{font:inherit}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,SUITE,monospace}.site-nav{height:52px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #e8e6df;background:#faf9f6}.site-nav nav{display:flex;gap:20px}.site-nav a,.site-content a,.site-footer a{color:#48684c;text-underline-offset:4px}.site-brand{font-weight:750;text-decoration:none}.site-content{max-width:1000px;margin:auto;padding:76px 28px;line-height:1.85}.site-content h1,.site-content h2{line-height:1.3;letter-spacing:-.035em}.site-content h1,.site-content>.site-hero h2{font-size:clamp(30px,4vw,48px);max-width:840px;margin:20px 0}.site-content h2{margin:54px 0 24px;font-size:28px}.site-content h3{font-size:20px;margin:0 0 12px}.site-lead{max-width:800px;color:#65665c;font-size:18px}.site-eyebrow{color:#607b64;font-size:13px;letter-spacing:.08em}.site-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.site-actions a{padding:10px 18px;border:1px solid #cdd7c7;border-radius:9px;text-decoration:none}.site-actions a:first-child{background:#607b64;color:#fff}.site-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.site-card,.site-limit{border:1px solid #e8e6df;border-radius:16px;padding:26px;background:#fffefa}.site-card p{margin:0;color:#65665c}.site-content details{border-bottom:1px solid #e8e6df;padding:18px 0}.site-content summary{cursor:pointer;font-weight:650}.site-content details p{color:#65665c}.site-footer{padding:24px 28px;border-top:1px solid #e8e6df;text-align:center;font-size:14px}.site-skip{position:absolute;left:20px;top:-100px;background:#fff;padding:12px;z-index:20}.site-skip:focus{top:5px}.site-notice{padding:16px 28px;color:#65665c}.site-web-demo .app{height:calc(100dvh - 52px)}.site-web-demo .site-content{border-top:1px solid #e8e6df}@media(max-width:680px){.site-nav{padding:0 16px;font-size:13px}.site-nav nav{gap:12px}.site-nav .site-source{display:none}.site-content{padding:48px 20px}.site-grid{grid-template-columns:1fr}.site-content h2{font-size:25px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}`;
 function body(lang) {
   const t = translations[lang];
   const tag = lang === MAIN ? "h2" : "h1";
-  return `<article class="site-content" id="overview" aria-label="${t.overview}"><header class="site-hero"><p class="site-eyebrow">PUMASI AGENT · DEVELOPER PREVIEW</p><${tag}>${t.heading}</${tag}><p class="site-lead">${t.intro}</p><div class="site-actions"><a href="${lang === MAIN ? "#root" : "/"}">${t.open}</a><a href="${release}">${t.download}</a><a href="${repo}/blob/main/README.md">${t.guide}</a></div></header><section><h2>${t.featureTitle}</h2><div class="site-grid">${t.features.map(([h, p]) => `<section class="site-card"><h3>${h}</h3><p>${p}</p></section>`).join("")}</div></section><section><h2>${t.faq}</h2>${t.questions.map(([q, a]) => `<details open><summary>${q}</summary><p>${a}</p></details>`).join("")}</section><section class="site-limit"><h2>${t.limitations}</h2><p>${t.limitation}</p><a href="${release}">${t.links}</a></section></article>`;
+  return `<article class="site-content" id="overview" aria-label="${t.overview}"><header class="site-hero"><p class="site-eyebrow">PUMASI AGENT · DEVELOPER PREVIEW</p><${tag}>${t.heading}</${tag}><p class="site-lead">${t.intro}</p><div class="site-actions"><a href="/app/">${t.open}</a><a data-download href="${download}">${t.download}</a><a href="${release}">${t.allDownloads}</a><a href="${repo}/blob/main/README.md">${t.guide}</a></div></header><section><h2>${t.featureTitle}</h2><div class="site-grid">${t.features.map(([h, p]) => `<section class="site-card"><h3>${h}</h3><p>${p}</p></section>`).join("")}</div></section><section><h2>${t.faq}</h2>${t.questions.map(([q, a]) => `<details open><summary>${q}</summary><p>${a}</p></details>`).join("")}</section><section class="site-limit"><h2>${t.limitations}</h2><p>${t.limitation}</p><a href="${release}">${t.links}</a></section></article>`;
 }
 function head(lang, production) {
   const t = translations[lang];
@@ -154,7 +159,7 @@ function head(lang, production) {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: t.title,
-    alternateName: "품앗이 에이전트",
+    alternateName: "Pumasi Agent",
     url: canonical,
     description: t.description,
     isPartOf: {
@@ -191,12 +196,9 @@ export async function buildWeb({
   ].map((m) => m[0].replaceAll('"./assets/', '"/assets/'));
   for (const lang of ["ko", "en"]) {
     const t = translations[lang];
-    const nav = `<a class="site-skip" href="#overview">${t.overview}</a><header class="site-nav"><a class="site-brand" href="/"><img class="site-brand-icon" src="/favicon.svg" width="28" height="28" alt=""> ${lang === "ko" ? "품앗이 에이전트" : "Pumasi Agent"}</a><nav aria-label="${t.overview}"><a href="${lang === MAIN ? "#overview" : "/"}">${lang === MAIN ? t.overview : t.demo}</a><a class="site-source" href="${repo}">GitHub</a><a href="${t.other}" lang="${lang === "ko" ? "en" : "ko"}" hreflang="${lang === "ko" ? "en" : "ko"}">${t.language}</a></nav></header>`;
-    const demo =
-      lang === MAIN
-        ? `<section class="demo-shell" aria-label="Pumasi Agent web preview"><div class="demo-chrome"><span><i></i><i></i><i></i></span><p>Pumasi Agent <span>/</span> Web preview</p><a href="#overview">${t.overview} ↗</a></div><div id="root"><section class="site-notice"><h1>${t.heading}</h1><p>${t.browser}</p></section></div><noscript><p class="site-notice">${t.nojs}</p></noscript></section>`
-        : "";
-    const html = `<!doctype html><html lang="${lang}"><head>${head(lang, production)}${lang === MAIN ? assets.join("") : ""}<link rel="stylesheet" href="/landing.css"></head><body class="${lang === MAIN ? "site-web-demo" : "site-korean"}">${nav}${landingHero(lang)}${demo}${body(lang)}<footer class="site-footer">Pumasi Agent · <a href="${repo}/blob/main/LICENSE">MIT</a> · <a href="${release}">${t.download}</a></footer></body></html>`;
+    const nav = `<a class="site-skip" href="#overview">${t.overview}</a><header class="site-nav"><a class="site-brand" href="/"><img class="site-brand-icon" src="/favicon.svg" width="28" height="28" alt=""> ${lang === "ko" ? "Pumasi Agent" : "Pumasi Agent"}</a><nav aria-label="${t.overview}"><a href="/app/">${t.demo}</a><a class="site-source" href="${repo}">GitHub</a><a href="${t.other}" lang="${lang === "ko" ? "en" : "ko"}" hreflang="${lang === "ko" ? "en" : "ko"}">${t.language}</a></nav></header>`;
+    const demo = "";
+    const html = `<!doctype html><html lang="${lang}"><head>${head(lang, production)}<link rel="stylesheet" href="/landing.css"><script src="/download.js" defer></script></head><body class="${lang === MAIN ? "site-english" : "site-korean"}">${nav}${landingHero(lang)}${demo}${body(lang)}<footer class="site-footer">Pumasi Agent · <a href="${repo}/blob/main/LICENSE">MIT</a> · <a data-download href="${download}">${t.download}</a> · <a href="${release}">${t.allDownloads}</a></footer></body></html>`;
     const file = path.join(
       outputDir,
       lang === MAIN ? "index.html" : `${lang}/index.html`,
@@ -204,10 +206,18 @@ export async function buildWeb({
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, html);
   }
+  // The web version of the app itself: full screen, its own page. It calls AI providers from the
+  // browser, so only this page may connect out (https, or a server on this computer).
+  const appCsp = `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src https: http://127.0.0.1:* http://localhost:*; object-src 'none'; base-uri 'none'; form-action 'none'`;
+  await mkdir(path.join(outputDir, "app"), { recursive: true });
+  await writeFile(
+    path.join(outputDir, "app", "index.html"),
+    `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="${appCsp}"><title>Pumasi Agent</title><meta name="description" content="Pumasi Agent on the web: free AI models working as a team, with your own keys."><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="theme-color" content="#607b64">${assets.join("")}</head><body><div id="root"></div><noscript>${translations.en.nojs}</noscript></body></html>`,
+  );
   const alternate = `<xhtml:link rel="alternate" hreflang="ko" href="${origin}/ko/"/><xhtml:link rel="alternate" hreflang="en" href="${origin}/"/><xhtml:link rel="alternate" hreflang="x-default" href="${origin}/"/>`;
   await writeFile(
     path.join(outputDir, "sitemap.xml"),
-    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url><loc>${origin}/</loc>${alternate}</url><url><loc>${origin}/ko/</loc>${alternate}</url></urlset>`,
+    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url><loc>${origin}/</loc>${alternate}</url><url><loc>${origin}/ko/</loc>${alternate}</url><url><loc>${origin}/app/</loc></url></urlset>`,
   );
   await writeFile(
     path.join(outputDir, "robots.txt"),
@@ -217,7 +227,7 @@ export async function buildWeb({
   );
   await writeFile(
     path.join(outputDir, "404.html"),
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Page not found — Pumasi Agent</title><style>${styles}</style></head><body><main class="site-content"><h1>Page not found</h1><a href="/">Pumasi Agent demo</a> · <a href="/en/">English overview</a></main></body></html>`,
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Page not found — Pumasi Agent</title><style>${styles}</style></head><body><main class="site-content"><h1>Page not found</h1><a href="/">Pumasi Agent</a> · <a href="/en/">English overview</a></main></body></html>`,
   );
 }
 if (

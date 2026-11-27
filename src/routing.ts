@@ -126,6 +126,10 @@ export type SecretsState = {
     { set: boolean; savedAt?: string | null; stale?: boolean }
   >;
   compatUrl: string;
+  /** Web version: keys live in this browser's storage, not in an OS keychain. */
+  browser?: boolean;
+  /** Keys this version cannot use (a provider that refuses calls from web pages). */
+  unusable?: SecretName[];
 };
 export type Completion = {
   text: string;
