@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-const { runAgent, parseActions } = require("../electron/agent.cjs");
+const { runAgent, parseActions, draftProse } = require("../electron/agent.cjs");
 const { createWorkspace } = require("../electron/workspace.cjs");
 
 test("parseActions reads actions in order and keeps the rest as prose", () => {
@@ -110,4 +110,47 @@ test("the run stops at the step limit", async () => {
   );
   assert.equal(r.steps, 3);
   assert.ok(events.some((e) => e.type === "limit"));
+});
+
+test("a streaming reply shows only its prose, never a file block being written", () => {
+  assert.equal(draftProse("먼저 봅니다.\n<<<READ src/a.js>>>"), "먼저 봅니다.");
+  assert.equal(draftProse("고칩니다.\n<<<FILE src/a.js\nlet a ="), "고칩니다.");
+  assert.equal(draftProse("고칩니다.\n<<<FILE src/a.js\nx\n>>>FILE\n끝."), "고칩니다.\n끝.");
+  // An action line cut off mid-way is hidden too.
+  assert.equal(draftProse("봅니다.\n<<<REA"), "봅니다.");
+});
+
+test("drafts stream while the model writes, and each saved change is remembered for undo", async () => {
+  const { workspace, root } = project();
+  const events: any[] = [];
+  const saved: any[] = [];
+  let n = 0;
+  await runAgent(
+    { text: "x", history: [], model: "auto-free" },
+    {
+      workspace,
+      request: async (_req: any, extra: any) => {
+        n++;
+        if (n === 1) {
+          extra.onDelta("새 파일을 만듭니다.");
+          return { text: "새 파일을 만듭니다.\n<<<FILE src/b.js\nb\n>>>FILE\n<<<FILE src/a.js\nlet a = 3;\n>>>FILE" };
+        }
+        return { text: "끝." };
+      },
+      exec: async () => ({ code: 0, output: "" }),
+      ask: async () => true,
+      emit: (e: any) => events.push(e),
+      saved: (e: any) => saved.push(e),
+    },
+  );
+  assert.equal(events.find((e) => e.type === "draft").text, "새 파일을 만듭니다.");
+  assert.deepEqual(
+    saved.map((e) => [e.path, e.existed, e.before]),
+    [["src/b.js", false, ""], ["src/a.js", true, "let a = 1;\n"]],
+  );
+  assert.equal(fs.readFileSync(path.join(root, "src/b.js"), "utf8"), "b\n");
+  // Undoing a created file removes it; the folder rules still apply.
+  workspace.remove("src/b.js");
+  assert.equal(fs.existsSync(path.join(root, "src/b.js")), false);
+  assert.throws(() => workspace.remove("../outside.js"));
 });

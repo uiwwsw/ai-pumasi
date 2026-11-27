@@ -107,7 +107,9 @@
   "저장할 내용이 너무 깁니다.": "The content is too long to save.",
   "저장할 내용이 올바르지 않습니다.": "The content to save is not valid.",
   "파일이 너무 큽니다 (1MB 초과).": "The file is too large (over 1 MB).",
-  "파일이 아닙니다.": "That is not a file.",
+  "파일이 아닙니다.": "Not a file.",
   "2분이 지나 멈췄습니다.": "Stopped after 2 minutes.",
-  "답할 모델이 없습니다. 설정 → API 키에서 키를 하나 넣으세요. NVIDIA·OpenRouter·Groq·Gemini 키는 무료입니다.": "No model to answer with. Add a key in Settings → API keys. NVIDIA, OpenRouter, Groq and Gemini keys are free."
+  "답할 모델이 없습니다. 설정 → API 키에서 키를 하나 넣으세요. NVIDIA·OpenRouter·Groq·Gemini 키는 무료입니다.": "No model to answer with. Add a key in Settings → API keys. NVIDIA, OpenRouter, Groq and Gemini keys are free.",
+  "되돌릴 변경을 찾지 못했습니다.": "Couldn't find that change to undo.",
+  "저장한 뒤 파일이 바뀌어 되돌리지 않았습니다.": "The file changed after it was saved, so it wasn't undone."
 }

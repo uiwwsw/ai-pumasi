@@ -41,5 +41,14 @@
   "메시지를 입력하세요": "Message",
   "무엇을 도와드릴까요?": "How can I help?",
   "문맥": "Context",
-  "아직 대화가 없습니다.": "No conversations yet."
+  "아직 대화가 없습니다.": "No conversations yet.",
+  "변경 사항": "Changes",
+  "이번 요청에서 나오는 파일 변경을 묻지 않고 저장합니다. 명령은 계속 묻습니다.": "Saves the rest of this request's file changes without asking. Commands still ask.",
+  "이번 요청 모두 저장": "Save all in this request",
+  "되돌리기": "Undo",
+  "되돌렸습니다": "Undone",
+  "자동": "Auto",
+  "git 저장소가 아니거나 git을 찾지 못했습니다.": "Not a git repository, or git wasn't found.",
+  "바뀐 파일이 없습니다.": "No changed files.",
+  "이 파일은 git이 아직 추적하지 않아 비교할 이전 내용이 없습니다.": "Git doesn't track this file yet, so there is no earlier version to compare."
 }

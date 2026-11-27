@@ -36,7 +36,11 @@ contextBridge.exposeInMainWorld("auroraAI", {
     read: (rel) => ipcRenderer.invoke("aurora:code-read", rel),
     // The window cannot write files itself: the agent saves a change only after the user approves it.
     run: (payload) => ipcRenderer.invoke("aurora:agent-run", payload),
-    answer: (id, allow) => ipcRenderer.invoke("aurora:agent-answer", id, allow),
+    answer: (id, allow, all) => ipcRenderer.invoke("aurora:agent-answer", id, allow, all),
+    // Undo a change the agent saved; the main process restores what it kept, the window sends only the id.
+    undo: (id) => ipcRenderer.invoke("aurora:code-undo", id),
+    gitStatus: () => ipcRenderer.invoke("aurora:code-git-status"),
+    gitDiff: (rel) => ipcRenderer.invoke("aurora:code-git-diff", rel),
     stop: () => ipcRenderer.invoke("aurora:agent-stop"),
     onEvent: (fn) => {
       const h = (_e, data) => fn(data);
