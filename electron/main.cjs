@@ -124,6 +124,39 @@ else
         );
       }
     });
+    // "Start with OpenRouter": sign in on openrouter.ai and keep the key it gives back.
+    let orLogin = null;
+    ipcMain.handle("aurora:openrouter-login", async (event) => {
+      if (!authorized(event)) throw forbiddenError();
+      orLogin?.cancel();
+      orLogin = require("./openrouter-login.cjs").startLogin({
+        open: (url) => shell.openExternal(url),
+      });
+      try {
+        const key = await orLogin.promise;
+        return secrets.set("OPENROUTER_API_KEY", key);
+      } catch (error) {
+        throw new Error(redact(error?.message ?? String(error), secrets.env()));
+      } finally {
+        orLogin = null;
+      }
+    });
+    ipcMain.handle("aurora:openrouter-cancel", (event) => {
+      if (!authorized(event)) throw forbiddenError();
+      orLogin?.cancel();
+    });
+    // One paste box: work out the provider, check the key with it, then save it.
+    ipcMain.handle("aurora:secrets-add", async (event, value) => {
+      if (!authorized(event)) throw forbiddenError();
+      try {
+        const r = await providers.addKey(value, { save: async (name, v) => secrets.set(name, v) });
+        return { name: r.name, provider: r.provider, check: r.check, state: r.state };
+      } catch (error) {
+        throw new Error(redact(error?.message ?? tr("저장하지 못했습니다."), {
+            [providers.detectKey(value) ?? "OPENAI_API_KEY"]: String(value ?? ""),
+          }));
+      }
+    });
     ipcMain.handle("aurora:secrets-remove", (event, name) => {
       if (!authorized(event)) throw forbiddenError();
       return secrets.remove(name);

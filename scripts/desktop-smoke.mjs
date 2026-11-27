@@ -40,11 +40,10 @@ try {
   };
   const close = () =>
     page.getByRole("button", { name: "닫기", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "무엇을 도와드릴까요?" }),
-  ).toBeVisible();
-  await page.screenshot({ path: "artifacts/aurora-desktop.png" });
-  // No keys: status says so, and sending explains where to add one. The draft stays.
+  // No keys: the app asks for one instead of offering a message box that cannot answer.
+  await expect(page.getByRole("heading", { name: "API 키를 등록해 주세요" })).toBeVisible();
+  await expect(editor).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "OpenRouter로 시작하기" })).toBeVisible();
   const status = await page.evaluate(() => window.auroraAI.status());
   expect(status).toMatchObject({
     openai: false,
@@ -56,10 +55,12 @@ try {
   });
   expect(Object.values(status.models).every((v) => v === false)).toBe(true);
   expect(Object.values(status.hosts).every((v) => v === false)).toBe(true);
-  await send("키 없이 보내기");
-  await expect(page.getByRole("alert")).toContainText("API 키");
-  await expect(editor).toHaveValue("키 없이 보내기");
-  await expect(page.locator(".message")).toHaveCount(0);
+  // A pasted value that is no provider's key shape is refused before anything is saved or sent.
+  const keyBox = page.getByLabel("API 키", { exact: true });
+  await keyBox.fill("not-a-key");
+  await page.getByRole("button", { name: "등록", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("어느 회사 키인지");
+  await page.screenshot({ path: "artifacts/aurora-key-setup.png" });
   // Settings: keys first, models folded under Advanced with Auto as the default.
   await settings();
   await page.getByText("고급: 모델과 팀").click();
@@ -92,6 +93,9 @@ try {
     });
   });
   await page.reload();
+  // With a key that can answer, the chat is there.
+  await expect(page.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();
+  await page.screenshot({ path: "artifacts/aurora-desktop.png" });
   // Enter sends right away: no confirmation dialog, no model to pick.
   await editor.fill("요약해 줘");
   await editor.press("Enter");
@@ -166,13 +170,15 @@ try {
   await send("여행 요약 레거시 두 번째");
   await expect(page.locator(".message")).toHaveCount(2);
   await expect(page.locator(".chat-item")).toHaveCount(2);
-  await page.getByRole("button", { name: "대화 검색", exact: true }).click();
-  await page.getByLabel("대화 검색어").fill("첫 번째");
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "레거시 첫 번째 코드 작업" })
-    .click();
+  // The search box sits above the list and filters it as you type; ⌘K jumps to it.
+  await page.keyboard.press("ControlOrMeta+k");
+  await expect(page.getByLabel("대화 검색", { exact: true })).toBeFocused();
+  await page.keyboard.type("첫 번째");
+  await expect(page.locator(".chat-item")).toHaveCount(1);
+  await page.locator(".chat-item").first().click();
   await expect(page.getByLabel("대화 내용")).toContainText("레거시 첫 번째 코드 작업");
+  await page.getByLabel("대화 검색", { exact: true }).fill("");
+  await expect(page.locator(".chat-item")).toHaveCount(2);
   await page.screenshot({ path: "artifacts/aurora-legacy.png" });
   await settings();
   await page.getByLabel("대화 관리 모드").selectOption("auto");
@@ -224,7 +230,7 @@ try {
         errors,
         prefs,
         checks: [
-          "missing-key-message",
+          "key-setup-before-chat",
           "enter-sends-without-dialog",
           "answer-streams",
           "text-attachment",

@@ -437,6 +437,9 @@ async function call(
   } else {
     headers["x-api-key"] = key;
     headers["anthropic-version"] = "2023-06-01";
+    // The web version calls Anthropic from the user's own browser with the user's own key.
+    if (typeof window !== "undefined")
+      headers["anthropic-dangerous-direct-browser-access"] = "true";
     body = { model: p.model, system, messages, max_tokens: p.maxOutputTokens };
   }
   // Only a plain answer streams; plans, reviews and votes need the whole JSON at once.
@@ -632,11 +635,156 @@ async function call(
       ),
   };
 }
+/**
+ * Which provider a pasted key belongs to, from its shape. Order matters: "sk-ant-" and "sk-or-"
+ * are more specific than "sk-". Returns a key name, or null when the shape is unknown.
+ */
+function detectKey(value) {
+  const v = String(value ?? "").trim();
+  if (!v || /\s/.test(v) || v.length > 500) return null;
+  if (v.startsWith("sk-ant-")) return "ANTHROPIC_API_KEY";
+  if (v.startsWith("sk-or-")) return "OPENROUTER_API_KEY";
+  if (v.startsWith("gsk_")) return "GROQ_API_KEY";
+  if (v.startsWith("nvapi-")) return "NVIDIA_API_KEY";
+  if (v.startsWith("AIza")) return "GEMINI_API_KEY";
+  if (v.startsWith("sk-")) return "OPENAI_API_KEY";
+  return null;
+}
+// A cheap request that only succeeds with a valid key. Listing models costs no tokens.
+const VERIFY = {
+  OPENAI_API_KEY: (k) => ["https://api.openai.com/v1/models", { Authorization: `Bearer ${k}` }],
+  ANTHROPIC_API_KEY: (k) => [
+    "https://api.anthropic.com/v1/models",
+    {
+      "x-api-key": k,
+      "anthropic-version": "2023-06-01",
+      ...(typeof window !== "undefined"
+        ? { "anthropic-dangerous-direct-browser-access": "true" }
+        : {}),
+    },
+  ],
+  GEMINI_API_KEY: (k) => [
+    "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1",
+    { "x-goog-api-key": k },
+  ],
+  GROQ_API_KEY: (k) => ["https://api.groq.com/openai/v1/models", { Authorization: `Bearer ${k}` }],
+  OPENROUTER_API_KEY: (k) => ["https://openrouter.ai/api/v1/key", { Authorization: `Bearer ${k}` }],
+  // NVIDIA's model list answers without a key, so it cannot tell a good key from a bad one.
+};
+/**
+ * Check a key with the provider before saving it. Resolves to "ok", "rejected" (the provider said
+ * the key is wrong) or "unknown" (no answer: offline, blocked, or the provider does not check).
+ */
+async function verifyKey(name, value, fetchImpl = fetch) {
+  const make = VERIFY[name];
+  if (!make) return "unknown";
+  const [url, headers] = make(String(value).trim());
+  try {
+    const r = await fetchImpl(url, {
+      headers,
+      redirect: "error",
+      signal: AbortSignal.timeout(15000),
+    });
+    if (r.ok) return "ok";
+    if (r.status === 401 || r.status === 403) return "rejected";
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+const KEY_LABELS = {
+  OPENAI_API_KEY: "OpenAI",
+  ANTHROPIC_API_KEY: "Anthropic",
+  GEMINI_API_KEY: "Google Gemini",
+  GROQ_API_KEY: "Groq",
+  OPENROUTER_API_KEY: "OpenRouter",
+  NVIDIA_API_KEY: "NVIDIA",
+};
+/**
+ * One paste box for every provider: work out whose key it is, check it with that provider, then
+ * save it. `save(name, value)` stores it and returns the new key state. Keys in `blocked` cannot
+ * be used in this version (NVIDIA on the web). Never puts the key itself in an error.
+ */
+async function addKey(value, { save, fetchImpl = fetch, blocked = [] }) {
+  const v = String(value ?? "").trim();
+  const name = detectKey(v);
+  if (!name)
+    throw new Error(
+      tr("어느 회사 키인지 알아보지 못했습니다. 키를 그대로 복사해 붙여 넣었는지 확인해 주세요."),
+    );
+  const provider = KEY_LABELS[name];
+  if (blocked.includes(name))
+    throw new Error(
+      tr("{provider} 키는 여기서 쓸 수 없습니다. 같은 모델을 OpenRouter 키로 쓸 수 있습니다.", { provider }),
+    );
+  const check = await verifyKey(name, v, fetchImpl);
+  if (check === "rejected")
+    throw new Error(tr("{provider}가 이 키를 받지 않았습니다. 키를 다시 확인해 주세요.", { provider }));
+  const state = await save(name, v);
+  return { name, provider, check, state };
+}
+
+// "Start with OpenRouter": the user signs in on openrouter.ai and the app gets a key of their own
+// (OAuth PKCE). No client registration; the key belongs to the user's OpenRouter account.
+const b64url = (bytes) =>
+  btoa(String.fromCharCode(...new Uint8Array(bytes)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+/** A fresh verifier, its S256 challenge, and a state value to match the callback. */
+async function openRouterPkce() {
+  const verifier = b64url(globalThis.crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = b64url(
+    await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)),
+  );
+  const state = b64url(globalThis.crypto.getRandomValues(new Uint8Array(16)));
+  return { verifier, challenge, state };
+}
+function openRouterAuthUrl({ callbackUrl, challenge, state }) {
+  const u = new URL("https://openrouter.ai/auth");
+  u.searchParams.set("callback_url", callbackUrl);
+  u.searchParams.set("code_challenge", challenge);
+  u.searchParams.set("code_challenge_method", "S256");
+  u.searchParams.set("state", state);
+  u.searchParams.set("key_label", "Pumasi Agent");
+  return u.href;
+}
+/** Trade the one-time code (valid for 10 minutes) for the user's key. */
+async function openRouterExchange(code, verifier, fetchImpl = fetch) {
+  let r;
+  try {
+    r = await fetchImpl("https://openrouter.ai/api/v1/auth/keys", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, code_verifier: verifier, code_challenge_method: "S256" }),
+      redirect: "error",
+      signal: AbortSignal.timeout(20000),
+    });
+  } catch {
+    throw new Error(tr("OpenRouter에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요."));
+  }
+  if (!r.ok)
+    throw new Error(
+      tr("OpenRouter 로그인을 마치지 못했습니다. 다시 시도해 주세요. (HTTP {status})", { status: r.status }),
+    );
+  const data = await r.json().catch(() => ({}));
+  if (typeof data.key !== "string" || !data.key.trim())
+    throw new Error(tr("OpenRouter가 키를 돌려주지 않았습니다. 다시 시도해 주세요."));
+  return data.key.trim();
+}
+
 module.exports = {
+  openRouterPkce,
+  openRouterAuthUrl,
+  openRouterExchange,
+  addKey,
   request,
   status,
   validate,
   substituted,
   router,
   autoCandidates,
+  detectKey,
+  verifyKey,
 };

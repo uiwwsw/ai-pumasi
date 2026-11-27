@@ -31,7 +31,7 @@
   "종료 코드 {code}": "Exit code {code}",
   "중지": "Stop",
   "중지했습니다.": "Stopped.",
-  "코드 모드에서는 아직 함께하기를 쓸 수 없습니다.": "Pitch in isn't available in code mode yet.",
+  "코드 모드에서는 아직 Pitch in을 쓸 수 없습니다.": "Pitch in isn't available in code mode yet.",
   "파일 패널 전환": "Toggle file panel",
   "파일": "Files",
   "할 일을 적으세요": "Describe the task",

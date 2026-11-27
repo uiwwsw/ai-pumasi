@@ -42,6 +42,7 @@ import {
   readRouting,
   ROUTING_KEY,
   type RoutingSettings,
+  modelReady,
   type ProviderStatus,
   type TeamResult,
   type Completion,
@@ -49,8 +50,12 @@ import {
 import { SecretSettings } from "./secrets";
 import { PumasiPanel } from "./pumasi";
 import { CodeWorkspace } from "./code-view";
+import { KeySetup } from "./key-setup";
 import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import "./style.css";
+import { installWebBridge } from "./web-bridge";
+// In a browser there is no desktop main process: the web version provides the same bridge.
+installWebBridge();
 function readSaved(): Workspace {
   try {
     return restoreWorkspace(
@@ -192,10 +197,15 @@ function App() {
     setAIErrorRaw(
       message.replace(/^Error invoking remote method '[^']+': (Error: )?/, ""),
     );
+  // Until the first status read, nothing is known about keys: don't flash the key setup screen.
+  const [statusLoaded, setStatusLoaded] = useState(false);
   const refreshStatus = () =>
     window.auroraAI
       ?.status()
-      .then(setProviderStatus)
+      .then((s) => {
+        setProviderStatus(s);
+        setStatusLoaded(true);
+      })
       .catch(() => setAIError(t("API 키 설정 상태를 확인하지 못했습니다.")));
   useEffect(() => {
     void refreshStatus();
@@ -237,7 +247,7 @@ function App() {
     return () => media.removeEventListener("change", collapse);
   }, []);
   const [dialog, setDialog] = useState<
-    "search" | "settings" | "pumasi" | null
+    "settings" | "pumasi" | null
   >(null);
   // Chat: questions and answers. Code: work on files in one folder (beta).
   const [appMode, setAppMode] = useState<"chat" | "code">(() => {
@@ -253,7 +263,9 @@ function App() {
       localStorage.setItem("aurora.mode", m);
     } catch {}
   };
+  // The sidebar search box filters the conversation list as you type.
   const [search, setSearch] = useState("");
+  const searchBox = useRef<HTMLInputElement>(null);
   const [filter, setFilter] = useState<"current" | "archived" | "trashed">(
     "current",
   );
@@ -340,7 +352,8 @@ function App() {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setDialog("search");
+        searchBox.current?.focus();
+        searchBox.current?.select();
       }
     };
     window.addEventListener("keydown", listener);
@@ -449,7 +462,7 @@ function App() {
         }
         if (e.stage === "pumasi") {
           setNotice(
-            t("팀 모드 · 품앗이 {done}/{total} 완료 · 돕는 중 {working} · 기다리는 자리 {open}", e),
+            t("팀 모드 · Pitch in {done}/{total} 완료 · 돕는 중 {working} · 기다리는 자리 {open}", e),
           );
           return;
         }
@@ -503,7 +516,7 @@ function App() {
               taskCount: team.tasks.length,
               rounds: team.rounds,
               pumasi: team.pumasiTasks
-                ? t(" · 품앗이로 받은 작업 {count}개", { count: team.pumasiTasks })
+                ? t(" · Pitch in으로 받은 작업 {count}개", { count: team.pumasiTasks })
                 : "",
               approved:
                 (team.approved ? t(" · 총괄 모델 승인") : "") +
@@ -707,7 +720,18 @@ function App() {
       t("작업 묶음을 복원했습니다. 새 요청의 문맥에는 자동 포함하지 않습니다."),
     );
   }
-  const sideItems: Chat[] = auto ? visible : workspace.legacyChats;
+  // No key that can answer yet: show the key setup instead of a message box that cannot work.
+  const needsKey =
+    routing.live &&
+    statusLoaded &&
+    !modelReady(routing.executor, providerStatus) &&
+    !(routing.team && modelReady(routing.worker, providerStatus));
+  const query = search.trim().toLowerCase();
+  const sideItems: Chat[] = (auto ? visible : workspace.legacyChats).filter(
+    (c) =>
+      !query ||
+      `${c.title} ${c.messages.map((m) => m.text).join(" ")}`.toLowerCase().includes(query),
+  );
   return (
     <div
       className={`app ${sidebar ? "" : "sidebar-closed"} ${usageOpen ? "" : "usage-closed"}`}
@@ -715,9 +739,16 @@ function App() {
       <aside className="sidebar" aria-label={t("사이드바")}>
         <div className="window-space" />
         <div className="brand">
-          <span className="brand-mark">
-            품<span>✦</span>
-          </span>
+          {/* The app icon: three overlapping circles and a spark. */}
+          <svg className="brand-mark" viewBox="0 0 1024 1024" aria-hidden="true">
+            <rect x="18" y="18" width="988" height="988" rx="222" fill="currentColor" />
+            <g fill="none" stroke="#fffdf6" strokeWidth="58">
+              <circle cx="404" cy="604" r="168" />
+              <circle cx="620" cy="604" r="168" />
+              <circle cx="512" cy="418" r="168" />
+            </g>
+            <path d="M776 178l25 70 70 25-70 25-25 70-25-70-70-25 70-25z" fill="#e2ebcf" />
+          </svg>
           <strong>{appName()}</strong>
           <button
             className="icon-button"
@@ -752,30 +783,30 @@ function App() {
               <span>{t("새 세션")}</span>
             </button>
           )}
-          <button
-            className="nav-item"
-            aria-label={t("대화 검색")}
-            onClick={() => setDialog("search")}
-          >
-            <Search size={17} />
-            <span>{t("대화 검색")}</span>
-            <kbd>⌘ K</kbd>
-          </button>
-          <button
-            className="nav-item"
-            aria-label={t("함께하기")}
-            onClick={() => setDialog("pumasi")}
-          >
-            <Users size={17} />
-            <span>{t("함께하기")}</span>
-          </button>
         </nav>
         {appMode === "chat" && (
           <>
-        <div className="section-label">
-          <span>{auto ? t("정리된 작업") : t("직접 관리하는 세션")}</span>
-          <span>{sideItems.length}</span>
-        </div>
+        <label className="side-search">
+          <Search size={14} />
+          <input
+            ref={searchBox}
+            type="search"
+            aria-label={t("대화 검색")}
+            placeholder={t("대화 검색")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setSearch("");
+            }}
+          />
+          {!search && <kbd>⌘K</kbd>}
+        </label>
+        {!auto && (
+          <div className="section-label">
+            <span>{t("세션")}</span>
+            <span>{sideItems.length}</span>
+          </div>
+        )}
         {auto && (
           <div className="filter-tabs" aria-label={t("작업 상태")}>
             {(["current", "archived", "trashed"] as const).map((f) => (
@@ -815,13 +846,25 @@ function App() {
             ))
           ) : (
             <div className="empty-history">
-              {auto ? t("아직 대화가 없습니다.") : t("아직 세션이 없습니다.")}
+              {query
+                ? t("찾는 대화가 없습니다.")
+                : auto
+                  ? t("아직 대화가 없습니다.")
+                  : t("아직 세션이 없습니다.")}
             </div>
           )}
         </div>
           </>
         )}
         <div className="sidebar-bottom">
+          <button
+            className="nav-item"
+            aria-label={t("Pitch in")}
+            onClick={() => setDialog("pumasi")}
+          >
+            <Users size={16} />
+            <span>{t("Pitch in")}</span>
+          </button>
           <button className="account" onClick={() => setDialog("settings")}>
             <span className="avatar">A</span>
             <span>
@@ -869,10 +912,6 @@ function App() {
             ))}
           </div>
           <div className="top-actions">
-            <span className="preview-badge">
-              <span />
-              {routing.live ? t("API 모드") : t("로컬 미리보기")}
-            </span>
             {appMode === "chat" && (
               <button
                 className="icon-button"
@@ -893,7 +932,16 @@ function App() {
             </button>
           </div>
         )}
-        {appMode === "code" ? (
+        {needsKey ? (
+          <div className="conversation">
+            <KeySetup
+              onAdded={(message) => {
+                setNotice(message);
+                void refreshStatus();
+              }}
+            />
+          </div>
+        ) : appMode === "code" ? (
           <CodeWorkspace />
         ) : (
           <>
@@ -1047,7 +1095,13 @@ function App() {
                 type="button"
                 className={`together-toggle ${routing.team && routing.pumasi ? "on" : ""}`}
                 aria-pressed={routing.team && routing.pumasi}
-                title={t("켜면 팀 모드로 실행하고, 리더가 나눈 작업을 다른 사람 앱이 먼저 맡습니다.")}
+                // Pitch in needs the desktop app; the web version has no helper network.
+                disabled={!window.auroraAI?.pumasi}
+                title={
+                  window.auroraAI?.pumasi
+                    ? t("켜면 팀 모드로 실행하고, 리더가 나눈 작업을 다른 사람 앱이 먼저 맡습니다.")
+                    : t("Pitch in은 설치 앱에서 쓸 수 있습니다.")
+                }
                 onClick={() =>
                   setRouting((r) =>
                     r.team && r.pumasi
@@ -1057,7 +1111,7 @@ function App() {
                 }
               >
                 <Users size={14} />
-                {t("함께하기")}
+                {t("Pitch in")}
               </button>
               <button
                 className="send-button"
@@ -1070,27 +1124,10 @@ function App() {
             </div>
           </div>
           <div className="composer-footnote">
-            <span>
-              <span className="status-dot" />
-              {routing.live
-                ? t("선택한 제공자 API로 전송 · 사용량 발생")
-                : t("외부 전송 없음 · 로컬 미리보기")}
-            </span>
             <span>{t("Enter 보내기 · Shift + Enter 줄바꿈")}</span>
           </div>
         </div>
           </>
-        )}
-        {appMode === "chat" && (
-        <footer className="statusbar">
-          <span>
-            <span className="status-dot" />
-            {auto
-              ? t("하나의 대화")
-              : t("세션 모드")}
-          </span>
-          <span>{workspace.save ? t("이 기기에 저장 중") : t("대화 저장 꺼짐")}</span>
-        </footer>
         )}
       </main>
       {usageOpen && appMode === "chat" && (
@@ -1185,11 +1222,7 @@ function App() {
           >
             <header>
               <h2 id="dialog-title">
-                {dialog === "search"
-                    ? t("대화 검색")
-                    : dialog === "pumasi"
-                      ? t("함께하기")
-                      : t("워크스페이스 설정")}
+                {dialog === "pumasi" ? t("Pitch in") : t("설정")}
               </h2>
               <button
                 className="icon-button"
@@ -1204,47 +1237,6 @@ function App() {
             </header>
             {dialog === "pumasi" ? (
               <PumasiPanel />
-            ) : dialog === "search" ? (
-              <>
-                <div className="search-input">
-                  <Search size={18} />
-                  <input
-                    aria-label={t("대화 검색어")}
-                    placeholder={t("작업 제목이나 메시지로 검색")}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <div className="search-results">
-                  {(auto
-                    ? workspace.bundles.filter(
-                        (b) => b.status === "active" || b.status === "grouped",
-                      )
-                    : workspace.legacyChats
-                  )
-                    .filter((c) =>
-                      `${c.title} ${c.messages.map((m) => m.text).join(" ")}`
-                        .toLowerCase()
-                        .includes(search.toLowerCase()),
-                    )
-                    .map((c) => (
-                      <button
-                        key={c.id}
-                        onClick={() => {
-                          if (auto) jump(c.id);
-                          else {
-                            setLegacyId(c.id);
-                            setDialog(null);
-                          }
-                        }}
-                      >
-                        <MessageSquare size={15} />
-                        <span>{c.title}</span>
-                        <ChevronRight size={14} />
-                      </button>
-                    ))}
-                </div>
-              </>
             ) : (
               <>
                 <SecretSettings
@@ -1391,14 +1383,14 @@ function App() {
                   </label>
                   <label className="setting-row">
                     <span>
-                      <strong>{t("품앗이에 맡기기")}</strong>
+                      <strong>{t("Pitch in에 맡기기")}</strong>
                       <small>
                         {t("팀 모드의 작업을 다른 사람의 앱이 그 사람의 키로 처리합니다. 5분 안에 아무도 돕지 않은 작업은 내 작업 모델이 합니다. 작업 글은 모르는 사람의 AI가 읽으니 개인 정보는 넣지 마세요.")}
                       </small>
                     </span>
                     <input
                       type="checkbox"
-                      aria-label={t("품앗이에 맡기기")}
+                      aria-label={t("Pitch in에 맡기기")}
                       checked={routing.pumasi}
                       disabled={!routing.team}
                       onChange={(e) =>
@@ -1519,22 +1511,6 @@ function App() {
 function MessageView({ message }: { message: Chat["messages"][number] }) {
   return (
     <article className={`message ${message.role}`}>
-      <div className="message-author">
-        {message.role === "assistant" ? (
-          <>
-            <span className="assistant-symbol">✦</span>
-            {appName()}
-            <span className="sample-tag">
-              {message.live
-                ? (message.model && modelById(message.model)?.name) ||
-                  t("API 응답")
-                : t("로컬 미리보기")}
-            </span>
-          </>
-        ) : (
-          t("나")
-        )}
-      </div>
       <div className="message-text">{message.text}</div>
       {message.files?.length ? (
         <div className="attach-chips in-message">
@@ -1546,6 +1522,14 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
           ))}
         </div>
       ) : null}
+      {message.role === "assistant" && (
+        // Which model answered, quietly under the answer.
+        <div className="message-meta">
+          {message.live
+            ? (message.model && modelById(message.model)?.name) || t("API 응답")
+            : t("로컬 미리보기")}
+        </div>
+      )}
     </article>
   );
 }

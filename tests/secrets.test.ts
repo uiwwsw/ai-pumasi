@@ -173,7 +173,10 @@ test("the window bridge can write keys but has no way to read one back", () => {
   );
   const methods = [...block.matchAll(/^\s+(\w+):/gm)].map((m) => m[1]);
   assert.deepEqual(methods.sort(), [
+    "add",
     "list",
+    "openRouterCancel",
+    "openRouterLogin",
     "openSignup",
     "remove",
     "set",
@@ -218,4 +221,34 @@ test("a saved key the OS keychain can no longer open is shown as needing re-entr
     stale: true,
   });
   assert.equal(store.env({}).NVIDIA_API_KEY, undefined);
+});
+
+test("one paste box: the provider comes from the key's shape and a rejected key is not saved", async () => {
+  const require = (await import("node:module")).createRequire(import.meta.url);
+  const { addKey, detectKey } = require("../electron/providers.cjs");
+  assert.equal(detectKey("sk-ant-api03-x"), "ANTHROPIC_API_KEY");
+  assert.equal(detectKey("sk-or-v1-x"), "OPENROUTER_API_KEY");
+  assert.equal(detectKey("sk-proj-x"), "OPENAI_API_KEY");
+  assert.equal(detectKey("gsk_x"), "GROQ_API_KEY");
+  assert.equal(detectKey("AIzaSyX"), "GEMINI_API_KEY");
+  assert.equal(detectKey("nvapi-x"), "NVIDIA_API_KEY");
+  assert.equal(detectKey("hello world"), null);
+  const saved: string[] = [];
+  const save = async (name: string) => {
+    saved.push(name);
+    return {};
+  };
+  const ok = await addKey("gsk_good", { save, fetchImpl: async () => ({ ok: true, status: 200 }) });
+  assert.equal(ok.check, "ok");
+  assert.equal(ok.provider, "Groq");
+  await assert.rejects(
+    addKey("gsk_bad", { save, fetchImpl: async () => ({ ok: false, status: 401 }) }),
+    (e: any) => /Groq/.test(e.message) && !e.message.includes("gsk_bad"),
+  );
+  // NVIDIA cannot be checked ahead of time; it is saved and the first question tells.
+  const nv = await addKey("nvapi-x", { save, fetchImpl: async () => { throw new Error("no"); } });
+  assert.equal(nv.check, "unknown");
+  await assert.rejects(addKey("nvapi-x", { save, blocked: ["NVIDIA_API_KEY"] }), /OpenRouter/);
+  await assert.rejects(addKey("not a key", { save }));
+  assert.deepEqual(saved, ["GROQ_API_KEY", "NVIDIA_API_KEY"]);
 });

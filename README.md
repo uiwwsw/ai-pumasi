@@ -35,7 +35,7 @@
 
 **Free models that hold their own.** Nemotron 3.5 Super, a free model you can run here, took three program-graded exams and scored 30/30, 28/30 and 23/25. ChatGPT's free tier scored 23, 24 and 13.4. Questions, answers and graders are in [bench/](bench/README.md).
 
-**Add your keys, then just ask.** Put keys for NVIDIA, OpenRouter, Groq or Google (free) and OpenAI or Anthropic (paid) in Settings once. Press Enter and Auto answers: it starts with the best-scoring free model you can reach, moves to the next when one hits its limit or stalls, and uses a paid key only after every free one is out. There is no model to pick and no confirmation step; you can still choose a model under Settings → Advanced.
+**Start with OpenRouter, or add your keys, then just ask.** The first screen has a Start with OpenRouter button: sign in, allow it, and a key of your own comes back to the app, no copying. Or put keys for NVIDIA, OpenRouter, Groq or Google (free) and OpenAI or Anthropic (paid) in Settings once. Press Enter and Auto answers: it starts with the best-scoring free model you can reach, moves to the next when one hits its limit or stalls, and uses a paid key only after every free one is out. There is no model to pick and no confirmation step; you can still choose a model under Settings → Advanced.
 
 **Your keys stay yours.** API keys are encrypted with the OS keychain, never shown again, and masked out of model answers and error messages.
 
@@ -72,13 +72,11 @@ Built and shipped one at a time, in this order.
 4. **Pitch in with people.** A person takes a role the lead hands out and works on it until the answer is right. Also: report and block bad results, and open sign-up.
 5. **Pitch in for code mode.** Text file attachments are in. Bundle vote (several models answer, then vote) is gone: it never scored higher than Nemotron Super alone and cost several times the tokens.
 
-## Install
+## Use it
 
-| Platform | Installer |
-| --- | --- |
-| macOS · Apple Silicon | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-arm64.dmg) |
-| macOS · Intel | [DMG](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-mac-x64.dmg) |
-| Windows · x64 | [EXE](https://github.com/uiwwsw/pumasi-agent/releases/download/v0.1.10/Pumasi-Agent-0.1.10-windows-x64.exe) |
+**On the web:** [pumasi-agent.vercel.app/app](https://pumasi-agent.vercel.app/app/). Chat and team mode, with your own keys. Keys are stored in that browser only and your questions go from the browser straight to each provider, never through our server. NVIDIA blocks calls from web pages, so on the web the Nemotron models run through an OpenRouter key. Code mode and Pitch in need the desktop app.
+
+**Desktop (macOS, Windows):** [yatko.app/uiwwsw/pumasi-agent](https://yatko.app/uiwwsw/pumasi-agent) picks the installer for your computer from the latest release. Every version and file is on the [releases page](https://github.com/uiwwsw/pumasi-agent/releases).
 
 Beta builds, with new features first, are on the [releases page](https://github.com/uiwwsw/pumasi-agent/releases). An installed app can switch under Help → Update channel.
 
