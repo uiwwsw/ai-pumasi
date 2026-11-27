@@ -265,7 +265,6 @@ else
                   env,
                   autoOrder: order,
                   timeoutMs: 300000,
-                  onUsage: (u) => usage().record(u),
                 }),
               emit: (e) => {
                 if (!event.sender.isDestroyed())
@@ -359,26 +358,6 @@ else
       (workerStats ??= require("./worker-stats.cjs").createStatsStore({
         file: path.join(app.getPath("userData"), "worker-stats.json"),
       }));
-    let usageLog;
-    // Real token counts per model and request kind, for the next estimate. No text, no keys.
-    const usage = () =>
-      (usageLog ??= require("./usage-log.cjs").createUsageLog({
-        file: path.join(app.getPath("userData"), "usage-log.json"),
-      }));
-    ipcMain.handle("aurora:usage-get", (event) => {
-      if (!authorized(event)) throw forbiddenError();
-      return usage().snapshot();
-    });
-    ipcMain.handle("aurora:usage-set", (event, enabled) => {
-      if (!authorized(event)) throw forbiddenError();
-      usage().setEnabled(enabled === true);
-      return usage().snapshot();
-    });
-    ipcMain.handle("aurora:usage-clear", (event) => {
-      if (!authorized(event)) throw forbiddenError();
-      usage().clear();
-      return usage().snapshot();
-    });
     ipcMain.handle("aurora:set-lang", (event, lang) => {
       if (!authorized(event)) throw forbiddenError();
       require("./i18n.cjs").setLang(lang);
@@ -397,7 +376,6 @@ else
         return await guarded(env, () =>
           providers.request(payload, {
             env,
-            onUsage: (u) => usage().record(u),
           }),
         );
       } finally {
@@ -410,8 +388,6 @@ else
       if (inFlight.has(id)) throw new Error(tr("이미 요청을 처리 중입니다."));
       inFlight.add(id);
       try {
-        // Count calls per stage so the next team estimate knows how many of each to expect.
-        const calls = { plan: 0, work: 0, review: 0, merge: 0 };
         const env = secrets.env();
         const copies = [1, 2, 3].includes(payload?.pumasi?.copies)
           ? payload.pumasi.copies
@@ -435,17 +411,8 @@ else
             onProgress: (e) =>
               event.sender.send("aurora:team-progress", scrub(e, env)),
             stats: stats(),
-            onUsage: (u) => {
-              if (u.kind in calls) calls[u.kind] += 1;
-              usage().record(u);
-            },
           }),
         );
-        usage().recordRun({
-          lead: payload.lead,
-          worker: payload.worker,
-          ...calls,
-        });
         return result;
       } finally {
         inFlight.delete(id);
@@ -464,7 +431,6 @@ else
             onProgress: (e) =>
               event.sender.send("aurora:team-progress", scrub(e, env)),
             stats: stats(),
-            onUsage: (u) => usage().record(u),
           }),
         );
       } finally {

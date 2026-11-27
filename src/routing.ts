@@ -2,7 +2,6 @@ import catalog from "./catalog.json";
 import weights from "./ensemble-weights.json";
 import { modelName } from "./i18n";
 import type { Tier } from "./domain";
-import type { UsageHistory } from "./usage";
 export type Provider =
   "openai" | "anthropic" | "gemini" | "ollama" | "compat" | "auto";
 export type Model = {
@@ -345,11 +344,7 @@ export interface AIBridge {
     leadOrder?: string[];
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
-  usage?: {
-    get(): Promise<UsageHistory>;
-    setEnabled(enabled: boolean): Promise<UsageHistory>;
-    clear(): Promise<UsageHistory>;
-  };
+
   status(): Promise<ProviderStatus>;
   setLang?(lang: "ko" | "en"): Promise<void>;
   secrets?: {

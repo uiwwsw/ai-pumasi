@@ -39,9 +39,7 @@
   "저장": "Save",
   "실행": "Run",
   "메시지를 입력하세요": "Message",
-  "모델 자동 추천 · 보내기 전에 확인": "Model picked per request · confirm before sending",
   "무엇을 도와드릴까요?": "How can I help?",
   "문맥": "Context",
-  "보내기 전에 요청과 문맥을 보고 모델 등급과 예상 토큰을 보여 줍니다.": "Before you send, shows the model tier and expected tokens for the request and its context.",
   "아직 대화가 없습니다.": "No conversations yet."
 }

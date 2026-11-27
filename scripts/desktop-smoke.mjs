@@ -41,7 +41,7 @@ try {
     if (!(await page.getByLabel("사용량", { exact: true }).isVisible()))
       await page.getByRole("button", { name: "사용량 패널 전환", exact: true }).click();
     await page
-      .getByRole("button", { name: "모드 및 예산 설정", exact: true })
+      .getByRole("button", { name: "모드 설정", exact: true })
       .click();
   };
   const close = () =>
@@ -52,7 +52,7 @@ try {
   await expect(
     page.getByRole("button", { name: "새 세션", exact: true }),
   ).toHaveCount(0);
-  // The usage panel starts closed; open it for the estimate and settings checks.
+  // The usage panel starts closed; open it for the settings checks.
   await page.getByRole("button", { name: "사용량 패널 전환", exact: true }).click();
   await expect(page.getByLabel("사용량", { exact: true })).toContainText(
     "미리보기",
@@ -60,8 +60,8 @@ try {
   await page.screenshot({ path: "artifacts/aurora-desktop.png" });
   // Preflight cancellation preserves the draft and creates no messages.
   await review("코드의 보안 아키텍처를 설계해 줘");
-  await expect(page.getByRole("dialog")).toContainText("고성능 모델 추천");
-  await expect(page.getByRole("dialog")).toContainText("추정 불가");
+  // Nothing is estimated before sending.
+  await expect(page.locator(".estimate-breakdown")).toHaveCount(0);
   await page.getByRole("button", { name: "다시 작성", exact: true }).click();
   await expect(editor).toHaveValue("코드의 보안 아키텍처를 설계해 줘");
   await expect(page.locator(".message")).toHaveCount(0);
@@ -103,7 +103,6 @@ try {
   await page.getByRole("button", { name: "작업", exact: true }).click();
   await expect(page.locator(".bundle")).toHaveCount(4);
   await settings();
-  await page.getByLabel("계획용 토큰 예산").fill("100000");
   await page.getByText("이 기기에 대화 저장", { exact: true }).click();
   await page.getByLabel("대화 관리 모드").selectOption("legacy");
   await close();
@@ -115,7 +114,6 @@ try {
   await page.getByRole("button", { name: "새 세션", exact: true }).click();
   await review("여행 요약 레거시 두 번째");
   await expect(page.getByRole("dialog")).not.toContainText("정리 제안");
-  await expect(page.getByRole("dialog")).toContainText("%");
   await proceed();
   await expect(page.locator(".chat-item")).toHaveCount(2);
   await page.getByRole("button", { name: "대화 검색", exact: true }).click();
@@ -137,7 +135,7 @@ try {
   await page.reload();
   await expect(page.locator(".bundle")).toHaveCount(4);
   await settings();
-  await expect(page.getByLabel("계획용 토큰 예산")).toHaveValue("100000");
+  await expect(page.getByLabel("대화 관리 모드")).toHaveValue("auto");
   await page.getByLabel("대화 관리 모드").selectOption("legacy");
   await close();
   await expect(page.locator(".chat-item")).toHaveCount(2);
@@ -145,7 +143,7 @@ try {
   await page.getByLabel("대화 관리 모드").selectOption("auto");
   await close();
   await editor.fill("다음 작업은 무엇일까?");
-  await expect(page.locator(".draft-estimate")).toContainText("설정 예산");
+  await expect(page.locator(".draft-estimate")).toHaveCount(0);
   await page.setViewportSize({ width: 900, height: 700 });
   await page.screenshot({ path: "artifacts/aurora-compact.png" });
   expect(
@@ -298,7 +296,7 @@ try {
           "group/archive/trash/restore",
           "legacy-session-search",
           "mode-isolation",
-          "budget-percent",
+          "no-pre-send-estimate",
           "persistence/reload",
           "dark/compact",
           "sandbox",
@@ -313,7 +311,7 @@ try {
     ),
   );
   console.log(
-    "Desktop checks passed: single stream, preflight, cleanup and restore, legacy mode isolation, estimates, storage and layout.",
+    "Desktop checks passed: single stream, preflight, cleanup and restore, legacy mode isolation, no estimates, storage and layout.",
   );
 } finally {
   await app?.close();

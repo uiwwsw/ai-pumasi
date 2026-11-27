@@ -31,7 +31,7 @@
 
 **Split the work, not the bill.** Team mode turns one request into up to six tasks. A lead model plans them and signs off; free models do the tasks and merge the result. By default the lead is the free model with the best measured score. If it hits its limit, the next one in the ranking takes over, and you can reorder the ranking in settings. When the lead isn't sure a result is right, the runner-up checks it once; otherwise there is no extra call. You can also pick a paid lead such as Claude Opus, which then spends its tokens on planning and approval only.
 
-**Borrow hands, not keys.** Turn on Pitch in and your team hands tasks to other users. Their app takes one task, runs it on a free key they chose to lend, and sends back the result. The task and the result are sealed between the two devices: the relay only moves ciphertext, and the helper's screen shows a token count and nothing else. No one's key ever leaves their machine. Helping earns points; posting spends them.
+**Share the problem.** Turn on Pitch in and your team hands tasks to other users. Their app takes one task, runs it on their own free key, and sends back the result. The task and the result are sealed between the two devices: the relay only moves ciphertext, and the helper's screen shows a token count and nothing else. No one's key ever leaves their machine. Helping earns points; posting spends them.
 
 **Free models that hold their own.** Nemotron 3.5 Super, a free model you can run here, took three program-graded exams and scored 30/30, 28/30 and 23/25. ChatGPT's free tier scored 23, 24 and 13.4. Questions, answers and graders are in [bench/](bench/README.md).
 
@@ -39,10 +39,18 @@
 
 **Your keys stay yours.** API keys are encrypted with the OS keychain, never shown again, and masked out of model answers and error messages.
 
+## The idea behind Pitch in
+
+Most token-sharing projects collect keys or credits in one place and hand them out. Whoever runs that pool sits in the middle of every request, and a shared key is easy to abuse.
+
+Pitch in works the other way round. You share the problem. Someone who wants to help picks it up, solves it with their own tools, and sends back the result. Keys and credits stay with the people who own them, and nothing sits in the middle that could be abused.
+
+Today's app has the first piece: another user's app runs one of your team's tasks on their own free key, sealed between the two devices. The full version, where a person takes a role the lead hands out and works on it until the answer is right, is still an idea. It isn't built yet, and we're looking for contributors to build it. See [CONTRIBUTING.md](CONTRIBUTING.md), or open an issue to talk it through.
+
 ## Also in the box
 
 - OpenAI, Anthropic, Gemini, Ollama and any OpenAI-compatible server
-- Token estimate and budget share before a run, real usage after
+- Token usage after each answer, as the provider reports it. Nothing is guessed before sending.
 - Failed, empty or cut-off answers are retried, then passed to another model
 - Conversations you can group, archive and restore; saving stays on your device and is off by default
 - English and Korean interface; signed and notarized for macOS, installer for Windows, automatic updates
@@ -59,11 +67,11 @@
 
 Built and shipped one at a time, in this order.
 
-1. **A team that runs itself.** The ranked lead is in the 0.2.0 beta. Next it gets measured on large, multi-part tasks against Nemotron Super alone, and it goes to the stable channel only if it does better with the same or fewer tokens.
-2. **Pitch in, next steps.** Help automatically while the app is idle, report and block bad results, open sign-up, and bring it to code mode.
-3. **Rethink bundle vote.** Keep it only if the self-running team needs it; otherwise remove it.
-4. **Streaming answers.**
-5. **File attachments.**
+1. **A team that doesn't waste tokens.** On six hard problems the team now gets 3 right where Nemotron Super alone gets 0, but it uses about 50 times the tokens. Next: answer directly when splitting won't help, cut review rounds that change nothing, and cap how long workers think. It goes to the stable channel only if it beats Super alone with the same or fewer tokens.
+2. **Streaming answers** in chat and code mode.
+3. **Code mode, closer to Claude Code and Codex.** Native tool calls where the model supports them, undo for saved changes, a git view, and reviewing several files at once.
+4. **Pitch in with people.** A person takes a role the lead hands out and works on it until the answer is right. Also: report and block bad results, and open sign-up.
+5. **Pitch in for code mode, file attachments, and a decision on bundle vote.**
 
 ## Install
 
