@@ -77,8 +77,11 @@ try {
       auto: true,
     }));
     ipcMain.removeHandler("aurora:ai-request");
-    ipcMain.handle("aurora:ai-request", (_event, p) => {
+    ipcMain.handle("aurora:ai-request", async (event, p) => {
       globalThis.auroraTestCalls.push(p);
+      // Stream part of the answer first, the way the real handler does.
+      event.sender.send("aurora:ai-delta", "모의 스트리밍 일부");
+      await new Promise((r) => setTimeout(r, 1500));
       return {
         model: p.model,
         text: "모의 API 답변",
@@ -93,6 +96,9 @@ try {
   await editor.fill("요약해 줘");
   await editor.press("Enter");
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  // The answer shows while it streams, before the call finishes.
+  await expect(page.locator(".message.assistant")).toContainText("모의 스트리밍 일부");
+  await page.screenshot({ path: "artifacts/aurora-streaming.png" });
   await expect(page.getByLabel("대화 내용")).toContainText("모의 API 답변");
   await expect(page.locator(".message.assistant")).toContainText("자동");
   await expect(editor).toHaveValue("");
@@ -107,6 +113,8 @@ try {
   await page.getByLabel("답할 모델", { exact: true }).selectOption("gpt-6.1-sol");
   await close();
   await send("이어서 설명해 줘");
+  // Wait for the streamed answer to be replaced by the finished one.
+  await expect(page.locator(".message.assistant").nth(1)).toContainText("모의 API 답변");
   await expect(page.locator(".message")).toHaveCount(4);
   let calls = await app.evaluate(() => globalThis.auroraTestCalls);
   expect(calls.map((c) => [c.action, c.model, c.maxOutputTokens])).toEqual([
@@ -208,6 +216,7 @@ try {
         checks: [
           "missing-key-message",
           "enter-sends-without-dialog",
+          "answer-streams",
           "auto-default-and-advanced-model",
           "real-usage-only",
           "API-error-retains-draft-no-retry",

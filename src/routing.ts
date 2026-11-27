@@ -345,6 +345,7 @@ export interface AIBridge {
     leadOrder?: string[];
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
+  onAnswerDelta?(fn: (text: string) => void): () => void;
 
   status(): Promise<ProviderStatus>;
   setLang?(lang: "ko" | "en"): Promise<void>;

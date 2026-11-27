@@ -44,6 +44,12 @@ contextBridge.exposeInMainWorld("auroraAI", {
       return () => ipcRenderer.removeListener("aurora:agent-event", h);
     },
   },
+  // The answer so far while it streams in (plain answers only).
+  onAnswerDelta: (fn) => {
+    const h = (_e, text) => fn(text);
+    ipcRenderer.on("aurora:ai-delta", h);
+    return () => ipcRenderer.removeListener("aurora:ai-delta", h);
+  },
   onTeamProgress: (fn) => {
     const h = (_e, data) => fn(data);
     ipcRenderer.on("aurora:team-progress", h);
