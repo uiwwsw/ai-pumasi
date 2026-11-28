@@ -66,7 +66,8 @@ import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import "./style.css";
 import { installWebBridge } from "./web-bridge";
 import { Markdown } from "./markdown";
-import { CrewRoster, CrewStack, ModelToken } from "./crew";
+import { CrewRoster, ModelToken } from "./crew";
+import { ModePicker } from "./modes";
 import { runCode } from "./code-sandbox";
 import { CopyButton, ShareButton, conversationMarkdown } from "./message-actions";
 // In a browser there is no desktop main process: the web version provides the same bridge.
@@ -651,6 +652,8 @@ function App() {
             context: context(),
             model: p.modelId,
             autoOrder: routing.leadOrder.length ? routing.leadOrder : undefined,
+            // The modes apply when the app picks the models, not to a model chosen by hand.
+            depth: p.modelId === "auto-free" ? routing.depth : undefined,
           });
           // How it was produced and how long it took.
           how = `${howLine(r)} · ${clock(Date.now() - askedAt)}`;
@@ -1003,24 +1006,16 @@ function App() {
           </>
         )}
         <div className="sidebar-bottom">
-          <button
-            className="nav-item"
-            aria-label={t("Pitch in")}
-            onClick={() => setDialog("pumasi")}
-          >
-            <Users size={16} />
-            <span>{t("Pitch in")}</span>
-            {waitingRequests > 0 && (
-              <span className="nav-count" title={t("도움을 기다리는 요청 {n}개", { n: waitingRequests })}>
-                {waitingRequests}
-              </span>
-            )}
-          </button>
           <button className="account" onClick={() => setDialog("settings")}>
             <span>
               <strong>{auto ? t("하나의 대화") : t("세션 모드")}</strong>
               <small>{t("모드 및 데이터 설정")}</small>
             </span>
+            {waitingRequests > 0 && (
+              <span className="nav-count" title={t("도움을 기다리는 요청 {n}개", { n: waitingRequests })}>
+                {waitingRequests}
+              </span>
+            )}
             <Settings2 size={16} />
           </button>
         </div>
@@ -1269,23 +1264,12 @@ function App() {
                   e.target.value = "";
                 }}
               />
-              <button
-                type="button"
-                className="model-control"
-                title={
-                  routing.executor === "auto-free"
-                    ? t("가장 효율적인 구성으로 여러 모델을 조합해 씁니다. 누르면 한 모델만 쓰도록 바꿀 수 있습니다.")
-                    : t("모델 바꾸기")
-                }
-                onClick={() => setDialog("settings")}
-              >
-                {routing.executor === "auto-free" ? (
-                  <CrewStack status={providerStatus} order={routing.leadOrder} />
-                ) : (
-                  <ModelToken id={routing.executor} />
-                )}
-                {modelById(routing.executor).name}
-              </button>
+              <ModePicker
+                depth={routing.depth}
+                single={routing.executor === "auto-free" ? undefined : modelById(routing.executor).name}
+                onPick={(depth) => setRouting((r) => ({ ...r, executor: "auto-free", depth }))}
+                onModels={() => setDialog("settings")}
+              />
               {busy && window.auroraAI?.askControl ? (
                 <button
                   className="send-button"
@@ -1495,6 +1479,19 @@ function App() {
                   status={providerStatus}
                   onChanged={() => void refreshStatus()}
                 />
+                {window.auroraAI?.pumasi && (
+                  <details className="routing-settings">
+                    <summary>
+                      {t("다른 사용자 돕기")}
+                      <small>
+                        {waitingRequests > 0
+                          ? t("도움을 기다리는 요청 {n}개", { n: waitingRequests })
+                          : t("도움 요청을 주고받으려면 여기서 가입합니다. 도울 때는 내가 고른 무료 키만 씁니다.")}
+                      </small>
+                    </summary>
+                    <PumasiPanel />
+                  </details>
+                )}
                 <details className="routing-settings">
                   <summary>
                     {t("고급: 모델과 팀")}

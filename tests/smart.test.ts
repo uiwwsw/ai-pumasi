@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-const { run, splitByHeadings, readTriage, partPrompt } = require("../electron/smart.cjs");
+const { run, splitByHeadings, readTriage, partPrompt, EFFORT_OUTPUT } = require("../electron/smart.cjs");
 const { createStatsStore } = require("../electron/worker-stats.cjs");
 
 const env = { NVIDIA_API_KEY: "k", AURORA_OLLAMA: "0" };
@@ -209,6 +209,32 @@ test("split: each part may compute on its own", async () => {
   assert.deepEqual(r.parts.map((p: any) => p.computed), [true, false]);
   assert.match(r.text, /### 문제 1\n\n391\n/);
   assert.match(r.text, /### 문제 2\n\nHello\./);
+});
+
+test("depth: light is one short answer from a fast model; deep gives every part the most room", async () => {
+  const many = "## 문제 1\n" + long("첫째 문제") + "\n\n## 문제 2\n" + long("둘째 문제");
+  // Light: no routing, no split, no program, the small output cap, fast models first.
+  const light = world(() => "짧은 답");
+  let ran = 0;
+  const a = await run(
+    { text: many, context: [], model: "auto-free", depth: "light" },
+    { ...light.io, runCode: async () => (ran++, { ok: true, out: "x" }) },
+  );
+  assert.deepEqual(light.calls.map((c) => c.kind), ["answer"]);
+  assert.equal(light.calls[0].user, many);
+  assert.equal(light.calls[0].max, EFFORT_OUTPUT.low);
+  assert.equal(light.calls[0].model, "nvidia/nemotron-3.5-lightning-30b-a3b");
+  assert.deepEqual([a.mode, a.depth, a.effort, ran], ["direct", "light", "low", 0]);
+  // Deep: a short question that would get the middle cap gets the high one.
+  const deep = world(() => "긴 답");
+  const b = await run({ text: "한국의 수도는?", context: [], model: "auto-free", depth: "deep" }, deep.io);
+  assert.equal(deep.calls[0].max, EFFORT_OUTPUT.high);
+  assert.deepEqual([b.depth, b.effort], ["deep", "high"]);
+  // Left alone, the same question gets the middle cap.
+  const auto = world(() => "답");
+  const c = await run({ text: "한국의 수도는?", context: [], model: "auto-free" }, auto.io);
+  assert.equal(auto.calls[0].max, EFFORT_OUTPUT.mid);
+  assert.equal(c.depth, "auto");
 });
 
 test("when routing fails, the question is still answered", async () => {

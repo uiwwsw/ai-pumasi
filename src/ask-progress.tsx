@@ -206,7 +206,7 @@ export function howLine(r: AskResult): string {
     const failed = r.parts?.filter((p) => p.failed).length ?? 0;
     const computed = r.parts?.filter((p) => p.computed).length ?? 0;
     return [
-      MODE_NAME,
+      r.depth === "deep" ? t("깊게") : MODE_NAME,
       t("{n}개로 나눠 풂", { n }),
       computed ? t("{n}개는 프로그램으로 계산", { n: computed }) : "",
       skipped ? t("{n}개 건너뜀", { n: skipped }) : "",
@@ -226,7 +226,13 @@ export function howLine(r: AskResult): string {
           ? t("{model}이(가) 검수함", { model: name(r.check.model) })
           : t("{model}이(가) 검수했지만 확신하지 못함", { model: name(r.check.model) }),
     ].join(" · ");
-  return r.computed ? `${model} · ${t("프로그램으로 계산")}` : model;
+  return [
+    r.depth === "light" ? t("가볍게") : r.depth === "deep" ? t("깊게") : "",
+    model,
+    r.computed ? t("프로그램으로 계산") : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 /** Who did which part, kept with the answer. Nothing for an answer one model gave directly. */
