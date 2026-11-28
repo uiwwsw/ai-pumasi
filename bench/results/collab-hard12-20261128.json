@@ -313,6 +313,32 @@
    "inputTokens": 17277,
    "seconds": 400,
    "total": 10
+  },
+  "app-code": {
+   "label": "the app's own code: bundles of six, the model chooses whether to hand back a program",
+   "correct": {
+    "knights-4": true,
+    "path-9": false,
+    "knapsack-9": true,
+    "path-3": true,
+    "grid-2": true,
+    "zebra-5": true,
+    "knights-9": true,
+    "path-7": false,
+    "knapsack-10": true,
+    "knapsack-3": true,
+    "bigmul-3": true,
+    "knights-1": true
+   },
+   "valueRightButFormatMissing": [
+    "knapsack-9",
+    "knapsack-3"
+   ],
+   "outputTokens": 223996,
+   "inputTokens": 17895,
+   "seconds": 930,
+   "total": 10,
+   "computedParts": 12
   }
  }
 }
