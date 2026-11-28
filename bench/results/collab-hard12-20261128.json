@@ -1,0 +1,318 @@
+{
+ "date": "2026-11-27/28",
+ "exam": "12 problems from the hard generator (level 3): the 8 that Nemotron 3.5 Super missed when asked one at a time in an earlier 60-problem run, plus 4 it solved",
+ "problems": [
+  "knights-4",
+  "path-9",
+  "knapsack-9",
+  "path-3",
+  "grid-2",
+  "zebra-5",
+  "knights-9",
+  "path-7",
+  "knapsack-10",
+  "knapsack-3",
+  "bigmul-3",
+  "knights-1"
+ ],
+ "arms": {
+  "smartbase": {
+   "label": "v0.2.0 as shipped",
+   "correct": {
+    "knights-4": true,
+    "path-9": false,
+    "knapsack-9": false,
+    "path-3": false,
+    "grid-2": true,
+    "zebra-5": true,
+    "knights-9": true,
+    "path-7": false,
+    "knapsack-10": false,
+    "knapsack-3": false,
+    "bigmul-3": true,
+    "knights-1": true
+   },
+   "outputTokens": 409499,
+   "inputTokens": 17014,
+   "seconds": 1722,
+   "checks": {},
+   "total": 6
+  },
+  "smartcheck": {
+   "label": "each part checked by one other model",
+   "correct": {
+    "knights-4": true,
+    "path-9": false,
+    "knapsack-9": true,
+    "path-3": false,
+    "grid-2": true,
+    "zebra-5": true,
+    "knights-9": true,
+    "path-7": false,
+    "knapsack-10": true,
+    "knapsack-3": true,
+    "bigmul-3": true,
+    "knights-1": true
+   },
+   "outputTokens": 572001,
+   "inputTokens": 37434,
+   "seconds": 3364,
+   "checks": {
+    "knights-4": {
+     "verdict": "wrong",
+     "revised": true
+    },
+    "path-9": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knapsack-9": {
+     "verdict": "wrong",
+     "revised": true
+    },
+    "path-3": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "grid-2": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "zebra-5": {
+     "verdict": "right",
+     "revised": false
+    },
+    "knights-9": {
+     "verdict": "right",
+     "revised": false
+    },
+    "path-7": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knapsack-10": {
+     "verdict": "right",
+     "revised": false
+    },
+    "knapsack-3": {
+     "verdict": "right",
+     "revised": false
+    },
+    "bigmul-3": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knights-1": {
+     "verdict": "right",
+     "revised": false
+    }
+   },
+   "total": 9
+  },
+  "smartlog": {
+   "label": "work log + check by one other model",
+   "correct": {
+    "knights-4": true,
+    "path-9": false,
+    "knapsack-9": false,
+    "path-3": false,
+    "grid-2": true,
+    "zebra-5": true,
+    "knights-9": true,
+    "path-7": false,
+    "knapsack-10": false,
+    "knapsack-3": false,
+    "bigmul-3": true,
+    "knights-1": true
+   },
+   "outputTokens": 626639,
+   "inputTokens": 36695,
+   "seconds": 3995,
+   "checks": {
+    "knights-4": {
+     "verdict": "right",
+     "revised": false
+    },
+    "path-9": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knapsack-9": {
+     "verdict": "wrong",
+     "revised": true
+    },
+    "path-3": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "grid-2": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "zebra-5": {
+     "verdict": "right",
+     "revised": false
+    },
+    "knights-9": {
+     "verdict": "wrong",
+     "revised": true
+    },
+    "path-7": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knapsack-10": {
+     "verdict": "right",
+     "revised": false
+    },
+    "knapsack-3": {
+     "verdict": "wrong",
+     "revised": true
+    },
+    "bigmul-3": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knights-1": {
+     "verdict": "wrong",
+     "revised": true
+    }
+   },
+   "total": 6
+  },
+  "smartslice": {
+   "label": "work log checked in slices by several models",
+   "correct": {
+    "knights-4": true,
+    "path-9": false,
+    "knapsack-9": false,
+    "path-3": false,
+    "grid-2": true,
+    "zebra-5": true,
+    "knights-9": true,
+    "path-7": false,
+    "knapsack-10": false,
+    "knapsack-3": true,
+    "bigmul-3": true,
+    "knights-1": true
+   },
+   "outputTokens": 592749,
+   "inputTokens": 92992,
+   "seconds": 1929,
+   "checks": {
+    "knights-4": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "path-9": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knapsack-9": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "path-3": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "grid-2": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "zebra-5": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knights-9": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "path-7": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knapsack-10": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knapsack-3": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "bigmul-3": {
+     "verdict": "unsure",
+     "revised": false
+    },
+    "knights-1": {
+     "verdict": "unsure",
+     "revised": false
+    }
+   },
+   "total": 7
+  },
+  "code-super": {
+   "label": "code written by Nemotron 3.5 Super, then run",
+   "correct": {
+    "knights-4": true,
+    "path-9": false,
+    "knapsack-9": true,
+    "path-3": true,
+    "grid-2": true,
+    "zebra-5": true,
+    "knights-9": true,
+    "path-7": false,
+    "knapsack-10": true,
+    "knapsack-3": true,
+    "bigmul-3": true,
+    "knights-1": true
+   },
+   "outputTokens": 93327,
+   "inputTokens": 8962,
+   "seconds": 1965,
+   "total": 10
+  },
+  "code-lightning": {
+   "label": "code written by Nemotron 3.5 Lightning, then run",
+   "correct": {
+    "knights-4": true,
+    "path-9": false,
+    "knapsack-9": true,
+    "path-3": true,
+    "grid-2": true,
+    "zebra-5": false,
+    "knights-9": false,
+    "path-7": true,
+    "knapsack-10": true,
+    "knapsack-3": true,
+    "bigmul-3": true,
+    "knights-1": true
+   },
+   "outputTokens": 69072,
+   "inputTokens": 9422,
+   "seconds": 3117,
+   "total": 9
+  },
+  "code-flash": {
+   "label": "code written by Gemini 3.1 Flash-Lite, then run",
+   "correct": {
+    "knights-4": true,
+    "path-9": true,
+    "knapsack-9": true,
+    "path-3": false,
+    "grid-2": true,
+    "zebra-5": true,
+    "knights-9": true,
+    "path-7": true,
+    "knapsack-10": true,
+    "knapsack-3": true,
+    "bigmul-3": true,
+    "knights-1": false
+   },
+   "outputTokens": 157850,
+   "inputTokens": 17277,
+   "seconds": 400,
+   "total": 10
+  }
+ }
+}
