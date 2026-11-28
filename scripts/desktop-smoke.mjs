@@ -114,7 +114,7 @@ try {
   await expect(page.locator(".message.assistant")).toContainText("모의 스트리밍 일부");
   await page.screenshot({ path: "artifacts/aurora-streaming.png" });
   await expect(page.getByLabel("대화 내용")).toContainText("모의 API 답변");
-  await expect(page.locator(".message.assistant")).toContainText("자동");
+  await expect(page.locator(".message.assistant")).toContainText("Pumasi mode");
   // Markdown is drawn, and <br> is a line break instead of text.
   await expect(page.locator(".message.assistant strong")).toHaveText("굵은 글씨");
   await expect(page.locator(".message.assistant td br")).toHaveCount(1);

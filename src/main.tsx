@@ -66,7 +66,7 @@ import { appName, getLang, setLang, t, type Lang } from "./i18n";
 import "./style.css";
 import { installWebBridge } from "./web-bridge";
 import { Markdown } from "./markdown";
-import { CrewRoster, ModelToken } from "./crew";
+import { CrewRoster, CrewStack, ModelToken } from "./crew";
 import { CopyButton, ShareButton, conversationMarkdown } from "./message-actions";
 // In a browser there is no desktop main process: the web version provides the same bridge.
 installWebBridge();
@@ -1025,7 +1025,11 @@ function App() {
                       "질문을 보고 일하는 방식을 정합니다. 양이 많으면 나눠서 동시에 풀고, 틀리기 쉬운 문제는 한 모델이 풀고 다른 모델이 검수합니다.",
                     )}
                   </p>
-                  <CrewRoster status={providerStatus} order={routing.leadOrder} />
+                  <CrewRoster
+                    status={providerStatus}
+                    order={routing.leadOrder}
+                    onAdd={() => setDialog("settings")}
+                  />
                 </>
               )}
             </section>
@@ -1156,10 +1160,18 @@ function App() {
               <button
                 type="button"
                 className="model-control"
-                title={t("모델 바꾸기")}
+                title={
+                  routing.executor === "auto-free"
+                    ? t("가장 효율적인 구성으로 여러 모델을 조합해 씁니다. 누르면 한 모델만 쓰도록 바꿀 수 있습니다.")
+                    : t("모델 바꾸기")
+                }
                 onClick={() => setDialog("settings")}
               >
-                <ModelToken id={routing.executor} />
+                {routing.executor === "auto-free" ? (
+                  <CrewStack status={providerStatus} order={routing.leadOrder} />
+                ) : (
+                  <ModelToken id={routing.executor} />
+                )}
                 {modelById(routing.executor).name}
               </button>
               <button
@@ -1357,7 +1369,7 @@ function App() {
                     <span>
                       <strong>{t("답할 모델")}</strong>
                       <small>
-                        {t("자동이면 지금 쓸 수 있는 모델 중 측정 성적이 가장 높은 것부터 씁니다.")}
+                        {t("Pumasi mode는 가장 효율적인 구성으로 여러 모델을 조합해 씁니다. 쉬운 질문은 한 모델이 답하고, 필요할 때 여러 모델이 함께 풉니다. 한 모델만 쓰려면 여기서 고르세요.")}
                       </small>
                     </span>
                     <select

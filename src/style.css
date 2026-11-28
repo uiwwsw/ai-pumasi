@@ -2706,3 +2706,22 @@ html[data-theme="dark"] .code-error {
   flex: 1;
   min-width: 0;
 }
+
+.crew-short {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.crew-short button {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
