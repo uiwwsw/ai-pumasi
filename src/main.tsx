@@ -67,6 +67,7 @@ import "./style.css";
 import { installWebBridge } from "./web-bridge";
 import { Markdown } from "./markdown";
 import { CrewRoster, CrewStack, ModelToken } from "./crew";
+import { runCode } from "./code-sandbox";
 import { CopyButton, ShareButton, conversationMarkdown } from "./message-actions";
 // In a browser there is no desktop main process: the web version provides the same bridge.
 installWebBridge();
@@ -269,6 +270,8 @@ function App() {
     waiting: boolean;
     working?: number;
   } | null>(null);
+  // The desktop app's main process sends programs here to be run in the sandboxed frame.
+  useEffect(() => window.auroraAI?.onRunCode?.(runCode), []);
   // Requests from other users that this app could help with: shown as a count on Pitch in.
   const [waitingRequests, setWaitingRequests] = useState(0);
   useEffect(() => {
@@ -1115,7 +1118,7 @@ function App() {
                 <>
                   <p>
                     {t(
-                      "질문을 보고 일하는 방식을 정합니다. 양이 많으면 나눠서 동시에 풀고, 틀리기 쉬운 문제는 한 모델이 풀고 다른 모델이 검수합니다.",
+                      "질문을 보고 일하는 방식을 정합니다. 양이 많으면 나눠서 동시에 풀고, 계산이 많은 문제는 프로그램을 써서 실행한 값으로 답합니다.",
                     )}
                   </p>
                   <CrewRoster

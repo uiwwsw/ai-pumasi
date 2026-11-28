@@ -4,6 +4,7 @@
 import providers from "../electron/providers.cjs";
 import team from "../electron/team.cjs";
 import smart from "../electron/smart.cjs";
+import { runCode } from "./code-sandbox";
 import i18n from "../electron/i18n.cjs";
 import stats from "../electron/worker-stats.cjs";
 import type {
@@ -144,6 +145,7 @@ export function installWebBridge() {
           signal: control.signal,
           signalFor: control.signalFor,
           skipped: control.skipped,
+          runCode,
           onProgress: (e: AskProgress) => askListeners.forEach((fn) => fn(e)),
           onDelta: (text: string) => deltaListeners.forEach((fn) => fn(text)),
         })) as AskResult;

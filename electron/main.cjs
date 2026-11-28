@@ -453,7 +453,13 @@ else
               const r = await require("./smart.cjs").run(
                 { text, context: [], model: "auto-free" },
                 // The relay drops a task after ten minutes; stop a little before that.
-                { env: donated, stats: stats(), allowPaid: false, signal: AbortSignal.timeout(540_000) },
+                {
+                  env: donated,
+                  stats: stats(),
+                  allowPaid: false,
+                  signal: AbortSignal.timeout(540_000),
+                  runCode: runCodeIn(event.sender),
+                },
               );
               const u = r.usage;
               return {
@@ -562,7 +568,32 @@ else
         inFlight.delete(id);
       }
     });
-    // Ask: the app decides how to work on the question (direct, split, or solve and check).
+    // Programs written by a model run in the asking window's sandboxed frame (public/sandbox.html):
+    // its own origin, no network, no way back into the app. This process never runs them.
+    const codeRuns = new Map();
+    ipcMain.on("aurora:code-ran", (event, id, result) => {
+      const waiting = codeRuns.get(id);
+      if (!waiting || waiting.sender !== event.sender || !authorized(event)) return;
+      waiting.done({
+        ok: result?.ok === true,
+        out: String(result?.out ?? "").slice(0, 8000),
+        ...(result?.error ? { error: String(result.error).slice(0, 500) } : {}),
+      });
+    });
+    const runCodeIn = (sender) => (code) =>
+      new Promise((resolve) => {
+        if (sender.isDestroyed()) return resolve({ ok: false, out: "", error: "no window" });
+        const id = require("node:crypto").randomUUID();
+        const done = (result) => {
+          clearTimeout(timer);
+          codeRuns.delete(id);
+          resolve(result);
+        };
+        const timer = setTimeout(() => done({ ok: false, out: "", error: "timeout" }), 25000);
+        codeRuns.set(id, { sender, done });
+        sender.send("aurora:run-code", id, String(code).slice(0, 100000));
+      });
+    // Ask: the app decides how to work on the question (direct or split, computing by program).
     let askControl = null;
     ipcMain.handle("aurora:ask", async (event, payload) => {
       if (!authorized(event)) throw forbiddenError();
@@ -596,6 +627,7 @@ else
               stats: stats(),
               allowPaid: true,
               signal: control.signal,
+              runCode: runCodeIn(event.sender),
               signalFor: control.signalFor,
               skipped: control.skipped,
               onProgress: (e) => {

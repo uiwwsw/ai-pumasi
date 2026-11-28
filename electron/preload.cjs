@@ -61,6 +61,20 @@ contextBridge.exposeInMainWorld("auroraAI", {
   // The answer so far while it streams in (plain answers only).
   // The app decides how to work on a question; progress says what is actually happening.
   ask: (payload) => ipcRenderer.invoke("aurora:ask", payload),
+  // A program a model wrote is run in the window's sandboxed frame; the result goes back.
+  onRunCode: (fn) => {
+    const h = async (_e, id, code) => {
+      let result;
+      try {
+        result = await fn(code);
+      } catch (error) {
+        result = { ok: false, out: "", error: String(error?.message ?? error) };
+      }
+      ipcRenderer.send("aurora:code-ran", id, result);
+    };
+    ipcRenderer.on("aurora:run-code", h);
+    return () => ipcRenderer.removeListener("aurora:run-code", h);
+  },
   askControl: (action, partId) => ipcRenderer.invoke("aurora:ask-control", action, partId),
   onAskProgress: (fn) => {
     const h = (_e, data) => fn(data);

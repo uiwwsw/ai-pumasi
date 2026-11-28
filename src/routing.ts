@@ -258,7 +258,9 @@ export type AskResult = {
   effort: "low" | "mid" | "high";
   model?: string;
   incomplete?: boolean;
-  parts?: { title: string; model: string | null; failed: boolean; skipped: boolean; incomplete: boolean }[];
+  /** The answer is what a program printed, not something a model worked out in its head. */
+  computed?: boolean;
+  parts?: { title: string; model: string | null; failed: boolean; skipped: boolean; incomplete: boolean; computed?: boolean }[];
   check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean } | null;
   usage: Record<"route" | "work" | "check", { in: number; out: number }>;
 };
@@ -270,7 +272,7 @@ export type AskProgress =
       stage: "part";
       id: string;
       title: string;
-      state: "waiting" | "running" | "retry" | "switch" | "substituted" | "done" | "failed" | "skipped";
+      state: "waiting" | "running" | "retry" | "switch" | "substituted" | "computing" | "done" | "failed" | "skipped";
       model?: string;
       from?: string;
       reason?: string;
@@ -332,6 +334,10 @@ export interface AIBridge {
   }): Promise<TeamResult>;
   onTeamProgress?(fn: (e: TeamProgress) => void): () => void;
   onAnswerDelta?(fn: (text: string) => void): () => void;
+  /** Desktop: the main process asks the window to run a program in its sandboxed frame. */
+  onRunCode?(
+    fn: (code: string) => Promise<{ ok: boolean; out: string; error?: string }>,
+  ): () => void;
   /** Ask a question; the app decides whether to answer directly, split it, or solve and check. */
   ask?(payload: {
     text: string;
