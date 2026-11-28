@@ -295,10 +295,17 @@ function App() {
       clearInterval(id);
     };
   }, []);
+  // What the user has to spend on help: earned by helping others, spent by asking.
+  const [points, setPoints] = useState<{ joined: boolean; credits?: number } | null>(null);
   const openHelp = (question: string) => {
     if (help?.waiting) return setNotice(t("이미 도움을 요청하는 중입니다."));
     setHelp({ question, waiting: false });
     setDialog("help");
+    setPoints(null);
+    window.auroraAI?.pumasi
+      ?.state()
+      .then((st) => setPoints({ joined: st.joined, credits: st.me?.credits }))
+      .catch(() => setPoints(null));
   };
   // Chat: questions and answers. Code: work on files in one folder (beta).
   const [appMode, setAppMode] = useState<"chat" | "code">(() => {
@@ -1424,6 +1431,15 @@ function App() {
                   <p className="small-copy">
                     {t("도와줄 사람이 받으면 그 사람의 Pumasi Agent가 풀어서 답을 돌려줍니다. 10분쯤 걸릴 수 있고, 아무도 받지 않으면 알려 드립니다.")}
                   </p>
+                  {points && (
+                    <p className="small-copy help-points">
+                      {!points.joined
+                        ? t("먼저 설정의 \"다른 사용자 돕기\"에서 가입해야 요청할 수 있습니다.")
+                        : (points.credits ?? 0) > 0
+                          ? t("내 점수 {n}. 도움을 받으면 쓴 만큼 줄고, 다른 사람을 도우면 그만큼 쌓입니다.", { n: (points.credits ?? 0).toLocaleString() })
+                          : t("점수가 없습니다. 다른 사람을 도우면 점수가 쌓이고, 그만큼 도움을 요청할 수 있습니다.")}
+                    </p>
+                  )}
                   <div className="help-confirm-actions">
                     <button type="button" onClick={() => setDialog(null)}>
                       {t("취소")}
@@ -1431,7 +1447,7 @@ function App() {
                     <button
                       type="button"
                       className="primary-button"
-                      disabled={!help?.question.trim()}
+                      disabled={!help?.question.trim() || points?.joined === false || points?.credits === 0}
                       onClick={() => void sendHelp()}
                     >
                       {t("공유하고 도움 요청")}

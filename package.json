@@ -10,6 +10,7 @@
     "start": "npm run build && electron .",
     "test": "tsx --test tests/*.test.ts",
     "test:desktop": "npm run build && node scripts/desktop-smoke.mjs",
+    "test:help": "npm run build && node scripts/help-e2e.mjs",
     "icons": "node scripts/icons.mjs",
     "package": "npm run build && npm run icons && node scripts/package.mjs",
     "package:mac": "npm run package -- --mac",
