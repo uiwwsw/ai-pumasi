@@ -9,6 +9,7 @@
 !.env.example
 node_modules
 distribution
+release-assets
 dist
 artifacts
 build
