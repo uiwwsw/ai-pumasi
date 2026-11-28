@@ -240,3 +240,62 @@ test("slots of a poster whose app stopped checking in are hidden, then dropped",
     await new Promise((r) => server.close(r));
   }
 });
+
+test("ask for help: one question goes out, a helper's whole app answers it, the asker gets the text", async () => {
+  const r = await startRelay();
+  try {
+    const asker = device(r.url);
+    const helper = device(r.url);
+    await asker.api("POST", "/v1/join", { invite: "hello" });
+    await helper.api("POST", "/v1/join", { invite: "hello" });
+    helper.settings.update({ donate: { nvidia: true } });
+    const env = { NVIDIA_API_KEY: FAKE_KEY, OPENAI_API_KEY: "paid-key-should-not-be-used" };
+    const solved: any[] = [];
+    // The helper's app solves with its own way of working, given only the donated key.
+    const solve = async (text: string, o: any) => {
+      solved.push({ text, env: o.env });
+      return { text: `도운 답: ${text}`, inputTokens: 40, outputTokens: 60 };
+    };
+    const never = async () => {
+      throw new Error("the single-model path must not run when solve is given");
+    };
+    const helping = (async () => {
+      for (let i = 0; i < 40; i++) {
+        const { slots } = await helper.api("GET", "/v1/open");
+        if (slots.length) return pumasi.help(slots[0].slotId, { api: helper.api, env, settings: helper.settings, request: never, solve, sleep });
+        await sleep(50);
+      }
+      throw new Error("no slot appeared");
+    })();
+    const seen: any[] = [];
+    const answer = await pumasi.ask("  17 곱하기 23은?  ", { api: asker.api, sleep: (ms: number) => sleep(Math.min(ms, 50)), onProgress: (e: any) => seen.push(e) });
+    assert.deepEqual(await helping, { tokens: 100 });
+    assert.equal(answer.text, "도운 답: 17 곱하기 23은?");
+    assert.deepEqual(solved, [{ text: "17 곱하기 23은?", env: { NVIDIA_API_KEY: FAKE_KEY } }]);
+    // The asker's window hears counts only while it waits.
+    assert.ok(seen.length && seen.every((e) => !("text" in e)));
+  } finally {
+    await r.close();
+  }
+});
+
+test("ask for help: nobody takes it, private details are refused, and it can be withdrawn", async () => {
+  const r = await startRelay();
+  try {
+    const asker = device(r.url);
+    await asker.api("POST", "/v1/join", { invite: "hello" });
+    const quick = (ms: number) => sleep(Math.min(ms, 20));
+    await assert.rejects(pumasi.ask("아무도 없는 질문", { api: asker.api, sleep: quick, waitMs: 200 }), /도와줄 사람이 없습니다/);
+    await assert.rejects(pumasi.ask("연락처는 someone@example.com 입니다", { api: asker.api, sleep: quick, waitMs: 200 }), /이메일 주소/);
+    await assert.rejects(pumasi.ask("   ", { api: asker.api, sleep: quick }), /보낼 질문이 없습니다/);
+    const stop = new AbortController();
+    const waiting = pumasi.ask("거둘 질문", { api: asker.api, sleep: quick, signal: stop.signal });
+    await sleep(60);
+    stop.abort();
+    await assert.rejects(waiting, /거두었습니다/);
+    // Nothing of the asker's is left on the relay.
+    assert.equal((await asker.api("GET", "/v1/open")).slots.length, 0);
+  } finally {
+    await r.close();
+  }
+});

@@ -261,8 +261,41 @@ function App() {
     return () => media.removeEventListener("change", collapse);
   }, []);
   const [dialog, setDialog] = useState<
-    "settings" | "pumasi" | null
+    "settings" | "pumasi" | "help" | null
   >(null);
+  // "Ask for help": a question waiting for the user's OK, then for another user's app to answer.
+  const [help, setHelp] = useState<{
+    question: string;
+    waiting: boolean;
+    working?: number;
+  } | null>(null);
+  // Requests from other users that this app could help with: shown as a count on Pitch in.
+  const [waitingRequests, setWaitingRequests] = useState(0);
+  useEffect(() => {
+    const bridge = window.auroraAI?.pumasi;
+    if (!bridge) return;
+    let alive = true;
+    const check = async () => {
+      try {
+        const joined = (await bridge.state()).joined;
+        const n = joined ? (await bridge.open()).length : 0;
+        if (alive) setWaitingRequests(n);
+      } catch {
+        // The relay is unreachable: show nothing rather than an error nobody asked for.
+      }
+    };
+    void check();
+    const id = setInterval(check, 60_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, []);
+  const openHelp = (question: string) => {
+    if (help?.waiting) return setNotice(t("이미 도움을 요청하는 중입니다."));
+    setHelp({ question, waiting: false });
+    setDialog("help");
+  };
   // Chat: questions and answers. Code: work on files in one folder (beta).
   const [appMode, setAppMode] = useState<"chat" | "code">(() => {
     try {
@@ -747,6 +780,61 @@ function App() {
     setSending(null);
     input.current?.focus();
   }
+  /** An answer can be sent out for help with the question right before it. */
+  const helpFor = (list: Chat["messages"], i: number) => {
+    const asked = list[i].role === "assistant" && list[i - 1]?.role === "user" ? list[i - 1].text : "";
+    return asked ? () => openHelp(asked) : undefined;
+  };
+  /** Add one answer to the conversation that is open now. */
+  function appendAnswer(message: Chat["messages"][number]) {
+    setWorkspace((w) => {
+      if (w.mode === "legacy")
+        return {
+          ...w,
+          legacyChats: w.legacyChats.map((c) =>
+            c.id === legacyId ? { ...c, messages: [...c.messages, message] } : c,
+          ),
+        };
+      const current = w.bundles.findLast((b) => b.status === "active");
+      return {
+        ...w,
+        bundles: w.bundles.map((b) =>
+          b.id === current?.id ? { ...b, messages: [...b.messages, message] } : b,
+        ),
+      };
+    });
+  }
+  async function sendHelp() {
+    const bridge = window.auroraAI?.pumasi;
+    if (!help || !bridge) return;
+    const question = help.question;
+    setDialog(null);
+    setHelp({ question, waiting: true });
+    const off = bridge.onAskProgress((e) =>
+      setHelp((h) => (h?.waiting ? { ...h, working: e.working } : h)),
+    );
+    const askedAt = Date.now();
+    try {
+      const r = await bridge.ask(question);
+      appendAnswer({
+        id: crypto.randomUUID(),
+        role: "assistant",
+        text: r.text,
+        live: true,
+        how: `${t("다른 사용자의 Pumasi Agent가 도운 답")} · ${clock(Date.now() - askedAt)}`,
+      });
+    } catch (error) {
+      setNotice(
+        String((error as Error)?.message ?? error).replace(
+          /^Error invoking remote method '[^']+': (Error: )?/,
+          "",
+        ),
+      );
+    } finally {
+      off();
+      setHelp(null);
+    }
+  }
   function switchMode(mode: Workspace["mode"]) {
     setWorkspace((w) => ({ ...w, mode }));
     setFilter("current");
@@ -919,6 +1007,11 @@ function App() {
           >
             <Users size={16} />
             <span>{t("Pitch in")}</span>
+            {waitingRequests > 0 && (
+              <span className="nav-count" title={t("도움을 기다리는 요청 {n}개", { n: waitingRequests })}>
+                {waitingRequests}
+              </span>
+            )}
           </button>
           <button className="account" onClick={() => setDialog("settings")}>
             <span>
@@ -1056,12 +1149,14 @@ function App() {
                           </button>
                         )}
                       </div>
-                      {b.messages.map((m) => (
-                        <MessageView key={m.id} message={m} />
+                      {b.messages.map((m, i) => (
+                        <MessageView key={m.id} message={m} onHelp={helpFor(b.messages, i)} />
                       ))}
                     </section>
                   ))
-                : messages.map((m) => <MessageView key={m.id} message={m} />)}
+                : messages.map((m, i) => (
+                    <MessageView key={m.id} message={m} onHelp={helpFor(messages, i)} />
+                  ))}
               {sending && (
                 <>
                   <MessageView
@@ -1072,6 +1167,7 @@ function App() {
                     writing={Boolean(streamed)}
                     onSkip={(id) => void window.auroraAI?.askControl?.("skip", id)}
                     onFinish={() => void window.auroraAI?.askControl?.("finish")}
+                    onHelp={() => openHelp(sending)}
                   />
                   {streamed || finishedText(run) ? (
                     // Finished parts show right away; a single answer shows as it is written.
@@ -1091,6 +1187,19 @@ function App() {
           )}
         </div>
         <div className="composer-area">
+          {help?.waiting && (
+            <p className="help-waiting" role="status">
+              <Users size={14} />
+              <span>
+                {help.working
+                  ? t("다른 사용자의 Pumasi Agent가 푸는 중입니다.")
+                  : t("도와줄 사람을 기다리는 중입니다.")}
+              </span>
+              <button type="button" onClick={() => void window.auroraAI?.pumasi?.askCancel()}>
+                {t("요청 거두기")}
+              </button>
+            </p>
+          )}
           <div
             className="composer"
             onDragOver={(e) => {
@@ -1173,28 +1282,6 @@ function App() {
                   <ModelToken id={routing.executor} />
                 )}
                 {modelById(routing.executor).name}
-              </button>
-              <button
-                type="button"
-                className={`together-toggle ${routing.team && routing.pumasi ? "on" : ""}`}
-                aria-pressed={routing.team && routing.pumasi}
-                title={
-                  window.auroraAI?.pumasi
-                    ? t("켜면 팀 모드로 실행하고, 리더가 나눈 작업을 다른 사람 앱이 먼저 맡습니다.")
-                    : t("Pitch in은 설치 앱에서 쓸 수 있습니다.")
-                }
-                onClick={() => {
-                  // Pitch in needs the desktop app; on the web, say so and offer the download.
-                  if (!window.auroraAI?.pumasi) return setDialog("pumasi");
-                  setRouting((r) =>
-                    r.team && r.pumasi
-                      ? { ...r, pumasi: false }
-                      : { ...r, team: true, pumasi: true },
-                  );
-                }}
-              >
-                <Users size={14} />
-                {t("Pitch in")}
               </button>
               {busy && window.auroraAI?.askControl ? (
                 <button
@@ -1318,7 +1405,7 @@ function App() {
           >
             <header>
               <h2 id="dialog-title">
-                {dialog === "pumasi" ? t("Pitch in") : t("설정")}
+                {dialog === "pumasi" ? t("Pitch in") : dialog === "help" ? t("Ask for help") : t("설정")}
               </h2>
               <button
                 className="icon-button"
@@ -1331,7 +1418,54 @@ function App() {
                 <X size={18} />
               </button>
             </header>
-            {dialog === "pumasi" ? (
+            {dialog === "help" ? (
+              window.auroraAI?.pumasi ? (
+                <div className="help-confirm">
+                  <p>
+                    <strong>{t("이 문제를 다른 사람과 공유하게 됩니다.")}</strong>{" "}
+                    {t("다른 사용자가 자기 AI를 써서 도와주게 됩니다. 괜찮나요?")}
+                  </p>
+                  <p className="small-copy">
+                    {t("아래 질문만 나갑니다. 첨부 파일과 앞선 대화는 보내지 않습니다. 이름이나 연락처는 지우고 보내세요.")}
+                  </p>
+                  <textarea
+                    aria-label={t("공유할 질문")}
+                    value={help?.question ?? ""}
+                    onChange={(e) => setHelp((h) => (h ? { ...h, question: e.target.value } : h))}
+                    rows={6}
+                  />
+                  <p className="small-copy">
+                    {t("도와줄 사람이 받으면 그 사람의 Pumasi Agent가 풀어서 답을 돌려줍니다. 10분쯤 걸릴 수 있고, 아무도 받지 않으면 알려 드립니다.")}
+                  </p>
+                  <div className="help-confirm-actions">
+                    <button type="button" onClick={() => setDialog(null)}>
+                      {t("취소")}
+                    </button>
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={!help?.question.trim()}
+                      onClick={() => void sendHelp()}
+                    >
+                      {t("공유하고 도움 요청")}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="desktop-only">
+                  <p>{t("도움 요청은 데스크톱 앱에서만 쓸 수 있습니다.")}</p>
+                  <a
+                    className="primary-button"
+                    href="https://yatko.app/uiwwsw/pumasi-agent"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <Download size={16} />
+                    {t("데스크톱 앱 받기")}
+                  </a>
+                </div>
+              )
+            ) : dialog === "pumasi" ? (
               window.auroraAI?.pumasi ? (
                 <PumasiPanel />
               ) : (
@@ -1623,7 +1757,14 @@ function App() {
     </div>
   );
 }
-function MessageView({ message }: { message: Chat["messages"][number] }) {
+function MessageView({
+  message,
+  onHelp,
+}: {
+  message: Chat["messages"][number];
+  /** Share the question behind this answer with other users. */
+  onHelp?: () => void;
+}) {
   if (message.role === "user")
     return (
       <article className="message user">
@@ -1651,11 +1792,13 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
     : t("로컬 미리보기");
   const who = (
     <>
-      <span className="token-stack">
-        {crew.map((id) => (
-          <ModelToken key={id} id={id} />
-        ))}
-      </span>
+      {crew.length > 0 && (
+        <span className="token-stack">
+          {crew.map((id) => (
+            <ModelToken key={id} id={id} />
+          ))}
+        </span>
+      )}
       <span>{line}</span>
     </>
   );
@@ -1684,6 +1827,17 @@ function MessageView({ message }: { message: Chat["messages"][number] }) {
       </div>
       <div className="message-actions">
         <CopyButton text={message.text} label={t("답 복사")} />
+        {onHelp && (
+          <button
+            type="button"
+            className="msg-action with-label"
+            title={t("이 질문을 다른 사용자에게 보내 도움을 받습니다.")}
+            onClick={onHelp}
+          >
+            <Users size={14} />
+            {t("Ask for help")}
+          </button>
+        )}
       </div>
     </article>
   );

@@ -315,6 +315,9 @@ export interface AIBridge {
     open(): Promise<PumasiSlot[]>;
     help(slotId: string): Promise<{ tokens: number }>;
     onProgress(fn: (e: PumasiProgress) => void): () => void;
+    ask(text: string): Promise<{ text: string }>;
+    askCancel(): Promise<void>;
+    onAskProgress(fn: (e: { open: number; working: number; done: number }) => void): () => void;
   };
   team?(payload: {
     lead: string;

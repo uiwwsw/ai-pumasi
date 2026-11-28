@@ -221,7 +221,7 @@ function donatedEnv(env, donate) {
  * Take one open slot, wait for its sealed task, run it with the donated keys and send back the
  * sealed result. onProgress gets states and token counts only, never text.
  */
-async function help(slotId, { api, env, settings, request, onProgress = () => {}, sleep, now = () => Date.now() }) {
+async function help(slotId, { api, env, settings, request, solve, onProgress = () => {}, sleep, now = () => Date.now() }) {
   const s = settings.get();
   const donated = donatedEnv(env, s.donate);
   if (!Object.keys(donated).length) throw new Error(tr("기부할 무료 제공자 키를 먼저 켜세요."));
@@ -249,10 +249,14 @@ async function help(slotId, { api, env, settings, request, onProgress = () => {}
   let tokens = 0;
   try {
     const prompt = open(task.sealed, keys, `${slotId}|task`);
-    const done = await request(
-      { action: "work", model: "auto-free", text: prompt.slice(0, 20000), context: [], maxOutputTokens: HELP_MAX_OUTPUT },
-      { env: donated, timeoutMs: 180_000 },
-    );
+    // With `solve`, the helper's whole app works on it (several models where that helps), still
+    // with the donated keys only. Without it, one model answers.
+    const done = solve
+      ? await solve(prompt.slice(0, 20000), { env: donated })
+      : await request(
+          { action: "work", model: "auto-free", text: prompt.slice(0, 20000), context: [], maxOutputTokens: HELP_MAX_OUTPUT },
+          { env: donated, timeoutMs: 180_000 },
+        );
     tokens = (done.inputTokens ?? 0) + (done.outputTokens ?? 0);
     text = redact(done.text ?? "", { ...env, ...donated });
     if (!text.trim()) throw new Error(tr("모델이 빈 답을 보냈습니다."));
@@ -265,6 +269,23 @@ async function help(slotId, { api, env, settings, request, onProgress = () => {}
   settings.addUsed(r.tokens);
   onProgress({ slotId, state: "done", tokens: r.tokens });
   return { tokens: r.tokens };
+}
+
+// ---------- asking: one question, one helper ----------
+
+/**
+ * Share one question and wait for another user's app to answer it. Returns the answer text, or
+ * throws when nobody took it in time. onProgress gets counts only.
+ */
+// A helper has ten minutes on the relay; wait a little longer than that.
+async function ask(text, { api, onProgress = () => {}, sleep, now, waitMs = 660_000, signal }) {
+  const question = String(text ?? "").trim().slice(0, 20000);
+  if (!question) throw new Error(tr("보낼 질문이 없습니다."));
+  const results = await runRemote([question], { api, copies: 1, onProgress, sleep, now, waitMs, signal });
+  const answer = results.get(0)?.[0];
+  if (signal?.aborted) throw Object.assign(new Error(tr("도움 요청을 거두었습니다.")), { stopped: true });
+  if (!answer) throw new Error(tr("지금은 도와줄 사람이 없습니다. 잠시 뒤 다시 요청해 보세요."));
+  return { text: answer };
 }
 
 // ---------- posting: the remote worker for team mode ----------
@@ -333,5 +354,6 @@ module.exports = {
   privateReason,
   donatedEnv,
   help,
+  ask,
   runRemote,
 };
