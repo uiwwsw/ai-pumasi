@@ -2,11 +2,14 @@
 //   direct - one model answers.
 //   split  - independent parts are answered at the same time, each from the original text, word
 //            for word, and the answers are shown in order.
-//   roles  - one model answers, a different model checks, and the answer is redone only when the
-//            checker can say what is wrong.
+// Either way, work that is exact computation is done by a program: the model writes it, the app
+// runs it shut away from everything, and what it prints is the answer.
 // Measured on six hard problems: asking each problem separately, as written, beat a lead that
 // rewrote the tasks, reviewed and merged (5/6 at 102k tokens against 4/6 at 470k). So nothing here
 // rewrites the request, and there is no review or merge pass over finished work.
+// Measured on twelve hard problems (bench/README.md): a second model checking the answer fixed one
+// answer in 48 tries at 1.4 times the tokens, so there is no checking step; letting a program do
+// the computing took the same problems from 6 right to 9-10 at less than half the tokens.
 const providers = require("./providers.cjs");
 const { createStatsStore } = require("./worker-stats.cjs");
 const { tr } = require("./i18n.cjs");
@@ -16,7 +19,6 @@ const team = require("./team.cjs");
 // a generous cap costs nothing on an easy answer; it only saves a cut-off try from being redone.
 const EFFORT_OUTPUT = { low: 4096, mid: 16000, high: 32000 };
 const TRIAGE_OUTPUT = 4000;
-const CHECK_OUTPUT = 16000;
 const CONCURRENCY = 3;
 const MAX_PARTS = 6;
 // A one-line question this short goes straight to one model with no routing call: deciding would
@@ -68,10 +70,8 @@ function readTriage(reply, text) {
   const d = team.extractJSON(reply);
   const effort = ["low", "mid", "high"].includes(d?.effort) ? d.effort : "mid";
   const direct = { mode: "direct", effort };
-  if (!d || !["direct", "split", "roles"].includes(d.mode)) return direct;
-  // Checking an easy answer costs a second model for nothing.
-  if (d.mode === "roles" && effort === "low") return direct;
-  if (d.mode !== "split") return { mode: d.mode, effort };
+  // An older reply may still say "roles" (answer, then check): that is one model answering now.
+  if (!d || d.mode !== "split") return direct;
   const range = (r) =>
     Array.isArray(r) &&
     Number.isInteger(r[0]) &&
@@ -95,6 +95,21 @@ function readTriage(reply, text) {
   return { mode: "split", effort, shared, parts };
 }
 
+// Offered to the model with the work: a program instead of an answer, when that is the surer way.
+const CODE_NOTE = [
+  "If the answer has to be worked out by exact computation (arithmetic on large numbers, searching through combinations, optimisation, counting, shortest paths, simulation, checking every case), do not work it out yourself. Reply with ONLY one ```js code block whose first line is `// RUN` and nothing else. The app runs it and shows what it prints as your answer.",
+  "The program: encode the data from the request exactly, compute the answer (BigInt for large integers), and print with console.log everything the request asks for, in the form it asks for and in the user's language. No imports, files, network or input; it must finish within 10 seconds.",
+  "For anything else (explaining, writing, translating, advice, or code the user wants to read), answer normally and do not use `// RUN`.",
+].join("\n");
+const CODE_FIX =
+  "That program did not produce an answer. Fix it and reply with the whole program again, as one ```js code block whose first line is `// RUN`.";
+
+/** The program in a reply that is nothing but one runnable block, or null. */
+function runnable(text) {
+  const m = /^\s*```(?:js|javascript)[ \t]*\n[ \t]*\/\/[ \t]*RUN\b[^\n]*\n([\s\S]*?)\n?```\s*$/.exec(String(text ?? ""));
+  return m && m[1].trim() ? m[1] : null;
+}
+
 /** What one part's model reads: the shared lines, the part as written, and at most a one-line note. */
 const partPrompt = (shared, part) =>
   [shared, part.text, part.note ? `(${part.note})` : ""].filter(Boolean).join("\n\n");
@@ -114,7 +129,9 @@ async function pool(items, limit, fn) {
  * @param {{text:string, context:any[], model:string, autoOrder?:string[]}} p
  * @param {{env?:object, fetchImpl?:Function, onProgress?:Function, onDelta?:Function,
  *   stats?:object, sleep?:Function, now?:Function, signal?:AbortSignal, allowPaid?:boolean,
- *   skipped?:(id:string)=>boolean}} io
+ *   skipped?:(id:string)=>boolean, runCode?:(code:string)=>Promise<{ok:boolean,out:string,error?:string}>}} io
+ *   runCode runs a program with no access to anything and returns what it printed. Without it,
+ *   models are not offered the choice and answer everything themselves.
  */
 async function run(p, io = {}) {
   const env = io.env ?? process.env;
@@ -218,6 +235,49 @@ async function run(p, io = {}) {
     throw last ?? new Error(tr("실행 실패"));
   };
 
+  /**
+   * One piece of work, where the model may hand back a program instead of an answer. The program
+   * is run and what it prints becomes the answer; if it fails it gets one fix, and after that the
+   * model answers by itself.
+   */
+  const answer = async (id, title, prompt, opts = {}) => {
+    if (!io.runCode || plan.effort === "low") return solve(id, title, prompt, opts);
+    const offered = `${prompt}\n\n${CODE_NOTE}`;
+    let done = await solve(id, title, offered, opts);
+    let code = runnable(done.text);
+    if (!code || done.incomplete) return done;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (io.skipped?.(id)) return done;
+      onProgress({ stage: "part", id, title, state: "computing", model: done.model });
+      let ran;
+      try {
+        ran = await io.runCode(code);
+      } catch (error) {
+        ran = { ok: false, out: "", error: String(error?.message ?? error) };
+      }
+      if (ran?.ok && String(ran.out ?? "").trim())
+        return {
+          ...done,
+          text: `${String(ran.out).trim()}\n\n${tr("계산에 쓴 프로그램:")}\n\n\`\`\`js\n${code.trim()}\n\`\`\``,
+          computed: true,
+        };
+      if (attempt === 1) break;
+      const why = ran?.error ? String(ran.error).slice(0, 500) : tr("출력이 없습니다.");
+      const again = await solve(
+        id,
+        title,
+        `${offered}\n\n${tr("이전 프로그램:")}\n\`\`\`js\n${code.trim()}\n\`\`\`\n${tr("실행 결과:")} ${why}\n\n${CODE_FIX}`,
+        opts,
+      );
+      const fixed = runnable(again.text);
+      if (!fixed || again.incomplete) return again;
+      done = again;
+      code = fixed;
+    }
+    // The program never ran: answer without one.
+    return solve(id, title, prompt, opts);
+  };
+
   // 2a. Independent parts, at the same time. Each finished part is reported at once.
   if (plan.mode === "split") {
     const results = new Array(plan.parts.length);
@@ -230,7 +290,7 @@ async function run(p, io = {}) {
         return;
       }
       try {
-        const done = await solve(id, part.title, partPrompt(plan.shared, part), { ctx: context });
+        const done = await answer(id, part.title, partPrompt(plan.shared, part), { ctx: context });
         results[i] = io.skipped?.(id) ? { skipped: true } : done;
         onProgress({
           stage: "part",
@@ -278,65 +338,24 @@ async function run(p, io = {}) {
         failed: !!results[i].error,
         skipped: !!results[i].skipped,
         incomplete: !!results[i].incomplete,
+        computed: !!results[i].computed,
       })),
       usage,
     };
   }
 
-  // 2b. One answer; with roles, a different model checks it.
-  const answered = await solve("answer", "", p.text, { ctx: context, onDelta: io.onDelta });
-  let text = answered.text;
-  let check = null;
-  if (plan.mode === "roles" && !answered.incomplete) {
-    const checker = providers.autoCandidates(env, p.autoOrder).find((id) => id !== answered.model);
-    if (checker) {
-      onProgress({ stage: "check", model: checker });
-      try {
-        const c = await request(
-          {
-            action: "check",
-            model: checker,
-            text: `${tr("요청:")}\n${p.text.slice(0, 12000)}\n\n${tr("답:")}\n${text.slice(0, 7000)}`,
-            context: [],
-            maxOutputTokens: CHECK_OUTPUT,
-          },
-          { timeoutMs: 300000 },
-        );
-        add("check", c);
-        const v = team.extractJSON(c.text);
-        const verdict = ["right", "wrong", "unsure"].includes(v?.verdict) ? v.verdict : "unsure";
-        const problem = typeof v?.problem === "string" ? v.problem.trim().slice(0, 2000) : "";
-        check = { model: checker, verdict, revised: false };
-        // Redo only on a concrete objection; "unsure" keeps the answer and says so.
-        if (verdict === "wrong" && problem) {
-          onProgress({ stage: "revise", model: answered.model });
-          const fixed = await solve(
-            "answer",
-            "",
-            `${p.text}\n\n${tr("이전 답:")}\n${text.slice(0, 7000)}\n\n${tr("다른 모델의 지적(맞는지 따져 보고, 맞으면 고쳐서 전체 답을 다시 쓰세요):")}\n${problem}`,
-            { ctx: context, onDelta: io.onDelta },
-          );
-          if (!fixed.incomplete) {
-            text = fixed.text;
-            check.revised = true;
-          }
-        }
-      } catch (error) {
-        if (error?.stopped) throw error;
-        // The checker could not answer: the first answer stands, unchecked.
-        check = { model: checker, verdict: "unsure", revised: false };
-      }
-    }
-  }
+  // 2b. One answer.
+  const answered = await answer("answer", "", p.text, { ctx: context, onDelta: io.onDelta });
   onProgress({ stage: "done" });
   return {
-    text,
-    mode: plan.mode,
+    text: answered.text,
+    mode: "direct",
     effort: plan.effort,
     routedBy: plan.routedBy,
     model: answered.model,
     incomplete: !!answered.incomplete,
-    check,
+    computed: !!answered.computed,
+    check: null,
     usage,
   };
 }
@@ -370,4 +389,4 @@ function createControl() {
   };
 }
 
-module.exports = { run, createControl, splitByHeadings, readTriage, partPrompt, EFFORT_OUTPUT };
+module.exports = { run, createControl, splitByHeadings, readTriage, partPrompt, runnable, EFFORT_OUTPUT };

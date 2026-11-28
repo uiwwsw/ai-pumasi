@@ -123,5 +123,9 @@
   "다른 모델의 지적(맞는지 따져 보고, 맞으면 고쳐서 전체 답을 다시 쓰세요):": "Another model's objection (weigh it; if it is right, fix the answer and write it out in full again):",
   "보낼 질문이 없습니다.": "There is no question to send.",
   "도움 요청을 거두었습니다.": "The help request was withdrawn.",
-  "지금은 도와줄 사람이 없습니다. 잠시 뒤 다시 요청해 보세요.": "Nobody is free to help right now. Try again in a little while."
+  "지금은 도와줄 사람이 없습니다. 잠시 뒤 다시 요청해 보세요.": "Nobody is free to help right now. Try again in a little while.",
+  "계산에 쓴 프로그램:": "The program that computed this:",
+  "출력이 없습니다.": "It printed nothing.",
+  "이전 프로그램:": "Previous program:",
+  "실행 결과:": "Result of running it:"
 }

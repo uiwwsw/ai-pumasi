@@ -61,7 +61,8 @@ test("a routing reply becomes line ranges of the original; anything malformed me
   ])
     assert.equal(readTriage(JSON.stringify(bad), text).mode, "direct");
   assert.equal(readTriage("not json", text).mode, "direct");
-  assert.equal(readTriage(JSON.stringify({ mode: "roles", effort: "high" }), text).mode, "roles");
+  // "roles" (answer, then a check by another model) is gone: it is one model answering.
+  assert.equal(readTriage(JSON.stringify({ mode: "roles", effort: "high" }), text).mode, "direct");
   // One piece of work is checked by a second model only when it is worth checking.
   assert.equal(readTriage(JSON.stringify({ mode: "roles", effort: "low" }), text).mode, "direct");
 });
@@ -111,33 +112,103 @@ test("a long request is routed once by a fast model; a skipped part costs nothin
   assert.match(r.text, /### 나\n\n\(건너뜀\)/);
 });
 
-test("roles: a different model checks, and only a concrete objection gets the answer redone", async () => {
-  const text = [long("다음 논리 문제를 풀어 주세요."), "", long("조건이 여럿 있는 문제")].join("\n");
-  const make = (verdict: any) => {
-    let answers = 0;
-    return world((kind) =>
+test("computation: the model hands back a program, the app runs it, and what it prints is the answer", async () => {
+  const program = "```js\n// RUN\nconsole.log('정답: ' + 17 * 23)\n```";
+  const w = world((kind, user) =>
+    kind === "triage" ? JSON.stringify({ mode: "direct", effort: "mid" }) : user.includes("// RUN") ? program : "그냥 답",
+  );
+  const ran: string[] = [];
+  const events: any[] = [];
+  const text = [long("다음 계산 문제를 풀어 주세요."), "", long("17 곱하기 23은 얼마인가요?")].join("\n");
+  const r = await run(
+    { text, context: [], model: "auto-free" },
+    {
+      ...w.io,
+      onProgress: (e: any) => events.push(e),
+      runCode: async (code: string) => {
+        ran.push(code);
+        return { ok: true, out: "정답: 391\n" };
+      },
+    },
+  );
+  // No second model looks at the answer: one routing call, one answer.
+  assert.deepEqual(w.calls.map((c) => c.kind), ["triage", "answer"]);
+  assert.ok(w.calls[1].user.startsWith(text) && w.calls[1].user.includes("// RUN"));
+  assert.deepEqual(ran, ["console.log('정답: ' + 17 * 23)"]);
+  assert.ok(r.text.startsWith("정답: 391\n\n"));
+  assert.ok(r.text.includes("```js\nconsole.log('정답: ' + 17 * 23)\n```"));
+  assert.equal(r.computed, true);
+  assert.equal(r.check, null);
+  assert.ok(events.some((e) => e.stage === "part" && e.id === "answer" && e.state === "computing"));
+});
+
+test("computation: a failed program gets one fix, then the model answers by itself", async () => {
+  const text = [long("다음 계산 문제를 풀어 주세요."), "", long("17 곱하기 23은 얼마인가요?")].join("\n");
+  const make = (results: any[]) => {
+    const w = world((kind, user) =>
       kind === "triage"
-        ? JSON.stringify({ mode: "roles", effort: "high" })
-        : kind === "check"
-          ? JSON.stringify(verdict)
-          : ++answers === 1 ? "첫 답입니다. 정답: 7 " + long("풀이") : "고친 답입니다. 정답: 8 " + long("풀이"),
+        ? JSON.stringify({ mode: "direct", effort: "mid" })
+        : !user.includes("// RUN")
+          ? "혼자 푼 답: 391"
+          : user.includes("did not produce an answer")
+            ? "```js\n// RUN\nconsole.log(391)\n```"
+            : "```js\n// RUN\nconsole.log(nope)\n```",
     );
+    let n = 0;
+    const runs: string[] = [];
+    const runCode = async (code: string) => {
+      runs.push(code);
+      return results[n++];
+    };
+    return { w, runs, runCode };
   };
-  const wrong = make({ verdict: "wrong", problem: "셋째 조건을 빠뜨렸습니다." });
-  const a = await run({ text, context: [], model: "nvidia/nemotron-3.5-super-vl-120b-a12b" }, wrong.io);
-  assert.deepEqual(wrong.calls.map((c) => c.kind), ["triage", "answer", "check", "answer"]);
-  const checker = wrong.calls[2].model;
-  assert.notEqual(checker, wrong.calls[1].model);
-  assert.ok(wrong.calls[3].user.includes("셋째 조건을 빠뜨렸습니다."));
-  assert.match(a.text, /고친 답/);
-  assert.deepEqual({ verdict: a.check.verdict, revised: a.check.revised }, { verdict: "wrong", revised: true });
-  for (const v of [{ verdict: "right" }, { verdict: "unsure" }, { verdict: "wrong", problem: "" }]) {
-    const w = make(v);
-    const r = await run({ text, context: [], model: "nvidia/nemotron-3.5-super-vl-120b-a12b" }, w.io);
-    assert.deepEqual(w.calls.map((c) => c.kind), ["triage", "answer", "check"]);
-    assert.match(r.text, /첫 답/);
-    assert.equal(r.check.revised, false);
+  // The first program fails, the fixed one runs.
+  const fixed = make([{ ok: false, out: "", error: "nope is not defined" }, { ok: true, out: "391" }]);
+  const a = await run({ text, context: [], model: "auto-free" }, { ...fixed.w.io, runCode: fixed.runCode });
+  assert.deepEqual(fixed.runs, ["console.log(nope)", "console.log(391)"]);
+  assert.ok(fixed.w.calls[2].user.includes("nope is not defined"));
+  assert.ok(a.text.startsWith("391\n\n") && a.computed);
+  // Both fail (the second prints nothing): the model is asked again without the offer.
+  const failed = make([{ ok: false, out: "", error: "timeout" }, { ok: true, out: "  " }]);
+  const b = await run({ text, context: [], model: "auto-free" }, { ...failed.w.io, runCode: failed.runCode });
+  assert.equal(b.text, "혼자 푼 답: 391");
+  assert.equal(b.computed, false);
+  assert.equal(failed.w.calls.at(-1)!.user, text);
+});
+
+test("computation is offered only where a program can run, and code the user asked to read is not run", async () => {
+  const text = [long("다음 계산 문제를 풀어 주세요."), "", long("17 곱하기 23은 얼마인가요?")].join("\n");
+  // Nowhere to run a program: the request goes out as written.
+  const plain = world((kind) => (kind === "triage" ? JSON.stringify({ mode: "direct", effort: "mid" }) : "391"));
+  await run({ text, context: [], model: "auto-free" }, plain.io);
+  assert.equal(plain.calls[1].user, text);
+  // An easy request is not offered it either.
+  const easy = world((kind) => (kind === "triage" ? JSON.stringify({ mode: "direct", effort: "low" }) : "안녕하세요"));
+  let ran = 0;
+  const runCode = async () => (ran++, { ok: true, out: "x" });
+  await run({ text, context: [], model: "auto-free" }, { ...easy.io, runCode });
+  assert.equal(easy.calls[1].user, text);
+  // A code block without the marker, or with words around it, is an answer to read.
+  for (const reply of ["```js\nfunction add(a, b) { return a + b }\n```", "이렇게 하면 됩니다.\n```js\n// RUN\nconsole.log(1)\n```"]) {
+    const w = world((kind) => (kind === "triage" ? JSON.stringify({ mode: "direct", effort: "mid" }) : reply));
+    const r = await run({ text, context: [], model: "auto-free" }, { ...w.io, runCode });
+    assert.equal(r.text, reply);
+    assert.equal(r.computed, false);
   }
+  assert.equal(ran, 0);
+});
+
+test("split: each part may compute on its own", async () => {
+  const text = "## 문제 1\n" + long("17 곱하기 23을 계산") + "\n\n## 문제 2\n" + long("인사말을 영어로");
+  const w = world((_kind, user) => (user.includes("곱하기") ? "```js\n// RUN\nconsole.log(17*23)\n```" : "Hello."));
+  const r = await run(
+    { text, context: [], model: "auto-free" },
+    { ...w.io, runCode: async () => ({ ok: true, out: "391" }) },
+  );
+  assert.equal(r.mode, "split");
+  assert.deepEqual(r.parts.map((p: any) => p.computed), [true, false]);
+  assert.match(r.text, /### 문제 1\n\n391\n/);
+  assert.match(r.text, /### 문제 2\n\nHello\./);
 });
 
 test("when routing fails, the question is still answered", async () => {

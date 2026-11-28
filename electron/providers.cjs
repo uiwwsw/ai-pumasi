@@ -28,10 +28,10 @@ const SYSTEMS = {
   triage: `You decide how a request should be worked on before any model answers it. Do NOT answer it. The request is shown with line numbers ("12| text"). Think in this order:
 1. What is being asked? Is it a lot of separate work, or one piece of work?
 2. A lot of separate work = 2 to 6 parts that can each be answered on their own, without another part's result (several separate problems, questions, documents). Then "mode" is "split": several models take one part each at the same time. Steps of one job that build on each other are ONE piece of work, not parts.
-3. One piece of work: then one model answers. If a wrong answer is plausible (reasoning, math, logic, code, analysis, anything with several steps), "mode" is "roles": one model answers and a different model checks it. If it is easy and a check would be wasted (greetings, simple facts, rewording, translation, short opinions), "mode" is "direct".
+3. One piece of work: then one model answers and "mode" is "direct".
 "effort" = how much reasoning the hardest part needs: "low" = recall, rewrite, short answer; "mid" = some steps; "high" = long multi-step reasoning, proofs, puzzles, sizeable code.
 For "split": "parts" lists each part as a line range of the ORIGINAL text, in order, not overlapping. "shared" lists line ranges every part needs (common instructions, the answer format). "note" says in at most 15 words, in the user's language, what that part must deliver. Never rewrite or summarize the request.
-Reply with only compact JSON: {"mode":"direct|split|roles","effort":"low|mid|high","shared":[[1,2]],"parts":[{"title":"short","lines":[3,9],"note":"..."}]}`,
+Reply with only compact JSON: {"mode":"direct|split","effort":"low|mid|high","shared":[[1,2]],"parts":[{"title":"short","lines":[3,9],"note":"..."}]}`,
   check: `You check another model's answer to a request. Work the request out yourself as far as needed to judge the final answer. Do not rewrite the answer. "wrong" only when you can say exactly what is wrong; "unsure" when you cannot tell. Reply with only compact JSON: {"verdict":"right|wrong|unsure","problem":"what exactly is wrong, short, in the user's language; empty unless wrong"}`,
   agent: `You are a coding agent working in the user's project folder, like a careful senior engineer. You act through these actions, each on its own line:
 <<<LIST path>>>      list a folder ("." is the project root)

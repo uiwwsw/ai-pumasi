@@ -102,6 +102,35 @@ try {
   // With a key that can answer, the chat is there.
   await expect(page.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();
   await page.screenshot({ path: "artifacts/aurora-desktop.png" });
+  // A program a model wrote runs in the window's sandboxed frame: it computes, but cannot reach
+  // the network or the app, and a loop that never ends is cut off.
+  const ranIn = (code) =>
+    app.evaluate(
+      ({ ipcMain, BrowserWindow }, program) =>
+        new Promise((resolve) => {
+          const id = `smoke-${Math.random()}`;
+          const heard = (_event, got, result) => {
+            if (got !== id) return;
+            ipcMain.removeListener("aurora:code-ran", heard);
+            resolve(result);
+          };
+          ipcMain.on("aurora:code-ran", heard);
+          BrowserWindow.getAllWindows()[0].webContents.send("aurora:run-code", id, program);
+        }),
+      code,
+    );
+  expect(await ranIn("console.log('정답: ' + 123456789012345678n * 987654321098765432n)")).toEqual({
+    ok: true,
+    out: "정답: 121932631137021794322511812221002896",
+  });
+  expect(
+    (await ranIn("try { await fetch('https://example.com/'); console.log('REACHED') } catch { console.log('no network') }")).out,
+  ).toBe("no network");
+  expect((await ranIn("console.log(typeof auroraAI, typeof localStorage, typeof document, typeof require)")).out).toBe(
+    "undefined undefined undefined undefined",
+  );
+  expect(await ranIn("while (true) {}")).toMatchObject({ ok: false, error: "timeout" });
+  expect(await page.locator("iframe").count()).toBe(0);
   // Enter sends right away: no confirmation dialog, no model to pick.
   await editor.fill("요약해 줘");
   await editor.press("Enter");

@@ -214,5 +214,10 @@
   "공유하고 도움 요청": "Share and ask for help",
   "도움 요청은 데스크톱 앱에서만 쓸 수 있습니다.": "Asking for help works in the desktop app only.",
   "이 질문을 다른 사용자에게 보내 도움을 받습니다.": "Send this question to other users for help.",
-  "도움을 기다리는 요청 {n}개": "{n} requests waiting for help"
+  "도움을 기다리는 요청 {n}개": "{n} requests waiting for help",
+  "프로그램을 실행하는 중": "Running the program",
+  "{model}이(가) 쓴 프로그램을 실행하는 중": "Running the program {model} wrote",
+  "{n}개는 프로그램으로 계산": "{n} computed by a program",
+  "프로그램으로 계산": "computed by a program",
+  "질문을 보고 일하는 방식을 정합니다. 양이 많으면 나눠서 동시에 풀고, 계산이 많은 문제는 프로그램을 써서 실행한 값으로 답합니다.": "It looks at your question and decides how to work. A lot of work is split and done at the same time, and heavy computation is done by a program whose output is the answer."
 }

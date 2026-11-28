@@ -84,6 +84,7 @@ function partLine(p: AskPart, now: number) {
   if (p.state === "switch")
     return t("{why} {model}(으)로 넘김", { why: why(p.reason), model: name(p.model) });
   if (p.state === "retry") return t("{why} 다시 묻는 중", { why: why(p.reason) });
+  if (p.state === "computing") return t("프로그램을 실행하는 중");
   return t("{model} · {time}", { model: name(p.model), time: clock(now - (p.startedAt ?? now)) });
 }
 
@@ -118,7 +119,9 @@ export function AskProgressView({
       ? t("{why} {model}(으)로 넘김", { why: why(a.reason), model: name(a.model) })
       : a?.state === "retry"
         ? t("{why} 다시 묻는 중", { why: why(a.reason) })
-        : writing
+        : a?.state === "computing"
+          ? t("{model}이(가) 쓴 프로그램을 실행하는 중", { model: name(a.model) })
+          : writing
           ? a?.model
             ? t("{model}이(가) 답을 쓰는 중", { model: name(a.model) })
             : t("답을 쓰는 중")
@@ -201,9 +204,11 @@ export function howLine(r: AskResult): string {
     const n = r.parts?.length ?? 0;
     const skipped = r.parts?.filter((p) => p.skipped).length ?? 0;
     const failed = r.parts?.filter((p) => p.failed).length ?? 0;
+    const computed = r.parts?.filter((p) => p.computed).length ?? 0;
     return [
       MODE_NAME,
       t("{n}개로 나눠 풂", { n }),
+      computed ? t("{n}개는 프로그램으로 계산", { n: computed }) : "",
       skipped ? t("{n}개 건너뜀", { n: skipped }) : "",
       failed ? t("{n}개 실패", { n: failed }) : "",
     ]
@@ -221,7 +226,7 @@ export function howLine(r: AskResult): string {
           ? t("{model}이(가) 검수함", { model: name(r.check.model) })
           : t("{model}이(가) 검수했지만 확신하지 못함", { model: name(r.check.model) }),
     ].join(" · ");
-  return model;
+  return r.computed ? `${model} · ${t("프로그램으로 계산")}` : model;
 }
 
 /** Who did which part, kept with the answer. Nothing for an answer one model gave directly. */
@@ -236,7 +241,9 @@ export function trailOf(r: AskResult): TrailStep[] | undefined {
           ? t("실패")
           : p.incomplete
             ? t("답이 잘림")
-            : undefined,
+            : p.computed
+              ? t("프로그램으로 계산")
+              : undefined,
     }));
   if (r.mode === "roles" && r.check)
     return [
