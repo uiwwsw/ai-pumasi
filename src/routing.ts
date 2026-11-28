@@ -19,9 +19,12 @@ export const models = (catalog as Model[]).map((m) => ({
 }));
 export const modelById = (id: string) => models.find((m) => m.id === id)!;
 export const ROUTING_KEY = "aurora.routing.v1";
+/** How much to spend on an answer when the app picks the models. */
+export type Depth = "light" | "auto" | "deep";
 export type RoutingSettings = {
   analyzer: string;
   executor: string;
+  depth: Depth;
   live: boolean;
   team: boolean;
   lead: string;
@@ -46,6 +49,7 @@ export function leadRanking(order: string[]) {
     .filter((m): m is (typeof models)[number] => !!m);
 }
 const teamDefaults = {
+  depth: "auto" as Depth,
   team: false,
   pumasi: false,
   pumasiCopies: 2,
@@ -80,6 +84,7 @@ export function readRouting(raw: string | null): RoutingSettings {
       return {
         ...teamDefaults,
         ...d,
+        depth: d.depth === "light" || d.depth === "deep" ? d.depth : "auto",
         team: d.team === true,
         pumasi: d.pumasi === true,
         pumasiCopies: [1, 2, 3].includes(d.pumasiCopies) ? d.pumasiCopies : 2,
@@ -256,6 +261,7 @@ export type AskResult = {
   text: string;
   mode: "direct" | "split" | "roles";
   effort: "low" | "mid" | "high";
+  depth?: Depth;
   model?: string;
   incomplete?: boolean;
   /** The answer is what a program printed, not something a model worked out in its head. */
@@ -344,6 +350,7 @@ export interface AIBridge {
     context: AIRequest["context"];
     model: string;
     autoOrder?: string[];
+    depth?: Depth;
   }): Promise<AskResult>;
   askControl?(action: "stop" | "finish" | "skip", partId?: string): Promise<void>;
   onAskProgress?(fn: (e: AskProgress) => void): () => void;

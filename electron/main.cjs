@@ -621,6 +621,7 @@ else
               context: Array.isArray(payload?.context) ? payload.context : [],
               model: typeof payload?.model === "string" ? payload.model : "auto-free",
               autoOrder: Array.isArray(payload?.autoOrder) ? payload.autoOrder : undefined,
+              depth: ["light", "deep"].includes(payload?.depth) ? payload.depth : "auto",
             },
             {
               env,

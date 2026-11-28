@@ -126,7 +126,9 @@ async function pool(items, limit, fn) {
 }
 
 /**
- * @param {{text:string, context:any[], model:string, autoOrder?:string[]}} p
+ * @param {{text:string, context:any[], model:string, autoOrder?:string[], depth?:"light"|"auto"|"deep"}} p
+ *   depth is how much to spend: "light" = one fast model answers at once, the fewest tokens;
+ *   "auto" (the default) = decided from the question; "deep" = the most room to think everywhere.
  * @param {{env?:object, fetchImpl?:Function, onProgress?:Function, onDelta?:Function,
  *   stats?:object, sleep?:Function, now?:Function, signal?:AbortSignal, allowPaid?:boolean,
  *   skipped?:(id:string)=>boolean, runCode?:(code:string)=>Promise<{ok:boolean,out:string,error?:string}>}} io
@@ -156,9 +158,14 @@ async function run(p, io = {}) {
   const context = Array.isArray(p.context) ? p.context : [];
 
   // 1. Decide how to work, spending as little as possible on the decision.
+  const depth = p.depth === "light" || p.depth === "deep" ? p.depth : "auto";
+  // Light: the fast models first, in the order used for routing.
+  const order = depth === "light" ? TRIAGE_ORDER : p.autoOrder;
   let plan = null;
-  const byHeadings = splitByHeadings(p.text);
-  if (byHeadings) plan = { mode: "split", effort: "high", ...byHeadings, routedBy: "rules" };
+  const byHeadings = depth === "light" ? null : splitByHeadings(p.text);
+  // Light never splits, routes or computes: one short answer from one model.
+  if (depth === "light") plan = { mode: "direct", effort: "low", routedBy: "mode" };
+  else if (byHeadings) plan = { mode: "split", effort: "high", ...byHeadings, routedBy: "rules" };
   else if (p.text.length < DIRECT_BELOW_CHARS && !p.text.trim().includes("\n"))
     plan = { mode: "direct", effort: "mid", routedBy: "rules" };
   else {
@@ -176,6 +183,8 @@ async function run(p, io = {}) {
       plan = { mode: "direct", effort: "mid", routedBy: "fallback" };
     }
   }
+  // Deep: every part gets the most room to think, whatever the routing said.
+  if (depth === "deep") plan.effort = "high";
   const cap = EFFORT_OUTPUT[plan.effort];
   onProgress({ stage: "plan", mode: plan.mode, effort: plan.effort, parts: plan.parts?.map((x) => x.title) });
 
@@ -207,7 +216,7 @@ async function run(p, io = {}) {
             { action, model: mdl, text, context: c, maxOutputTokens },
             {
               timeoutMs,
-              autoOrder: p.autoOrder,
+              autoOrder: order,
               onDelta: m === 0 ? onDelta : undefined,
               onThinking,
               // Skipping one part stops only that part's request.
@@ -331,6 +340,7 @@ async function run(p, io = {}) {
       text,
       mode: "split",
       effort: plan.effort,
+      depth,
       routedBy: plan.routedBy,
       parts: plan.parts.map((part, i) => ({
         title: part.title,
@@ -351,6 +361,7 @@ async function run(p, io = {}) {
     text: answered.text,
     mode: "direct",
     effort: plan.effort,
+    depth,
     routedBy: plan.routedBy,
     model: answered.model,
     incomplete: !!answered.incomplete,
