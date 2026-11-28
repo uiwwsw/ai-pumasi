@@ -127,5 +127,6 @@
   "계산에 쓴 프로그램:": "The program that computed this:",
   "출력이 없습니다.": "It printed nothing.",
   "이전 프로그램:": "Previous program:",
-  "실행 결과:": "Result of running it:"
+  "실행 결과:": "Result of running it:",
+  "다른 모델의 프로그램은 다른 값을 냈습니다. 이 답은 확인되지 않았습니다.": "Other models' programs gave different values. This answer is not confirmed."
 }

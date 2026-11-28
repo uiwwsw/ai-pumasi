@@ -4,7 +4,14 @@ import { Feather, Layers, Telescope, Check, SlidersHorizontal } from "lucide-rea
 import { t } from "./i18n";
 import type { Depth } from "./routing";
 
-export const MODES: { id: Depth; name: () => string; about: () => string; Icon: typeof Feather }[] = [
+export const MODES: {
+  id: Depth;
+  name: () => string;
+  about: () => string;
+  Icon: typeof Feather;
+  /** Not yet shown by measurement to be better than Pumasi mode. */
+  beta?: boolean;
+}[] = [
   {
     id: "light",
     name: () => t("가볍게"),
@@ -19,9 +26,10 @@ export const MODES: { id: Depth; name: () => string; about: () => string; Icon: 
   },
   {
     id: "deep",
-    name: () => t("깊게"),
-    about: () => t("가장 강한 모델이 오래 생각합니다. 토큰을 많이 씁니다."),
+    name: () => "Team",
+    about: () => t("여러 모델이 각자 풀고 답을 맞춰 봅니다. 토큰을 많이 쓰고 오래 걸립니다."),
     Icon: Telescope,
+    beta: true,
   },
 ];
 export const modeOf = (depth: Depth) => MODES.find((m) => m.id === depth) ?? MODES[1];
@@ -67,6 +75,7 @@ export function ModePicker({
       >
         {single ? <SlidersHorizontal size={14} /> : <current.Icon size={14} />}
         {single ?? current.name()}
+        {!single && current.beta && <em className="beta-tag">Beta</em>}
       </button>
       {open && (
         <div className="mode-menu" role="menu">
@@ -83,7 +92,10 @@ export function ModePicker({
             >
               <m.Icon size={16} />
               <span>
-                <strong>{m.name()}</strong>
+                <strong>
+                  {m.name()}
+                  {m.beta && <em className="beta-tag">Beta</em>}
+                </strong>
                 <small>{m.about()}</small>
               </span>
               {!single && m.id === depth && <Check size={15} />}

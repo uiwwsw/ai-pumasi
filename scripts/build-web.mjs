@@ -15,10 +15,10 @@ const verification =
   '<meta name="google-site-verification" content="b7vKjUgQjabMbz1oYHEAqD3DvJJexV7WSpJPxTTTs_c"><meta name="naver-site-verification" content="5ffb0ec5bd027c7691da31041883a09b2fb98892">';
 const translations = {
   "ko": {
-    "title": "Pumasi Agent — 무료 AI가 팀으로 일하는 앱",
-    "description": "Pumasi Agent는 리더 모델이 일을 나누고 무료 모델이 처리하는 앱입니다. 웹에서 바로 쓰거나 macOS·Windows에 설치합니다. 손이 더 필요하면 다른 사용자가 자기 무료 키로 작업을 거들어 줍니다.",
-    "heading": "무료 AI가 팀으로 일합니다.",
-    "intro": "Pumasi Agent는 요청을 작업 여러 개로 나눕니다. 리더 모델이 계획하고 승인하며 작업은 무료 모델이 합니다. Pitch in을 켜면 다른 사용자가 자기 무료 키로 작업 하나를 대신 처리해 주고, 작업 글과 결과는 암호화되어 서버도 돕는 사람도 읽을 수 없습니다. 무료 한도에 걸리면 다음 제공자로 넘어갑니다. 이 페이지의 웹에서도 바로 쓸 수 있고, 키는 그 브라우저에만 저장됩니다.",
+    "title": "Pumasi Agent — 무료 AI를 이어 쓰고, 막히면 서로 돕는 앱",
+    "description": "Pumasi Agent는 여러 회사의 무료 AI 모델을 연결해, 한 곳이 한도에 걸려도 다음 모델로 이어 쓰는 앱입니다. 안 풀리는 문제는 다른 사용자에게 도움을 요청하면 그 사람의 AI가 풀어 줍니다. 웹에서 바로 쓰거나 macOS·Windows에 설치합니다.",
+    "heading": "무료 AI를 이어 쓰고, 막히면 서로 돕습니다.",
+    "intro": "Pumasi Agent는 여러 회사의 무료 모델을 한곳에 연결합니다. 한 모델이 한도에 걸리면 다음 모델이 이어받아서, 쓰다가 끊기는 일이 줄어듭니다. 답이 마음에 들지 않거나 오래 걸리면 Ask for help로 질문을 공유합니다. 다른 사용자의 Pumasi Agent가 자기 무료 키로 풀어 답을 돌려주고, 그 글은 암호화되어 가운데 서버가 읽을 수 없습니다. 남을 도우면 점수가 쌓이고, 그 점수로 나도 도움을 받습니다. 웹에서도 쓸 수 있고, 키는 그 브라우저에만 남습니다.",
     "demo": "웹에서 쓰기",
     "allDownloads": "다른 버전·전체 목록 (GitHub)",
     "overview": "제품 소개",
@@ -27,16 +27,16 @@ const translations = {
     "other": "/",
     "features": [
       [
-        "일은 나누고, 돈은 아낍니다",
-        "팀 모드는 요청 하나를 작업 최대 6개로 나눕니다. 리더가 계획하고 승인하며 작업과 합치기는 무료 모델이 합니다. 리더도 무료로 둘 수 있고, 유료 리더는 계획과 승인에만 토큰을 씁니다."
+        "무료 모델을 이어 씁니다",
+        "여러 회사의 무료 키를 넣어 두면 한 곳이 한도에 걸려도 다음 모델이 이어받습니다. OpenRouter 로그인 한 번이면 바로 시작할 수 있고, 키를 더 넣을수록 덜 끊깁니다. 독립된 문제가 여러 개면 나눠서 동시에 풉니다."
       ],
       [
-        "문제를 나눕니다",
-        "토큰을 한곳에 모아 나눠 주는 대신 문제를 공유합니다. 돕는 사람이 자기 키로 풀어 결과만 돌려주니, 가운데에서 오남용될 곳이 없습니다. 지금은 작업 하나를 다른 사용자의 앱이 맡는 첫 단계이고, 사람이 역할을 맡는 부분은 함께 만들 기여자를 모으고 있습니다."
+        "막히면 서로 돕습니다",
+        "답 아래의 Ask for help를 누르면 질문이 다른 사용자에게 갑니다. 받은 사람의 앱이 자기 무료 키로 풀어 결과만 돌려줍니다. 보내기 전에 무엇이 나가는지 보여 주고, 질문만 나갑니다. 남을 도우면 쓴 만큼 점수가 쌓이고, 도움을 받으면 그만큼 줄어듭니다."
       ],
       [
-        "무료 모델도 충분히 셉니다",
-        "여기서 쓸 수 있는 무료 모델 Nemotron 3.5 Super가 프로그램 채점 시험 세 개에서 30/30, 28/30, 23/25를 받았습니다. ChatGPT 무료는 23, 24, 13.4였습니다."
+        "계산은 프로그램이 합니다",
+        "정확한 계산이 필요한 문제는 모델이 프로그램을 쓰고, 앱이 격리된 곳에서 실행한 값을 답으로 씁니다. 어려운 계산 문제 12개에서 이 방식은 10개를, 이전 방식은 6개를 맞혔고 토큰은 절반쯤 들었습니다. 한 번 잰 결과이고, 기록은 저장소에 있습니다."
       ],
       [
         "키는 내 기기에만",
@@ -46,7 +46,7 @@ const translations = {
     "questions": [
       [
         "웹과 설치 앱은 무엇이 다른가요?",
-        "웹에서도 채팅과 팀 모드를 그대로 씁니다. 설정에 넣은 키는 그 브라우저에만 저장되고, 질문은 브라우저에서 각 AI 회사로 바로 갑니다. 우리 서버는 거치지 않습니다. NVIDIA는 브라우저 호출을 막아서, 웹에서는 같은 Nemotron 모델을 OpenRouter 키로 씁니다. 코드 모드(폴더의 파일 읽고 고치기)와 Pitch in은 설치 앱에서만 됩니다."
+        "채팅은 웹에서도 그대로 씁니다. 설정에 넣은 키는 그 브라우저에만 저장되고, 질문은 브라우저에서 각 AI 회사로 바로 갑니다. 우리 서버는 거치지 않습니다. NVIDIA는 브라우저 호출을 막아서, 웹에서는 같은 Nemotron 모델을 OpenRouter 키로 씁니다. 코드 모드(폴더의 파일 읽고 고치기)와 Ask for help는 설치 앱에서 씁니다."
       ],
       [
         "정말 무료 모델로 충분한가요?",
@@ -68,7 +68,7 @@ const translations = {
     "featureTitle": "Pumasi Agent에서 할 수 있는 일",
     "faq": "자주 묻는 질문",
     "limitations": "개발 프리뷰의 범위",
-    "limitation": "코드 모드는 베타입니다. 연 폴더의 파일을 읽고, 승인한 뒤에만 고치거나 명령을 실행합니다. Pitch in은 미리보기 동안 초대제입니다. 개인이 만드는 개발 프리뷰이며, 측정 결과는 공개한 시험에 대한 것입니다.",
+    "limitation": "코드 모드와 Team 모드는 베타입니다. 코드 모드는 연 폴더의 파일을 읽고, 승인한 뒤에만 고치거나 명령을 실행합니다. Team 모드는 여러 모델이 각자 풀고 답을 맞춰 보는 방식으로, 더 정확한지는 아직 측정 중입니다. Ask for help는 미리보기 동안 초대제입니다. 개인이 만드는 개발 프리뷰이며, 측정 결과는 공개한 시험에 대한 것입니다.",
     "browser": "웹에서 쓰기 · 키는 이 브라우저에만",
     "open": "웹에서 바로 쓰기",
     "source": "소스와 문서",
@@ -77,10 +77,10 @@ const translations = {
     "nojs": "웹 버전은 JavaScript가 필요합니다. 설치 앱은 아래 다운로드 링크에서 받을 수 있습니다."
   },
   "en": {
-    "title": "Pumasi Agent: free AI models, working as a team",
-    "description": "Pumasi Agent is an app, on the web or installed on macOS and Windows, where a lead model splits the job and free models do the work. When you need more hands, other users can take a task with their own free keys. A free model you can run here outscored ChatGPT's free tier on three program-graded exams.",
-    "heading": "Free AI models, working as a team.",
-    "intro": "Pumasi Agent splits a request into tasks. A lead model plans and signs off, free models do the work, and with Pumasi other users can take a task off your hands with their own free keys, sealed so that neither the relay nor the helper can read it. When a free tier runs dry, the request moves to the next provider. You can use it on the web too; your keys stay in that browser.",
+    "title": "Pumasi Agent: free AI models that keep going, and people who pitch in",
+    "description": "Pumasi Agent connects free AI models from several providers, so when one hits its limit the next one carries on. When a problem will not come out, ask for help and another user's AI works on it. Use it on the web or install it on macOS and Windows.",
+    "heading": "Free AI that keeps going. Help when you are stuck.",
+    "intro": "Pumasi Agent connects free models from several providers in one place. When one hits its limit the next takes over, so you are cut off less often. If an answer is not good enough or takes too long, Ask for help shares the question. Another user's Pumasi Agent solves it with their own free key and sends the answer back, sealed so the relay in the middle cannot read it. Helping others earns points, and points are what you spend to get help. You can use it on the web too; your keys stay in that browser.",
     "demo": "Use on the web",
     "allDownloads": "Other versions (GitHub)",
     "overview": "Overview",
@@ -89,16 +89,16 @@ const translations = {
     "other": "/ko/",
     "features": [
       [
-        "Split the work, not the bill",
-        "Team mode turns one request into up to six tasks. A lead plans and signs off, free models do the tasks and merge them. The lead can be free, or a paid model that spends tokens only on planning and approval."
+        "Free models that keep going",
+        "Add free keys from several providers and when one hits its limit the next model takes over. One OpenRouter sign-in is enough to start, and each extra key means fewer stops. Several separate problems are split and solved at the same time."
       ],
       [
-        "Share the problem",
-        "Instead of pooling tokens in one place, you share the problem. A helper solves it with their own key and sends back the result, so there is no central pool to abuse. Today another user's app can take one task; the part where people take roles is still an idea, and we're looking for contributors."
+        "Help when you are stuck",
+        "Ask for help under an answer sends the question to other users. The app of whoever takes it solves it with their own free key and returns only the result. You see what will be sent first, and only the question goes. Helping earns points for what it cost; getting help spends them."
       ],
       [
-        "Free models that hold their own",
-        "Nemotron 3.5 Super, a free model you can run here, scored 30/30, 28/30 and 23/25 on three program-graded exams. ChatGPT free scored 23, 24 and 13.4."
+        "A program does the computing",
+        "When a problem needs exact computation, the model writes a program and the app runs it in a sandbox; what it prints is the answer. On twelve hard computation problems this got 10 right where the earlier way got 6, at about half the tokens. Measured once; the record is in the repository."
       ],
       [
         "Keys stay on your machine",
@@ -108,7 +108,7 @@ const translations = {
     "questions": [
       [
         "How is the web version different from the desktop app?",
-        "Chat and team mode work the same. Keys you add are stored in that browser only, and your questions go from the browser straight to each AI provider, never through our server. NVIDIA blocks calls from web pages, so on the web the same Nemotron models run through an OpenRouter key. Code mode (reading and editing files in a folder) and Pitch in need the desktop app."
+        "Chat works the same. Keys you add are stored in that browser only, and your questions go from the browser straight to each AI provider, never through our server. NVIDIA blocks calls from web pages, so on the web the same Nemotron models run through an OpenRouter key. Code mode (reading and editing files in a folder) and Ask for help need the desktop app."
       ],
       [
         "Are free models really enough?",
@@ -130,7 +130,7 @@ const translations = {
     "featureTitle": "Why it's different",
     "faq": "Frequently asked questions",
     "limitations": "Developer preview limitations",
-    "limitation": `The public ${VERSION} preview has code mode as a beta: it reads files in a folder you open and edits them or runs commands only after you approve. Pitch in is invite-only during the preview. Built by one person; the measurements cover the published exams only.`,
+    "limitation": `The public ${VERSION} preview has code mode and Team mode as betas. Code mode reads files in a folder you open and edits them or runs commands only after you approve. Team mode has several models solve the same problem and compares their answers; whether that is more accurate is still being measured. Ask for help is invite-only during the preview. Built by one person; the measurements cover the published exams only.`,
     "browser": "Use it on the web · keys stay in this browser",
     "open": "Use it on the web",
     "source": "Source and documentation",
@@ -146,7 +146,7 @@ const escape = (s) =>
   s.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 function landingHero(lang) {
   const en = lang === "en";
-  return `<section class="landing-hero" aria-label="${en ? "Meet Pumasi Agent" : "Pumasi Agent 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> PUMASI AGENT · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Free AI models,<br>working as a team." : "무료 AI가<br>팀으로 일합니다."}</p><p class="hero-description">${en ? "A lead splits the job, free models do it.<br>Other users can lend a hand." : "리더가 일을 나누고 무료 모델이 처리합니다.<br>다른 사용자가 손을 보탤 수도 있습니다."}</p><div class="hero-actions"><a class="hero-primary" data-download href="${download}"><span aria-hidden="true">↓</span> ${en ? "Download Pumasi Agent" : "Pumasi Agent 다운로드"}</a><a class="hero-secondary" href="/app/">${en ? "Use it on the web" : "웹에서 바로 쓰기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">${en ? "Web" : "웹"} · macOS · Windows <span> / </span> ${en ? "Your keys, straight from your browser to each provider" : "키는 내 브라우저에서 각 회사로 바로 갑니다"} <span> / </span> <a href="${release}">${en ? "Other versions" : "다른 버전"}</a></p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Ask once" : "한 번 요청하면"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "The lead splits it into tasks" : "리더가 작업을 나누고"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Free models, or other users, do them" : "무료 모델이나 다른 사용자가 처리합니다"}</span></div><a class="hero-scroll" href="${lang === MAIN ? "#root" : "#overview"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
+  return `<section class="landing-hero" aria-label="${en ? "Meet Pumasi Agent" : "Pumasi Agent 소개"}"><div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-copy"><p class="hero-kicker"><span></span> PUMASI AGENT · DEVELOPER PREVIEW</p><p class="hero-title">${en ? "Free AI that keeps going.<br>Help when you are stuck." : "무료 AI를 이어 씁니다.<br>막히면 서로 돕습니다."}</p><p class="hero-description">${en ? "When one free model hits its limit, the next carries on.<br>Stuck? Another user's AI pitches in." : "한 모델이 한도에 걸리면 다음 모델이 이어받습니다.<br>안 풀리면 다른 사용자의 AI가 돕습니다."}</p><div class="hero-actions"><a class="hero-primary" data-download href="${download}"><span aria-hidden="true">↓</span> ${en ? "Download Pumasi Agent" : "Pumasi Agent 다운로드"}</a><a class="hero-secondary" href="/app/">${en ? "Use it on the web" : "웹에서 바로 쓰기"} <span aria-hidden="true">↗</span></a></div><p class="hero-platforms">${en ? "Web" : "웹"} · macOS · Windows <span> / </span> ${en ? "Your keys, straight from your browser to each provider" : "키는 내 브라우저에서 각 회사로 바로 갑니다"} <span> / </span> <a href="${release}">${en ? "Other versions" : "다른 버전"}</a></p></div><div class="hero-workflow" aria-label="${en ? "Workflow" : "작업 흐름"}"><span><b>01</b> ${en ? "Connect free keys" : "무료 키를 연결하면"}</span><i aria-hidden="true">→</i><span><b>02</b> ${en ? "The next model takes over at a limit" : "한도에 걸려도 다음 모델이 이어받고"}</span><i aria-hidden="true">→</i><span><b>03</b> ${en ? "Stuck? Other users help" : "막히면 다른 사용자가 돕습니다"}</span></div><a class="hero-scroll" href="${lang === MAIN ? "#root" : "#overview"}">${en ? "Explore the workspace" : "작업 공간 살펴보기"} <span aria-hidden="true">↓</span></a></section>`;
 }
 const styles = `@font-face{font-family:SUITE;src:url('/fonts/SUITE-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}html{scroll-behavior:smooth}body{margin:0;color:#34342f;background:#faf9f6;font-family:SUITE,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}button,input,select,textarea{font:inherit}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,SUITE,monospace}.site-nav{height:52px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #e8e6df;background:#faf9f6}.site-nav nav{display:flex;gap:20px}.site-nav a,.site-content a,.site-footer a{color:#48684c;text-underline-offset:4px}.site-brand{font-weight:750;text-decoration:none}.site-content{max-width:1000px;margin:auto;padding:76px 28px;line-height:1.85}.site-content h1,.site-content h2{line-height:1.3;letter-spacing:-.035em}.site-content h1,.site-content>.site-hero h2{font-size:clamp(30px,4vw,48px);max-width:840px;margin:20px 0}.site-content h2{margin:54px 0 24px;font-size:28px}.site-content h3{font-size:20px;margin:0 0 12px}.site-lead{max-width:800px;color:#65665c;font-size:18px}.site-eyebrow{color:#607b64;font-size:13px;letter-spacing:.08em}.site-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.site-actions a{padding:10px 18px;border:1px solid #cdd7c7;border-radius:9px;text-decoration:none}.site-actions a:first-child{background:#607b64;color:#fff}.site-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.site-card,.site-limit{border:1px solid #e8e6df;border-radius:16px;padding:26px;background:#fffefa}.site-card p{margin:0;color:#65665c}.site-content details{border-bottom:1px solid #e8e6df;padding:18px 0}.site-content summary{cursor:pointer;font-weight:650}.site-content details p{color:#65665c}.site-footer{padding:24px 28px;border-top:1px solid #e8e6df;text-align:center;font-size:14px}.site-skip{position:absolute;left:20px;top:-100px;background:#fff;padding:12px;z-index:20}.site-skip:focus{top:5px}.site-notice{padding:16px 28px;color:#65665c}.site-web-demo .app{height:calc(100dvh - 52px)}.site-web-demo .site-content{border-top:1px solid #e8e6df}@media(max-width:680px){.site-nav{padding:0 16px;font-size:13px}.site-nav nav{gap:12px}.site-nav .site-source{display:none}.site-content{padding:48px 20px}.site-grid{grid-template-columns:1fr}.site-content h2{font-size:25px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}`;
 function body(lang) {
