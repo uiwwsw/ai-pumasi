@@ -448,6 +448,20 @@ else
             env,
             settings,
             request: providers.request,
+            // The helper's whole app answers, with the donated free keys and no paid fallback.
+            solve: async (text, { env: donated }) => {
+              const r = await require("./smart.cjs").run(
+                { text, context: [], model: "auto-free" },
+                // The relay drops a task after ten minutes; stop a little before that.
+                { env: donated, stats: stats(), allowPaid: false, signal: AbortSignal.timeout(540_000) },
+              );
+              const u = r.usage;
+              return {
+                text: r.text,
+                inputTokens: u.route.in + u.work.in + u.check.in,
+                outputTokens: u.route.out + u.work.out + u.check.out,
+              };
+            },
             sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
             onProgress: (e) =>
               event.sender.send("aurora:pumasi-progress", {
@@ -460,6 +474,40 @@ else
       } finally {
         helping = false;
       }
+    });
+    // "Ask for help": share one question with other users and wait for one of their apps to
+    // answer. The answer is for this user, so unlike a helper's task text it goes to the window.
+    let asking = null;
+    ipcMain.handle("aurora:pumasi-ask", async (event, text) => {
+      if (!authorized(event)) throw forbiddenError();
+      if (asking) throw new Error(tr("이미 도움을 요청하는 중입니다."));
+      const { mod, settings, api } = pumasi();
+      if (!settings.get().joined) throw new Error(tr("먼저 Pitch in에 가입하세요."));
+      asking = new AbortController();
+      const env = secrets.env();
+      try {
+        const r = await mod.ask(text, {
+          api,
+          signal: asking.signal,
+          sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+          onProgress: (e) =>
+            event.sender.isDestroyed() ||
+            event.sender.send("aurora:pumasi-ask-progress", {
+              open: e.open,
+              working: e.working,
+              done: e.done,
+            }),
+        });
+        return { text: scrub(r.text, env) };
+      } catch (error) {
+        throw new Error(redact(error?.message ?? String(error), env));
+      } finally {
+        asking = null;
+      }
+    });
+    ipcMain.handle("aurora:pumasi-ask-cancel", (event) => {
+      if (!authorized(event)) throw forbiddenError();
+      asking?.abort();
     });
     let workerStats;
     // Per-model success and latency only: model ids and numbers, never keys or prompts.

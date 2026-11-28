@@ -31,6 +31,8 @@ export type AskRun = {
 export const emptyRun = (): AskRun => ({ stage: "start", parts: [], startedAt: Date.now() });
 /** Several models worked on it together: split between them, or one solving and one checking. */
 export const MODE_NAME = "Pumasi mode";
+/** After this long without an answer, asking another user for help is offered. */
+export const SLOW_MS = 45_000;
 
 /** Fold one progress event into the run shown on screen. */
 export function applyProgress(run: AskRun, e: AskProgress): AskRun {
@@ -93,12 +95,15 @@ export function AskProgressView({
   writing,
   onSkip,
   onFinish,
+  onHelp,
 }: {
   run: AskRun;
   /** The answer has started to appear below. */
   writing: boolean;
   onSkip: (id: string) => void;
   onFinish: () => void;
+  /** Offered once the wait is long: ask another user's app for help. */
+  onHelp?: () => void;
 }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -170,6 +175,14 @@ export function AskProgressView({
             </li>
           ))}
         </ol>
+      )}
+      {onHelp && now - run.startedAt >= SLOW_MS && (
+        <p className="ask-slow">
+          {t("오래 걸리고 있습니다.")}
+          <button type="button" onClick={onHelp}>
+            {t("Ask for help")}
+          </button>
+        </p>
       )}
     </div>
   );

@@ -24,6 +24,14 @@ contextBridge.exposeInMainWorld("auroraAI", {
     join: (invite) => ipcRenderer.invoke("aurora:pumasi-join", invite),
     open: () => ipcRenderer.invoke("aurora:pumasi-open"),
     help: (slotId) => ipcRenderer.invoke("aurora:pumasi-help", slotId),
+    // Share one question with other users; the answer comes back to the asker.
+    ask: (text) => ipcRenderer.invoke("aurora:pumasi-ask", text),
+    askCancel: () => ipcRenderer.invoke("aurora:pumasi-ask-cancel"),
+    onAskProgress: (fn) => {
+      const h = (_e, data) => fn(data);
+      ipcRenderer.on("aurora:pumasi-ask-progress", h);
+      return () => ipcRenderer.removeListener("aurora:pumasi-ask-progress", h);
+    },
     onProgress: (fn) => {
       const h = (_e, data) => fn(data);
       ipcRenderer.on("aurora:pumasi-progress", h);
