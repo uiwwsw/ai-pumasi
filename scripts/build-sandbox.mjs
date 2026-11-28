@@ -5,7 +5,8 @@ import { readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 
 export async function sandboxPage() {
-  const js = await readFile(new URL("./sandbox-page.js", import.meta.url), "utf8");
+  // Line endings are fixed, so the page and its hash come out the same on every system.
+  const js = (await readFile(new URL("./sandbox-page.js", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
   if (js.includes("</script")) throw new Error("sandbox-page.js must not contain a closing script tag");
   const hash = createHash("sha256").update(js).digest("base64");
   return `<!doctype html>
