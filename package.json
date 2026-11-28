@@ -1,6 +1,6 @@
 {
   "name": "pumasi-agent-desktop",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "description": "Pumasi Agent: a desktop app where several free AI models work together, vote on the answer and stop as soon as the result is settled.",
