@@ -9,7 +9,7 @@
 // rewrites the request, and there is no review or merge pass over finished work.
 // Measured on twelve hard problems (bench/README.md): a second model checking the answer fixed one
 // answer in 48 tries at 1.4 times the tokens, so there is no checking step; letting a program do
-// the computing took the same problems from 6 right to 9-10 at less than half the tokens.
+// the computing took the nine well-posed problems from 6 right to 9 at about half the tokens.
 const providers = require("./providers.cjs");
 const { createStatsStore } = require("./worker-stats.cjs");
 const { tr } = require("./i18n.cjs");

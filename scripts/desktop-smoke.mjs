@@ -64,7 +64,7 @@ try {
   await page.screenshot({ path: "artifacts/aurora-key-setup.png" });
   // Settings: keys first, models folded under Advanced with Auto as the default.
   await settings();
-  await page.getByText("고급: 모델과 팀").click();
+  await page.locator("summary", { hasText: "고급: 모델" }).click();
   await expect(page.getByLabel("답할 모델", { exact: true })).toHaveValue("auto-free");
   await expect(page.getByText("실제 API 사용", { exact: true })).toHaveCount(0);
   await page.screenshot({ path: "artifacts/aurora-model-settings.png" });
@@ -159,7 +159,7 @@ try {
   await page.screenshot({ path: "artifacts/aurora-answer.png" });
   // A model chosen in Advanced is used for the next question.
   await settings();
-  await page.getByText("고급: 모델과 팀").click();
+  await page.locator("summary", { hasText: "고급: 모델" }).click();
   await page.getByLabel("답할 모델", { exact: true }).selectOption("gpt-6.1-sol");
   await close();
   // A text file rides along with the question: the model gets its content, the chat shows its name.

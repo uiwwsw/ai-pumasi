@@ -275,7 +275,7 @@ def path():
     lines = ", ".join(f"{labels[a]}-{labels[b]}:{w}" for (a, b), w in el)
 
     if LEVEL >= 3:
-        add("path", f"양방향 도로망이 있다(도시-도시:비용). {lines}\n{labels[s]}에서 {labels[t]}까지 가는 최소 비용은 반드시 {labels[w]}를 거쳐야 한다(같은 도시를 다시 지나도 된다)?", str(total_dist), "정수 하나")
+        add("path", f"양방향 도로망이 있다(도시-도시:비용). {lines}\n{labels[s]}에서 출발해 반드시 {labels[w]}를 거쳐 {labels[t]}까지 가는 최소 비용은 얼마인가(같은 도시를 다시 지나도 된다)?", str(total_dist), "정수 하나")
     else:
         add("path", f"양방향 도로망이 있다(도시-도시:비용). {lines}\n{labels[s]}에서 {labels[t]}까지 가는 최소 비용은?", str(total_dist), "정수 하나")
 

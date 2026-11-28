@@ -36,7 +36,7 @@ const translations = {
       ],
       [
         "계산은 프로그램이 합니다",
-        "정확한 계산이 필요한 문제는 모델이 프로그램을 쓰고, 앱이 격리된 곳에서 실행한 값을 답으로 씁니다. 어려운 계산 문제 12개에서 이 방식은 10개를, 이전 방식은 6개를 맞혔고 토큰은 절반쯤 들었습니다. 한 번 잰 결과이고, 기록은 저장소에 있습니다."
+        "정확한 계산이 필요한 문제는 모델이 프로그램을 쓰고, 앱이 격리된 곳에서 실행한 값을 답으로 씁니다. 어려운 문제 9개에서 이 방식은 9개를, 이전 방식은 6개를 맞혔고 토큰은 절반쯤 들었습니다. 한 번 잰 결과이고, 기록은 저장소에 있습니다."
       ],
       [
         "키는 내 기기에만",
@@ -98,7 +98,7 @@ const translations = {
       ],
       [
         "A program does the computing",
-        "When a problem needs exact computation, the model writes a program and the app runs it in a sandbox; what it prints is the answer. On twelve hard computation problems this got 10 right where the earlier way got 6, at about half the tokens. Measured once; the record is in the repository."
+        "When a problem needs exact computation, the model writes a program and the app runs it in a sandbox; what it prints is the answer. On nine hard problems this got all 9 right where the earlier way got 6, at about half the tokens. Measured once; the record is in the repository."
       ],
       [
         "Keys stay on your machine",
