@@ -9,7 +9,7 @@
 // rewrites the request, and there is no review or merge pass over finished work.
 // Measured on twelve hard problems (bench/README.md): a second model checking the answer fixed one
 // answer in 48 tries at 1.4 times the tokens, so there is no checking step; letting a program do
-// the computing took the same problems from 6 right to 9-10 at less than half the tokens.
+// the computing took the nine well-posed problems from 6 right to 9 at about half the tokens.
 const providers = require("./providers.cjs");
 const { createStatsStore } = require("./worker-stats.cjs");
 const { tr } = require("./i18n.cjs");
@@ -104,6 +104,25 @@ const CODE_NOTE = [
 const CODE_FIX =
   "That program did not produce an answer. Fix it and reply with the whole program again, as one ```js code block whose first line is `// RUN`.";
 
+/**
+ * Whether two programs printed the same result. Labels, spacing and the order of a list do not
+ * count: "정답 3: 1,174" and "1174" are the same, and so are "a, b" and "b,a".
+ */
+function sameResult(a, b) {
+  const key = (text) =>
+    String(text ?? "")
+      .toLowerCase()
+      .replace(/(?:정답|답|answer|result)\s*\d*\s*[:：=]/g, "")
+      .replace(/(?<=\d),(?=\d{3}(?!\d))/g, "")
+      .replace(/[`*"'\s]/g, "")
+      .split(/[,\n;]/)
+      .filter(Boolean)
+      .sort()
+      .join(",");
+  const x = key(a);
+  return x !== "" && x === key(b);
+}
+
 /** The program in a reply that is nothing but one runnable block, or null. */
 function runnable(text) {
   const m = /^\s*```(?:js|javascript)[ \t]*\n[ \t]*\/\/[ \t]*RUN\b[^\n]*\n([\s\S]*?)\n?```\s*$/.exec(String(text ?? ""));
@@ -128,7 +147,8 @@ async function pool(items, limit, fn) {
 /**
  * @param {{text:string, context:any[], model:string, autoOrder?:string[], depth?:"light"|"auto"|"deep"}} p
  *   depth is how much to spend: "light" = one fast model answers at once, the fewest tokens;
- *   "auto" (the default) = decided from the question; "deep" = the most room to think everywhere.
+ *   "auto" (the default) = decided from the question; "deep" = Team (beta): the most room to think
+ *   everywhere, and a computed answer is worked out again by a different model and compared.
  * @param {{env?:object, fetchImpl?:Function, onProgress?:Function, onDelta?:Function,
  *   stats?:object, sleep?:Function, now?:Function, signal?:AbortSignal, allowPaid?:boolean,
  *   skipped?:(id:string)=>boolean, runCode?:(code:string)=>Promise<{ok:boolean,out:string,error?:string}>}} io
@@ -195,7 +215,7 @@ async function run(p, io = {}) {
     stats,
   );
   /** One piece of work with retries and the next model on failure. Returns the reply or throws. */
-  const solve = async (id, title, prompt, { ctx = [], onDelta } = {}) => {
+  const solve = async (id, title, prompt, { ctx = [], onDelta, models = chain } = {}) => {
     const report = (state, extra = {}) => onProgress({ stage: "part", id, title, state, ...extra });
     // The model's own reasoning while it works: the last stretch only, a few times a second.
     let thoughtAt = 0;
@@ -207,9 +227,9 @@ async function run(p, io = {}) {
     };
     let last;
     let best = null;
-    for (const [m, model] of chain.entries()) {
+    for (const [m, model] of models.entries()) {
       if (io.skipped?.(id)) break;
-      if (m > 0) report("switch", { model, from: chain[m - 1], reason: last?.reason ?? team.failureReason(last) });
+      if (m > 0) report("switch", { model, from: models[m - 1], reason: last?.reason ?? team.failureReason(last) });
       const r = await team.superviseModel(model, prompt, {
         call: (action, mdl, text, c, maxOutputTokens, timeoutMs) =>
           request(
@@ -269,6 +289,7 @@ async function run(p, io = {}) {
           ...done,
           text: `${String(ran.out).trim()}\n\n${tr("계산에 쓴 프로그램:")}\n\n\`\`\`js\n${code.trim()}\n\`\`\``,
           computed: true,
+          output: String(ran.out).trim(),
         };
       if (attempt === 1) break;
       const why = ran?.error ? String(ran.error).slice(0, 500) : tr("출력이 없습니다.");
@@ -287,6 +308,46 @@ async function run(p, io = {}) {
     return solve(id, title, prompt, opts);
   };
 
+  /**
+   * Team (beta, depth "deep"): a computed answer is worked out again by a different model with a
+   * program of its own. The same result twice is taken; if they differ a third model decides by
+   * majority, and with no majority the first answer is kept and the others are shown beside it.
+   * An answer that was not computed cannot be compared this way and is returned as it is.
+   */
+  const together = async (id, title, prompt, opts = {}) => {
+    const first = await answer(id, title, prompt, opts);
+    if (depth !== "deep" || !first.computed) return first;
+    const others = providers.autoCandidates(env, order).filter((m) => m !== first.model);
+    const votes = [first];
+    for (const model of others.slice(0, 2)) {
+      if (io.skipped?.(id)) break;
+      let next;
+      try {
+        // Nothing streams from here on: the first answer is already on screen.
+        next = await answer(id, title, prompt, { ctx: opts.ctx, models: [model] });
+      } catch (error) {
+        if (error?.stopped) throw error;
+        continue;
+      }
+      // Only a different model's own program counts as a second opinion.
+      if (!next.computed || votes.some((v) => v.model === next.model)) continue;
+      votes.push(next);
+      const same = votes.filter((v) => sameResult(v.output, next.output));
+      if (same.length >= 2) return { ...same[0], agreed: same.length, of: votes.length };
+    }
+    if (votes.length === 1) return first;
+    const beside = votes
+      .slice(1)
+      .map((v) => `- ${v.model}: ${v.output.replace(/\s+/g, " ").slice(0, 300)}`)
+      .join("\n");
+    return {
+      ...first,
+      text: `${first.text}\n\n${tr("다른 모델의 프로그램은 다른 값을 냈습니다. 이 답은 확인되지 않았습니다.")}\n${beside}`,
+      disputed: true,
+      of: votes.length,
+    };
+  };
+
   // 2a. Independent parts, at the same time. Each finished part is reported at once.
   if (plan.mode === "split") {
     const results = new Array(plan.parts.length);
@@ -299,7 +360,7 @@ async function run(p, io = {}) {
         return;
       }
       try {
-        const done = await answer(id, part.title, partPrompt(plan.shared, part), { ctx: context });
+        const done = await together(id, part.title, partPrompt(plan.shared, part), { ctx: context });
         results[i] = io.skipped?.(id) ? { skipped: true } : done;
         onProgress({
           stage: "part",
@@ -349,13 +410,15 @@ async function run(p, io = {}) {
         skipped: !!results[i].skipped,
         incomplete: !!results[i].incomplete,
         computed: !!results[i].computed,
+        ...(results[i].agreed ? { agreed: results[i].agreed } : {}),
+        ...(results[i].disputed ? { disputed: true } : {}),
       })),
       usage,
     };
   }
 
   // 2b. One answer.
-  const answered = await answer("answer", "", p.text, { ctx: context, onDelta: io.onDelta });
+  const answered = await together("answer", "", p.text, { ctx: context, onDelta: io.onDelta });
   onProgress({ stage: "done" });
   return {
     text: answered.text,
@@ -366,6 +429,8 @@ async function run(p, io = {}) {
     model: answered.model,
     incomplete: !!answered.incomplete,
     computed: !!answered.computed,
+    ...(answered.agreed ? { agreed: answered.agreed } : {}),
+    ...(answered.disputed ? { disputed: true } : {}),
     check: null,
     usage,
   };
@@ -400,4 +465,4 @@ function createControl() {
   };
 }
 
-module.exports = { run, createControl, splitByHeadings, readTriage, partPrompt, runnable, EFFORT_OUTPUT };
+module.exports = { run, createControl, splitByHeadings, readTriage, partPrompt, runnable, sameResult, EFFORT_OUTPUT };

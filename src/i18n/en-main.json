@@ -232,5 +232,13 @@
   "도움 요청을 주고받으려면 여기서 가입합니다. 도울 때는 내가 고른 무료 키만 씁니다.": "Join here to ask for and give help. Helping uses only the free keys you choose.",
   "먼저 설정의 \"다른 사용자 돕기\"에서 가입해야 요청할 수 있습니다.": "Join under \"Help other users\" in settings before you can ask.",
   "내 점수 {n}. 도움을 받으면 쓴 만큼 줄고, 다른 사람을 도우면 그만큼 쌓입니다.": "Your points: {n}. Getting help spends them, and helping others earns them back.",
-  "점수가 없습니다. 다른 사람을 도우면 점수가 쌓이고, 그만큼 도움을 요청할 수 있습니다.": "You have no points. Help others to earn points, then you can ask for that much help."
+  "점수가 없습니다. 다른 사람을 도우면 점수가 쌓이고, 그만큼 도움을 요청할 수 있습니다.": "You have no points. Help others to earn points, then you can ask for that much help.",
+  "여러 모델이 각자 풀고 답을 맞춰 봅니다. 토큰을 많이 쓰고 오래 걸립니다.": "Several models each solve it and the answers are compared. Uses many tokens and takes longer.",
+  "모델 {n}개의 답이 같음": "{n} models got the same answer",
+  "모델마다 답이 달라 확인되지 않음": "the models disagreed, so this is not confirmed",
+  "{n}개는 두 모델의 답이 같음": "{n} with two models agreeing",
+  "{n}개는 확인되지 않음": "{n} not confirmed",
+  "모델 순서": "Model order",
+  "측정한 실력 순서입니다. 앞에 있는 모델부터 쓰고, 한도에 걸리면 다음 순위가 이어받습니다.": "The measured order of strength. The first model is used first, and the next takes over when it hits a limit.",
+  "고급: 모델": "Advanced: models"
 }

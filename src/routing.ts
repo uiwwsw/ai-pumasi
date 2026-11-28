@@ -85,7 +85,8 @@ export function readRouting(raw: string | null): RoutingSettings {
         ...teamDefaults,
         ...d,
         depth: d.depth === "light" || d.depth === "deep" ? d.depth : "auto",
-        team: d.team === true,
+        // The old team mode (a lead that plans, reviews and merges) measured worse and is gone.
+        team: false,
         pumasi: d.pumasi === true,
         pumasiCopies: [1, 2, 3].includes(d.pumasiCopies) ? d.pumasiCopies : 2,
         lead: models.some((m) => m.id === d.lead) ? d.lead : teamDefaults.lead,
@@ -266,7 +267,11 @@ export type AskResult = {
   incomplete?: boolean;
   /** The answer is what a program printed, not something a model worked out in its head. */
   computed?: boolean;
-  parts?: { title: string; model: string | null; failed: boolean; skipped: boolean; incomplete: boolean; computed?: boolean }[];
+  /** Team: how many models' programs printed the same result. */
+  agreed?: number;
+  /** Team: the models' programs printed different results and none won. */
+  disputed?: boolean;
+  parts?: { title: string; model: string | null; failed: boolean; skipped: boolean; incomplete: boolean; computed?: boolean; agreed?: number; disputed?: boolean }[];
   check?: { model: string; verdict: "right" | "wrong" | "unsure"; revised: boolean } | null;
   usage: Record<"route" | "work" | "check", { in: number; out: number }>;
 };

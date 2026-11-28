@@ -205,9 +205,13 @@ export function howLine(r: AskResult): string {
     const skipped = r.parts?.filter((p) => p.skipped).length ?? 0;
     const failed = r.parts?.filter((p) => p.failed).length ?? 0;
     const computed = r.parts?.filter((p) => p.computed).length ?? 0;
+    const agreed = r.parts?.filter((p) => p.agreed).length ?? 0;
+    const disputed = r.parts?.filter((p) => p.disputed).length ?? 0;
     return [
-      r.depth === "deep" ? t("깊게") : MODE_NAME,
+      r.depth === "deep" ? "Team (Beta)" : MODE_NAME,
       t("{n}개로 나눠 풂", { n }),
+      agreed ? t("{n}개는 두 모델의 답이 같음", { n: agreed }) : "",
+      disputed ? t("{n}개는 확인되지 않음", { n: disputed }) : "",
       computed ? t("{n}개는 프로그램으로 계산", { n: computed }) : "",
       skipped ? t("{n}개 건너뜀", { n: skipped }) : "",
       failed ? t("{n}개 실패", { n: failed }) : "",
@@ -227,9 +231,11 @@ export function howLine(r: AskResult): string {
           : t("{model}이(가) 검수했지만 확신하지 못함", { model: name(r.check.model) }),
     ].join(" · ");
   return [
-    r.depth === "light" ? t("가볍게") : r.depth === "deep" ? t("깊게") : "",
+    r.depth === "light" ? t("가볍게") : r.depth === "deep" ? "Team (Beta)" : "",
     model,
     r.computed ? t("프로그램으로 계산") : "",
+    r.agreed ? t("모델 {n}개의 답이 같음", { n: r.agreed }) : "",
+    r.disputed ? t("모델마다 답이 달라 확인되지 않음") : "",
   ]
     .filter(Boolean)
     .join(" · ");
@@ -247,9 +253,13 @@ export function trailOf(r: AskResult): TrailStep[] | undefined {
           ? t("실패")
           : p.incomplete
             ? t("답이 잘림")
-            : p.computed
-              ? t("프로그램으로 계산")
-              : undefined,
+            : p.disputed
+              ? t("모델마다 답이 달라 확인되지 않음")
+              : p.agreed
+                ? t("모델 {n}개의 답이 같음", { n: p.agreed })
+                : p.computed
+                  ? t("프로그램으로 계산")
+                  : undefined,
     }));
   if (r.mode === "roles" && r.check)
     return [

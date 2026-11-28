@@ -1510,7 +1510,7 @@ function App() {
                 )}
                 <details className="routing-settings">
                   <summary>
-                    {t("고급: 모델과 팀")}
+                    {t("고급: 모델")}
                     <small>
                       {t("그대로 두면 알아서 고릅니다. 무료 모델이 먼저 답하고, 무료 한도가 모두 막히면 넣어 둔 유료 키를 씁니다.")}
                     </small>
@@ -1536,48 +1536,13 @@ function App() {
                       ))}
                     </select>
                   </label>
-                  <label className="setting-row">
-                    <span>
-                      <strong>{t("팀 모드")}</strong>
-                      <small>
-                        {t("리더가 요청을 작업 여러 개로 나누고 작업 모델이 처리합니다. 토큰을 훨씬 많이 씁니다.")}
-                      </small>
-                    </span>
-                    <input
-                      type="checkbox"
-                      aria-label={t("팀 모드")}
-                      checked={routing.team}
-                      onChange={(e) =>
-                        setRouting((r) => ({ ...r, team: e.target.checked }))
-                      }
-                    />
-                  </label>
-                  <label className="setting-row">
-                    <span>
-                      <strong>{t("총괄 모델")}</strong>
-                      <small>{t("작업을 나누고 결과를 검수합니다.")}</small>
-                    </span>
-                    <select
-                      aria-label={t("총괄 모델")}
-                      value={routing.lead}
-                      onChange={(e) =>
-                        setRouting((r) => ({ ...r, lead: e.target.value }))
-                      }
-                    >
-                      {models.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
                   {routing.lead === "auto-free" && (
                     <div className="setting-row lead-order">
                       <span>
-                        <strong>{t("리더 순서")}</strong>
+                        <strong>{t("모델 순서")}</strong>
                         <small>
                           {t(
-                            "측정한 실력 순서입니다. 1등이 한도에 걸리면 다음 순위가 이어받고, 끝낼지는 리더가 정합니다. 리더가 확신하지 못할 때만 2등이 한 번 더 봅니다.",
+                            "측정한 실력 순서입니다. 앞에 있는 모델부터 쓰고, 한도에 걸리면 다음 순위가 이어받습니다.",
                           )}
                         </small>
                       </span>
@@ -1624,67 +1589,6 @@ function App() {
                         </button>
                       )}
                     </div>
-                  )}
-                  <label className="setting-row">
-                    <span>
-                      <strong>{t("작업 모델")}</strong>
-                      <small>
-                        {t("나눠진 작업 하나씩만 받습니다. 대화 전체는 보내지 않습니다.")}
-                      </small>
-                    </span>
-                    <select
-                      aria-label={t("작업 모델")}
-                      value={routing.worker}
-                      onChange={(e) =>
-                        setRouting((r) => ({ ...r, worker: e.target.value }))
-                      }
-                    >
-                      {models.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="setting-row">
-                    <span>
-                      <strong>{t("Pitch in에 맡기기")}</strong>
-                      <small>
-                        {t("팀 모드의 작업을 다른 사람의 앱이 그 사람의 키로 처리합니다. 5분 안에 아무도 돕지 않은 작업은 내 작업 모델이 합니다. 작업 글은 모르는 사람의 AI가 읽으니 개인 정보는 넣지 마세요.")}
-                      </small>
-                    </span>
-                    <input
-                      type="checkbox"
-                      aria-label={t("Pitch in에 맡기기")}
-                      checked={routing.pumasi}
-                      disabled={!routing.team}
-                      onChange={(e) =>
-                        setRouting((r) => ({ ...r, pumasi: e.target.checked }))
-                      }
-                    />
-                  </label>
-                  {routing.team && routing.pumasi && (
-                    <label className="setting-row">
-                      <span>
-                        <strong>{t("작업당 돕는 사람")}</strong>
-                        <small>
-                          {t("2명 이상이면 두 결과를 비교해 더 나은 쪽을 씁니다. 엉터리 결과를 거르는 데 필요합니다.")}
-                        </small>
-                      </span>
-                      <select
-                        aria-label={t("작업당 돕는 사람")}
-                        value={routing.pumasiCopies}
-                        onChange={(e) =>
-                          setRouting((r) => ({ ...r, pumasiCopies: Number(e.target.value) }))
-                        }
-                      >
-                        {[1, 2, 3].map((n) => (
-                          <option key={n} value={n}>
-                            {t("{count}명", { count: n })}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
                   )}
                   <p className="small-copy">
                     {t("OpenAI 키 {openai} · Claude 키 {anthropic} · Gemini 키 {gemini} · 무료 제공자 {compat}. 키는 아래 API 키에서 넣거나 환경 변수로 줄 수 있습니다. 모델 접근 권한은 실제 호출 시 확인됩니다. 모델 설정은 대화 저장과 별도로 이 기기에 유지됩니다.", {

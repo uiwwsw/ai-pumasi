@@ -2851,3 +2851,16 @@ html[data-theme="dark"] .code-error {
   border-radius: 0 0 7px 7px !important;
   padding-top: 11px !important;
 }
+
+.beta-tag {
+  margin-left: 6px;
+  padding: 0 5px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--muted);
+  vertical-align: 1px;
+}

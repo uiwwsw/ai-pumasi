@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-const { run, splitByHeadings, readTriage, partPrompt, EFFORT_OUTPUT } = require("../electron/smart.cjs");
+const { run, splitByHeadings, readTriage, partPrompt, sameResult, EFFORT_OUTPUT } = require("../electron/smart.cjs");
 const { createStatsStore } = require("../electron/worker-stats.cjs");
 
 const env = { NVIDIA_API_KEY: "k", AURORA_OLLAMA: "0" };
@@ -235,6 +235,53 @@ test("depth: light is one short answer from a fast model; deep gives every part 
   const c = await run({ text: "한국의 수도는?", context: [], model: "auto-free" }, auto.io);
   assert.equal(auto.calls[0].max, EFFORT_OUTPUT.mid);
   assert.equal(c.depth, "auto");
+});
+
+test("team: a computed answer is worked out again by a different model and the two are compared", async () => {
+  assert.ok(sameResult("정답 3: 1,174", "1174"));
+  assert.ok(sameResult("정답: 민수, 지아", "지아,민수"));
+  assert.ok(!sameResult("193", "177"));
+  assert.ok(!sameResult("", ""));
+  const text = [long("다음 계산 문제를 풀어 주세요."), "", long("17 곱하기 23은 얼마인가요?")].join("\n");
+  const SUPER = "nvidia/nemotron-3.5-super-vl-120b-a12b";
+  // Each model writes a program that prints its own name; the fake runner turns that into a value.
+  const make = (value: (model: string) => string) => {
+    const w = world((kind, _user, model) =>
+      kind === "triage" ? JSON.stringify({ mode: "direct", effort: "mid" }) : "```js\n// RUN\nconsole.log('" + model + "')\n```",
+    );
+    const runCode = async (code: string) => ({ ok: true, out: value(/'([^']+)'/.exec(code)![1]) });
+    return { w, runCode };
+  };
+  // The first two agree: two answers, no third.
+  const agree = make(() => "391");
+  const a = await run({ text, context: [], model: "auto-free", depth: "deep" }, { ...agree.w.io, runCode: agree.runCode });
+  const solvers = agree.w.calls.filter((c) => c.kind === "answer").map((c) => c.model);
+  assert.equal(solvers.length, 2);
+  assert.notEqual(solvers[0], solvers[1]);
+  assert.deepEqual([a.agreed, a.disputed, a.computed], [2, undefined, true]);
+  assert.ok(a.text.startsWith("391\n"));
+  // The first is the odd one out: the third settles it, and the majority's answer is used.
+  const split = make((model) => (model === SUPER ? "381" : "정답: 391"));
+  const b = await run({ text, context: [], model: "auto-free", depth: "deep" }, { ...split.w.io, runCode: split.runCode });
+  assert.equal(split.w.calls.filter((c) => c.kind === "answer").length, 3);
+  assert.equal(b.agreed, 2);
+  assert.ok(b.text.startsWith("정답: 391\n"));
+  assert.notEqual(b.model, SUPER);
+  // Three different values: the first answer stays, marked as not confirmed, with the others shown.
+  const apart = make((model) => `값-${model.length}-${model.slice(-4)}`);
+  const c = await run({ text, context: [], model: "auto-free", depth: "deep" }, { ...apart.w.io, runCode: apart.runCode });
+  assert.equal(c.disputed, true);
+  assert.equal(c.agreed, undefined);
+  assert.match(c.text, /확인되지 않았습니다/);
+  // Left to Pumasi mode, the same question is computed once.
+  const once = make(() => "391");
+  const d = await run({ text, context: [], model: "auto-free" }, { ...once.w.io, runCode: once.runCode });
+  assert.equal(once.w.calls.filter((c) => c.kind === "answer").length, 1);
+  assert.equal(d.agreed, undefined);
+  // An answer that was not computed is not asked twice.
+  const plain = world((kind) => (kind === "triage" ? JSON.stringify({ mode: "direct", effort: "mid" }) : "설명입니다."));
+  await run({ text, context: [], model: "auto-free", depth: "deep" }, { ...plain.io, runCode: once.runCode });
+  assert.equal(plain.calls.filter((c) => c.kind === "answer").length, 1);
 });
 
 test("when routing fails, the question is still answered", async () => {

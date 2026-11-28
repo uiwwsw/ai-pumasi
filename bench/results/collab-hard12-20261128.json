@@ -36,7 +36,8 @@
    "inputTokens": 17014,
    "seconds": 1722,
    "checks": {},
-   "total": 6
+   "total": 6,
+   "totalWithoutPath": 6
   },
   "smartcheck": {
    "label": "each part checked by one other model",
@@ -107,7 +108,8 @@
      "revised": false
     }
    },
-   "total": 9
+   "total": 9,
+   "totalWithoutPath": 9
   },
   "smartlog": {
    "label": "work log + check by one other model",
@@ -178,7 +180,8 @@
      "revised": true
     }
    },
-   "total": 6
+   "total": 6,
+   "totalWithoutPath": 6
   },
   "smartslice": {
    "label": "work log checked in slices by several models",
@@ -249,7 +252,8 @@
      "revised": false
     }
    },
-   "total": 7
+   "total": 7,
+   "totalWithoutPath": 7
   },
   "code-super": {
    "label": "code written by Nemotron 3.5 Super, then run",
@@ -270,7 +274,8 @@
    "outputTokens": 93327,
    "inputTokens": 8962,
    "seconds": 1965,
-   "total": 10
+   "total": 10,
+   "totalWithoutPath": 9
   },
   "code-lightning": {
    "label": "code written by Nemotron 3.5 Lightning, then run",
@@ -291,7 +296,8 @@
    "outputTokens": 69072,
    "inputTokens": 9422,
    "seconds": 3117,
-   "total": 9
+   "total": 9,
+   "totalWithoutPath": 7
   },
   "code-flash": {
    "label": "code written by Gemini 3.1 Flash-Lite, then run",
@@ -312,7 +318,8 @@
    "outputTokens": 157850,
    "inputTokens": 17277,
    "seconds": 400,
-   "total": 10
+   "total": 10,
+   "totalWithoutPath": 8
   },
   "app-code": {
    "label": "the app's own code: bundles of six, the model chooses whether to hand back a program",
@@ -338,7 +345,48 @@
    "inputTokens": 17895,
    "seconds": 930,
    "total": 10,
-   "computedParts": 12
+   "computedParts": 12,
+   "totalWithoutPath": 9
+  },
+  "app-team-beta": {
+   "label": "the app's Team (beta): a computed answer is worked out again by a different model and compared",
+   "correct": {
+    "knights-4": true,
+    "path-9": false,
+    "knapsack-9": true,
+    "path-3": false,
+    "grid-2": true,
+    "zebra-5": true,
+    "knights-9": false,
+    "path-7": false,
+    "knapsack-10": true,
+    "knapsack-3": true,
+    "bigmul-3": true,
+    "knights-1": true
+   },
+   "outputTokens": 321720,
+   "seconds": 927,
+   "total": 8,
+   "agreed": [
+    "knights-4",
+    "path-9",
+    "knapsack-9",
+    "path-3",
+    "grid-2",
+    "path-7",
+    "knapsack-10",
+    "knapsack-3",
+    "bigmul-3"
+   ],
+   "disputed": [
+    "knights-9",
+    "knights-1"
+   ],
+   "notComputed": [
+    "zebra-5"
+   ],
+   "totalWithoutPath": 8
   }
- }
+ },
+ "note": "The three path problems are badly worded (the level-3 waypoint sentence reads as a yes/no question; fixed in generate_hard.py on 2026-11-29). Compare the arms on the nine other problems."
 }
