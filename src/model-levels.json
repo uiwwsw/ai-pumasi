@@ -1,0 +1,20 @@
+{
+  "source": "Artificial Analysis Intelligence Index, https://artificialanalysis.ai/leaderboards/models, read 2026-11-28. One row per model in catalog.json. A number is the index of the row with the same model name and version; null means the leaderboard has no row for exactly this model, and nothing is guessed from a neighbouring version.",
+  "levels": {
+    "claude-opus-5-5": 59,
+    "claude-sonnet-5-5": 55,
+    "claude-haiku-5-5": 37,
+    "gpt-6-luna": 28,
+    "gpt-6.1-sol": null,
+    "gpt-6-astra": null,
+    "nvidia/nemotron-3.5-super-vl-120b-a12b": 14,
+    "nvidia/nemotron-3-ultra-550b-a55b": 12,
+    "nvidia/nemotron-3.5-lightning-30b-a3b": 6,
+    "openai/gpt-oss-120b": 4,
+    "google/gemini-3.1-flash-lite": null,
+    "deepseek-ai/deepseek-v4-flash-0731": null,
+    "gemini-flash-latest": null,
+    "ollama-local": null,
+    "auto-free": null
+  }
+}
