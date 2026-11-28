@@ -35,7 +35,18 @@ export function readyCrew(status: ProviderStatus, order: string[]) {
   return [...ranked, ...rest].filter((id) => modelReady(id, status)).map((id) => modelById(id));
 }
 
-export function CrewRoster({ status, order }: { status: ProviderStatus; order: string[] }) {
+/** Working as a team needs a second model: one answers, another checks or takes a part. */
+export const TEAM_MIN = 2;
+
+export function CrewRoster({
+  status,
+  order,
+  onAdd,
+}: {
+  status: ProviderStatus;
+  order: string[];
+  onAdd?: () => void;
+}) {
   const crew = readyCrew(status, order);
   if (!crew.length) return null;
   return (
@@ -50,6 +61,29 @@ export function CrewRoster({ status, order }: { status: ProviderStatus; order: s
           </li>
         ))}
       </ul>
+      {crew.length < TEAM_MIN && (
+        <p className="crew-short">
+          {t("여러 모델이 함께 풀려면 {n}개 이상 필요합니다. 지금은 이 모델이 혼자 답합니다.", { n: TEAM_MIN })}
+          {onAdd && (
+            <button type="button" onClick={onAdd}>
+              {t("모델 더 연결하기")}
+            </button>
+          )}
+        </p>
+      )}
     </div>
+  );
+}
+
+/** The composer's model button when the app picks: the marks of the models it will draw on. */
+export function CrewStack({ status, order }: { status: ProviderStatus; order: string[] }) {
+  const crew = readyCrew(status, order).slice(0, 3);
+  if (!crew.length) return <ModelToken id="auto-free" />;
+  return (
+    <span className="token-stack">
+      {crew.map((m) => (
+        <ModelToken key={m.id} id={m.id} />
+      ))}
+    </span>
   );
 }

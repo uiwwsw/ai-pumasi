@@ -51,7 +51,7 @@
   },
   {
     "id": "auto-free",
-    "name": "자동",
+    "name": "Pumasi mode",
     "provider": "auto",
     "tier": "light",
     "free": true
